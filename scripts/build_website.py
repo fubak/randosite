@@ -459,7 +459,7 @@ class WebsiteBuilder:
     </script>
 
     <!-- Google AdSense -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2196222970720414" crossorigin="anonymous"></script>
     <style>
       .ad-container {{
         display: flex;
@@ -2363,7 +2363,7 @@ class WebsiteBuilder:
         <div class="{container_class}">
             <ins class="adsbygoogle"
                  style="{style}"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-client="ca-pub-2196222970720414"
                  data-ad-format="{ad_format}"
                  data-full-width-responsive="true"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({{}});</script>
@@ -2373,7 +2373,7 @@ class WebsiteBuilder:
         <div class="{container_class}">
             <ins class="adsbygoogle"
                  style="{style}"
-                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-client="ca-pub-2196222970720414"
                  data-ad-slot="{slot_id}"
                  data-ad-format="{ad_format}"
                  data-full-width-responsive="true"></ins>
