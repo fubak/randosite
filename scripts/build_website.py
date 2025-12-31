@@ -532,6 +532,7 @@ class WebsiteBuilder:
             background: var(--color-bg);
             min-height: 100vh;
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }}
 
         a {{
@@ -735,6 +736,8 @@ class WebsiteBuilder:
             --color-muted: #64748b;
             --color-card-bg: #f8fafc;
             --color-border: #e2e8f0;
+            background-color: #ffffff !important;
+            color: #1a1a2e !important;
         }}
 
         body.light-mode .nav {{
@@ -800,6 +803,51 @@ class WebsiteBuilder:
         body.light-mode .theme-toggle {{
             background: var(--color-card-bg);
             border-color: var(--color-border);
+        }}
+
+        body.light-mode .nav-logo,
+        body.light-mode .headline-xl,
+        body.light-mode .headline-lg,
+        body.light-mode .headline-md,
+        body.light-mode .section-title,
+        body.light-mode .story-title,
+        body.light-mode .compact-card-title,
+        body.light-mode .footer-brand {{
+            color: #1a1a2e;
+        }}
+
+        body.light-mode .nav-links a,
+        body.light-mode .nav-date,
+        body.light-mode .text-muted,
+        body.light-mode .hero-subtitle,
+        body.light-mode .hero-meta,
+        body.light-mode .story-description,
+        body.light-mode .footer-description,
+        body.light-mode .section-count {{
+            color: #64748b;
+        }}
+
+        body.light-mode .section-header {{
+            border-bottom-color: #e2e8f0;
+        }}
+
+        body.light-mode footer {{
+            border-top-color: #e2e8f0;
+            background-color: #ffffff;
+        }}
+
+        body.light-mode .footer-bottom {{
+            border-top-color: #e2e8f0;
+        }}
+
+        body.light-mode .nav-github,
+        body.light-mode .footer-github {{
+            color: #64748b;
+        }}
+
+        body.light-mode .nav-github:hover,
+        body.light-mode .footer-github:hover {{
+            color: #1a1a2e;
         }}
 
         /* ===== HERO SECTION ===== */
