@@ -332,16 +332,16 @@ class WebsiteBuilder:
         hover_effect = self.design.get('hover_effect', 'lift')
         text_transform = self.design.get('text_transform_headings', 'none')
         animation_level = self.design.get('animation_level', 'subtle')
-        is_dark = self.design.get('is_dark_mode', True)
 
-        # Build body classes
+        # Build body classes - always start with dark-mode
+        # JavaScript will override based on user preference from localStorage
         body_classes = [
             f"layout-{self.layout}",
             f"hero-{self.hero_style}",
             f"card-style-{card_style}",
             f"hover-{hover_effect}",
             f"animation-{animation_level}",
-            "dark-mode" if is_dark else "light-mode",
+            "dark-mode",  # Always default to dark mode
         ]
 
         if text_transform != 'none':
@@ -374,9 +374,9 @@ class WebsiteBuilder:
     <!-- Canonical URL -->
     <link rel="canonical" href="https://dailytrending.info/">
 
-    <!-- Theme Color -->
-    <meta name="theme-color" content="{self.design.get('color_bg', '#0a0a0a')}">
-    <meta name="color-scheme" content="{'dark' if is_dark else 'light'}">
+    <!-- Theme Color - Always dark mode as default -->
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="color-scheme" content="dark light">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -479,17 +479,30 @@ class WebsiteBuilder:
         }
         anim_duration = animation_map.get(animation_level, '0.3s')
 
+        # Always use dark mode as base - force dark background colors
+        # but preserve the design's accent colors for theming
+        dark_bg = '#0a0a0a'
+        dark_text = '#ffffff'
+        dark_muted = '#a1a1aa'
+        dark_card_bg = '#18181b'
+        dark_border = '#27272a'
+
+        # Get accent colors from design (these work in both modes)
+        accent = d.get('color_accent', '#6366f1')
+        accent_secondary = d.get('color_accent_secondary', '#8b5cf6')
+
         return f"""
     <style>
         /* ===== CSS CUSTOM PROPERTIES ===== */
+        /* Base theme is always dark mode */
         :root {{
-            --color-bg: {d.get('color_bg', '#0a0a0a')};
-            --color-text: {d.get('color_text', '#ffffff')};
-            --color-accent: {d.get('color_accent', '#6366f1')};
-            --color-accent-secondary: {d.get('color_accent_secondary', '#8b5cf6')};
-            --color-muted: {d.get('color_muted', '#a1a1aa')};
-            --color-card-bg: {d.get('color_card_bg', '#18181b')};
-            --color-border: {d.get('color_border', '#27272a')};
+            --color-bg: {dark_bg};
+            --color-text: {dark_text};
+            --color-accent: {accent};
+            --color-accent-secondary: {accent_secondary};
+            --color-muted: {dark_muted};
+            --color-card-bg: {dark_card_bg};
+            --color-border: {dark_border};
 
             --font-primary: '{d.get('font_primary', 'Space Grotesk')}', system-ui, sans-serif;
             --font-secondary: '{d.get('font_secondary', 'Inter')}', system-ui, sans-serif;
