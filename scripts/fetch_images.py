@@ -8,11 +8,21 @@ import os
 import json
 import time
 import random
+import hashlib
+from pathlib import Path
+from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from urllib.parse import quote_plus
 
 import requests
+
+
+# Cache configuration
+CACHE_DIR = Path(__file__).parent.parent / "data" / "image_cache"
+CACHE_INDEX_FILE = CACHE_DIR / "cache_index.json"
+CACHE_MAX_AGE_DAYS = 7  # Refresh cached images after this many days
+CACHE_MAX_ENTRIES = 500  # Maximum cached image entries
 
 
 @dataclass
@@ -32,16 +42,161 @@ class Image:
     height: int = 0
 
 
+class ImageCache:
+    """Persistent disk cache for images to reduce API calls and provide fallback."""
+
+    def __init__(self, cache_dir: Path = CACHE_DIR):
+        self.cache_dir = cache_dir
+        self.index_file = cache_dir / "cache_index.json"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.index = self._load_index()
+
+    def _load_index(self) -> Dict:
+        """Load the cache index from disk."""
+        if self.index_file.exists():
+            try:
+                with open(self.index_file) as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, IOError):
+                pass
+        return {"queries": {}, "images": {}}
+
+    def _save_index(self):
+        """Save the cache index to disk."""
+        try:
+            with open(self.index_file, 'w') as f:
+                json.dump(self.index, f, indent=2)
+        except IOError as e:
+            print(f"  Warning: Could not save cache index: {e}")
+
+    def _query_key(self, query: str) -> str:
+        """Generate a normalized cache key for a query."""
+        normalized = query.lower().strip()
+        return hashlib.md5(normalized.encode()).hexdigest()[:12]
+
+    def is_cached(self, query: str) -> bool:
+        """Check if a query has cached results that aren't expired."""
+        key = self._query_key(query)
+        if key not in self.index.get("queries", {}):
+            return False
+
+        cached = self.index["queries"][key]
+        cached_time = datetime.fromisoformat(cached.get("timestamp", "2000-01-01"))
+        max_age = timedelta(days=CACHE_MAX_AGE_DAYS)
+
+        return datetime.now() - cached_time < max_age
+
+    def get_cached(self, query: str) -> List[Image]:
+        """Get cached images for a query."""
+        key = self._query_key(query)
+        if key not in self.index.get("queries", {}):
+            return []
+
+        cached = self.index["queries"][key]
+        image_ids = cached.get("image_ids", [])
+
+        images = []
+        for img_id in image_ids:
+            if img_id in self.index.get("images", {}):
+                img_data = self.index["images"][img_id]
+                try:
+                    images.append(Image(**img_data))
+                except TypeError:
+                    continue
+
+        return images
+
+    def cache_results(self, query: str, images: List[Image]):
+        """Cache search results for a query."""
+        if not images:
+            return
+
+        key = self._query_key(query)
+
+        # Store images in the images index
+        for img in images:
+            self.index.setdefault("images", {})[img.id] = asdict(img)
+
+        # Store query mapping
+        self.index.setdefault("queries", {})[key] = {
+            "query": query,
+            "timestamp": datetime.now().isoformat(),
+            "image_ids": [img.id for img in images]
+        }
+
+        # Enforce max entries limit
+        self._cleanup_if_needed()
+
+        # Save to disk
+        self._save_index()
+
+    def _cleanup_if_needed(self):
+        """Remove oldest entries if cache exceeds max size."""
+        images = self.index.get("images", {})
+        if len(images) <= CACHE_MAX_ENTRIES:
+            return
+
+        # Sort queries by timestamp and remove oldest
+        queries = self.index.get("queries", {})
+        sorted_queries = sorted(
+            queries.items(),
+            key=lambda x: x[1].get("timestamp", ""),
+            reverse=True
+        )
+
+        # Keep only the newest entries
+        keep_queries = dict(sorted_queries[:CACHE_MAX_ENTRIES // 5])
+        keep_image_ids = set()
+        for q in keep_queries.values():
+            keep_image_ids.update(q.get("image_ids", []))
+
+        # Filter images
+        self.index["queries"] = keep_queries
+        self.index["images"] = {
+            k: v for k, v in images.items() if k in keep_image_ids
+        }
+
+        print(f"  Cache cleaned: kept {len(self.index['images'])} images")
+
+    def get_random_cached(self, count: int = 10) -> List[Image]:
+        """Get random cached images as fallback."""
+        all_images = []
+        for img_data in self.index.get("images", {}).values():
+            try:
+                all_images.append(Image(**img_data))
+            except TypeError:
+                continue
+
+        if not all_images:
+            return []
+
+        random.shuffle(all_images)
+        return all_images[:count]
+
+    def get_stats(self) -> Dict:
+        """Get cache statistics."""
+        return {
+            "total_images": len(self.index.get("images", {})),
+            "total_queries": len(self.index.get("queries", {})),
+            "cache_dir": str(self.cache_dir)
+        }
+
+
 class ImageFetcher:
     """Fetches and manages images from multiple sources."""
 
-    def __init__(self, pexels_key: Optional[str] = None, unsplash_key: Optional[str] = None):
+    def __init__(self, pexels_key: Optional[str] = None, unsplash_key: Optional[str] = None,
+                 use_cache: bool = True):
         self.pexels_key = pexels_key or os.getenv('PEXELS_API_KEY')
         self.unsplash_key = unsplash_key or os.getenv('UNSPLASH_ACCESS_KEY')
 
         self.session = requests.Session()
         self.images: List[Image] = []
         self.used_ids: set = set()
+
+        # Persistent cache
+        self.use_cache = use_cache
+        self.cache = ImageCache() if use_cache else None
 
         # Rate limiting
         self._last_request_time = 0
@@ -164,8 +319,18 @@ class ImageFetcher:
         return images
 
     def search(self, query: str, per_page: int = 5) -> List[Image]:
-        """Search for images, trying Pexels first then Unsplash as fallback."""
+        """Search for images, trying cache first, then Pexels, then Unsplash."""
         print(f"  Searching for: '{query}'")
+
+        # Check cache first
+        if self.use_cache and self.cache and self.cache.is_cached(query):
+            cached_images = self.cache.get_cached(query)
+            if cached_images:
+                # Filter out already used images
+                cached_images = [img for img in cached_images if img.id not in self.used_ids]
+                if cached_images:
+                    print(f"    Found {len(cached_images)} images (cached)")
+                    return cached_images
 
         # Try Pexels first
         images = self.search_pexels(query, per_page)
@@ -173,6 +338,10 @@ class ImageFetcher:
         # If no results, try Unsplash
         if not images:
             images = self.search_unsplash(query, per_page)
+
+        # Cache the results for future use
+        if self.use_cache and self.cache and images:
+            self.cache.cache_results(query, images)
 
         # Filter out already used images
         images = [img for img in images if img.id not in self.used_ids]
@@ -183,6 +352,10 @@ class ImageFetcher:
     def fetch_for_keywords(self, keywords: List[str], images_per_keyword: int = 3) -> List[Image]:
         """Fetch images for a list of keywords."""
         print("Fetching images for keywords...")
+
+        if self.use_cache and self.cache:
+            stats = self.cache.get_stats()
+            print(f"  Cache stats: {stats['total_images']} images, {stats['total_queries']} queries")
 
         all_images = []
 
@@ -195,6 +368,18 @@ class ImageFetcher:
                 self.used_ids.add(img.id)
 
             time.sleep(0.3)  # Be nice to APIs
+
+        # If we got very few images, supplement with cached fallback
+        MIN_IMAGES = 5
+        if len(all_images) < MIN_IMAGES and self.use_cache and self.cache:
+            print(f"  Only {len(all_images)} images found, using cached fallback...")
+            fallback = self.cache.get_random_cached(MIN_IMAGES - len(all_images))
+            # Filter out duplicates
+            fallback = [img for img in fallback if img.id not in self.used_ids]
+            all_images.extend(fallback)
+            for img in fallback:
+                self.used_ids.add(img.id)
+            print(f"  Added {len(fallback)} cached images as fallback")
 
         self.images = all_images
         print(f"Total images fetched: {len(all_images)}")
