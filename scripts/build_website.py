@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 """
-Website Builder - Generates modern responsive HTML/CSS from design specs.
-Features: Bento grid, fluid typography, dark mode, mobile-first.
+Website Builder - Generates modern news-style websites with dynamic layouts.
+
+Features:
+- Multiple layout templates (newspaper, magazine, dashboard, minimal, bold)
+- Source-grouped sections (News, Tech, Reddit, etc.)
+- Word cloud visualization
+- Dynamic hero styles
+- Responsive design with CSS Grid
 """
 
 import os
 import json
 import html
+import random
+import hashlib
 from datetime import datetime
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
+from collections import defaultdict
 
 from fetch_images import FallbackImageGenerator
 
@@ -28,12 +37,108 @@ class BuildContext:
             self.generated_at = datetime.now().strftime("%B %d, %Y")
 
 
+# Layout templates with different structures
+LAYOUT_TEMPLATES = [
+    "newspaper",   # Classic newspaper with columns
+    "magazine",    # Large featured images, editorial style
+    "dashboard",   # Data-dense with stats and grids
+    "minimal",     # Clean, lots of whitespace
+    "bold",        # Large typography, high contrast
+    "mosaic",      # Asymmetric grid, varied card sizes
+]
+
+# Hero style variants
+HERO_STYLES = [
+    "full",        # Full viewport with overlay
+    "split",       # Split screen with content
+    "minimal",     # Small hero, content-focused
+    "gradient",    # Animated gradient background
+    "ticker",      # Breaking news style
+]
+
+
 class WebsiteBuilder:
-    """Builds the final HTML/CSS website."""
+    """Builds dynamic news-style websites with varied layouts."""
 
     def __init__(self, context: BuildContext):
         self.ctx = context
         self.design = context.design
+
+        # Use date as seed for consistent daily randomization
+        date_seed = datetime.now().strftime("%Y-%m-%d")
+        self.rng = random.Random(date_seed)
+
+        # Select layout and hero style for today
+        self.layout = self.rng.choice(LAYOUT_TEMPLATES)
+        self.hero_style = self.rng.choice(HERO_STYLES)
+
+        # Group trends by category
+        self.grouped_trends = self._group_trends()
+
+        # Calculate keyword frequencies for word cloud
+        self.keyword_freq = self._calculate_keyword_freq()
+
+    def _group_trends(self) -> Dict[str, List[Dict]]:
+        """Group trends by their source category."""
+        groups = defaultdict(list)
+
+        category_map = {
+            'news_': 'World News',
+            'tech_': 'Technology',
+            'reddit_news': 'Reddit News',
+            'reddit_worldnews': 'World News',
+            'reddit_politics': 'Politics',
+            'reddit_technology': 'Technology',
+            'reddit_science': 'Science',
+            'reddit_programming': 'Technology',
+            'reddit_futurology': 'Future',
+            'reddit_space': 'Science',
+            'reddit_movies': 'Entertainment',
+            'reddit_television': 'Entertainment',
+            'reddit_music': 'Entertainment',
+            'reddit_books': 'Culture',
+            'reddit_sports': 'Sports',
+            'reddit_nba': 'Sports',
+            'reddit_soccer': 'Sports',
+            'reddit_business': 'Business',
+            'reddit_economics': 'Business',
+            'reddit_gadgets': 'Technology',
+            'reddit_': 'Trending',
+            'hackernews': 'Hacker News',
+            'google_trends': 'Trending',
+            'github_trending': 'GitHub',
+            'wikipedia_current': 'Current Events',
+        }
+
+        for trend in self.ctx.trends:
+            source = trend.get('source', 'unknown')
+            category = 'Other'
+
+            for prefix, cat in category_map.items():
+                if source.startswith(prefix):
+                    category = cat
+                    break
+
+            groups[category].append(trend)
+
+        return dict(groups)
+
+    def _calculate_keyword_freq(self) -> List[Tuple[str, int]]:
+        """Calculate keyword frequencies for word cloud."""
+        freq = defaultdict(int)
+
+        for trend in self.ctx.trends:
+            keywords = trend.get('keywords', [])
+            for kw in keywords:
+                freq[kw.lower()] += 1
+
+        # Also count from keyword list
+        for kw in self.ctx.keywords:
+            freq[kw.lower()] += 1
+
+        # Sort by frequency
+        sorted_freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
+        return sorted_freq[:50]
 
     def build(self) -> str:
         """Build the complete HTML page."""
@@ -49,12 +154,19 @@ class WebsiteBuilder:
     {self._build_fonts()}
     {self._build_styles()}
 </head>
-<body>
+<body class="layout-{self.layout} hero-{self.hero_style}">
+    {self._build_nav()}
     {self._build_hero()}
-    {self._build_ticker()}
-    {self._build_main_content()}
-    {self._build_footer()}
+    {self._build_breaking_ticker()}
 
+    <main>
+        {self._build_word_cloud()}
+        {self._build_top_stories()}
+        {self._build_category_sections()}
+        {self._build_stats_bar()}
+    </main>
+
+    {self._build_footer()}
     {self._build_scripts()}
 </body>
 </html>"""
@@ -67,10 +179,10 @@ class WebsiteBuilder:
         return f"""
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={primary}:wght@400;500;600;700&family={secondary}:wght@400;500;600&display=swap" rel="stylesheet">"""
+    <link href="https://fonts.googleapis.com/css2?family={primary}:wght@400;500;600;700;800;900&family={secondary}:wght@400;500;600&display=swap" rel="stylesheet">"""
 
     def _build_styles(self) -> str:
-        """Build all CSS styles."""
+        """Build all CSS styles with layout variants."""
         d = self.design
 
         # Get hero image if available
@@ -83,6 +195,7 @@ class WebsiteBuilder:
 
         return f"""
     <style>
+        /* ===== CSS CUSTOM PROPERTIES ===== */
         :root {{
             --color-bg: {d.get('color_bg', '#0a0a0a')};
             --color-text: {d.get('color_text', '#ffffff')};
@@ -95,18 +208,18 @@ class WebsiteBuilder:
             --font-primary: '{d.get('font_primary', 'Space Grotesk')}', system-ui, sans-serif;
             --font-secondary: '{d.get('font_secondary', 'Inter')}', system-ui, sans-serif;
 
-            --font-size-hero: {d.get('font_size_hero', 'clamp(2.5rem, 8vw, 6rem)')};
-            --font-size-h2: {d.get('font_size_h2', 'clamp(1.5rem, 4vw, 2.5rem)')};
-            --font-size-body: {d.get('font_size_body', 'clamp(1rem, 2vw, 1.125rem)')};
+            --radius-sm: 0.5rem;
+            --radius: 1rem;
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
 
-            --radius: {d.get('card_radius', '1.5rem')};
-            --padding: {d.get('card_padding', '1.5rem')};
-            --gap: {d.get('section_gap', '1.5rem')};
-            --max-width: {d.get('max_width', '1400px')};
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --max-width: 1400px;
 
-            --transition: {d.get('transition_speed', '0.3s')} ease;
+            --hero-bg: {hero_bg};
         }}
 
+        /* ===== RESET & BASE ===== */
         *, *::before, *::after {{
             box-sizing: border-box;
             margin: 0;
@@ -115,11 +228,11 @@ class WebsiteBuilder:
 
         html {{
             scroll-behavior: smooth;
+            font-size: 16px;
         }}
 
         body {{
             font-family: var(--font-secondary);
-            font-size: var(--font-size-body);
             line-height: 1.6;
             color: var(--color-text);
             background: var(--color-bg);
@@ -127,16 +240,111 @@ class WebsiteBuilder:
             overflow-x: hidden;
         }}
 
-        /* Hero Section */
+        a {{
+            color: inherit;
+            text-decoration: none;
+        }}
+
+        img {{
+            max-width: 100%;
+            height: auto;
+        }}
+
+        /* ===== TYPOGRAPHY ===== */
+        .headline-xl {{
+            font-family: var(--font-primary);
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+        }}
+
+        .headline-lg {{
+            font-family: var(--font-primary);
+            font-size: clamp(1.75rem, 4vw, 3rem);
+            font-weight: 700;
+            line-height: 1.1;
+        }}
+
+        .headline-md {{
+            font-family: var(--font-primary);
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+            font-weight: 600;
+            line-height: 1.2;
+        }}
+
+        .text-muted {{
+            color: var(--color-muted);
+        }}
+
+        /* ===== NAVIGATION ===== */
+        .nav {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--color-bg), transparent);
+            transition: background var(--transition);
+        }}
+
+        .nav.scrolled {{
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border);
+        }}
+
+        .nav-logo {{
+            font-family: var(--font-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }}
+
+        .nav-logo::before {{
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }}
+
+        .nav-links {{
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }}
+
+        .nav-links a {{
+            font-size: 0.9rem;
+            color: var(--color-muted);
+            transition: color var(--transition);
+        }}
+
+        .nav-links a:hover {{
+            color: var(--color-text);
+        }}
+
+        .nav-date {{
+            font-size: 0.85rem;
+            color: var(--color-muted);
+        }}
+
+        /* ===== HERO SECTION ===== */
         .hero {{
-            position: relative;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 2rem;
+            padding: 6rem 2rem 4rem;
+            position: relative;
             overflow: hidden;
         }}
 
@@ -144,90 +352,128 @@ class WebsiteBuilder:
             content: '';
             position: absolute;
             inset: 0;
-            background: {hero_bg};
-            opacity: 0.15;
-            z-index: 0;
+            background: var(--hero-bg);
+            opacity: 0.1;
+            z-index: -1;
         }}
 
         .hero::after {{
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(
-                180deg,
-                transparent 0%,
-                var(--color-bg) 100%
-            );
-            z-index: 1;
+            background: linear-gradient(180deg, var(--color-bg) 0%, transparent 30%, transparent 70%, var(--color-bg) 100%);
+            z-index: -1;
         }}
 
         .hero-content {{
-            position: relative;
-            z-index: 2;
-            max-width: 900px;
-            animation: fadeInUp 1s ease-out;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            width: 100%;
+        }}
+
+        .hero-eyebrow {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--color-accent);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.5rem;
         }}
 
         .hero h1 {{
-            font-family: var(--font-primary);
-            font-size: var(--font-size-hero);
-            font-weight: 700;
-            line-height: 1.1;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--color-text), var(--color-accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            max-width: 900px;
         }}
 
-        .hero p {{
-            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+        .hero-subtitle {{
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
             color: var(--color-muted);
-            margin-bottom: 2rem;
             max-width: 600px;
-            margin-inline: auto;
+            margin-bottom: 2rem;
         }}
 
-        .hero-date {{
-            display: inline-block;
-            padding: 0.5rem 1.5rem;
-            background: var(--color-card-bg);
-            border: 1px solid var(--color-border);
-            border-radius: 100px;
+        .hero-meta {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
             font-size: 0.9rem;
             color: var(--color-muted);
         }}
 
-        .scroll-indicator {{
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 2;
-            animation: bounce 2s infinite;
+        .hero-meta span {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }}
 
-        .scroll-indicator span {{
-            display: block;
-            width: 2px;
-            height: 40px;
-            background: linear-gradient(to bottom, var(--color-accent), transparent);
-            margin: 0 auto 0.5rem;
+        /* ===== HERO STYLE VARIANTS ===== */
+        .hero-split .hero {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
         }}
 
-        /* Ticker */
+        .hero-minimal .hero {{
+            min-height: 60vh;
+            text-align: center;
+        }}
+
+        .hero-minimal .hero-content {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }}
+
+        .hero-gradient .hero::before {{
+            background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-secondary) 50%, var(--color-bg) 100%);
+            opacity: 0.15;
+            animation: gradientShift 10s ease infinite;
+        }}
+
+        .hero-ticker .hero {{
+            min-height: auto;
+            padding: 8rem 2rem 2rem;
+        }}
+
+        /* ===== BREAKING NEWS TICKER ===== */
         .ticker-wrap {{
             overflow: hidden;
             background: var(--color-card-bg);
             border-top: 1px solid var(--color-border);
             border-bottom: 1px solid var(--color-border);
-            padding: 1rem 0;
+            position: relative;
+        }}
+
+        .ticker-label {{
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            background: var(--color-accent);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            z-index: 2;
         }}
 
         .ticker {{
             display: flex;
             width: fit-content;
-            animation: ticker 30s linear infinite;
+            animation: ticker 60s linear infinite;
+            padding: 0.75rem 0;
+            padding-left: 120px;
         }}
 
         .ticker:hover {{
@@ -237,104 +483,245 @@ class WebsiteBuilder:
         .ticker-item {{
             flex-shrink: 0;
             padding: 0 2rem;
-            font-family: var(--font-primary);
             font-size: 0.9rem;
             color: var(--color-muted);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
+            border-right: 1px solid var(--color-border);
         }}
 
-        .ticker-item::before {{
-            content: '';
-            width: 6px;
-            height: 6px;
-            background: var(--color-accent);
-            border-radius: 50%;
+        .ticker-item strong {{
+            color: var(--color-text);
         }}
 
-        /* Main Content */
+        .ticker-source {{
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            letter-spacing: 0.05em;
+        }}
+
+        /* ===== MAIN CONTENT ===== */
         main {{
             max-width: var(--max-width);
             margin: 0 auto;
-            padding: 4rem 1.5rem;
+            padding: 3rem 2rem;
+        }}
+
+        /* ===== WORD CLOUD ===== */
+        .word-cloud-section {{
+            margin-bottom: 4rem;
+            text-align: center;
+        }}
+
+        .word-cloud {{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem 1rem;
+            padding: 2rem;
+            background: var(--color-card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            min-height: 200px;
+        }}
+
+        .word-cloud-item {{
+            transition: all var(--transition);
+            cursor: default;
+            opacity: 0.7;
+        }}
+
+        .word-cloud-item:hover {{
+            opacity: 1;
+            transform: scale(1.1);
+            color: var(--color-accent);
+        }}
+
+        .word-cloud-item.size-1 {{ font-size: 0.75rem; }}
+        .word-cloud-item.size-2 {{ font-size: 0.9rem; }}
+        .word-cloud-item.size-3 {{ font-size: 1.1rem; font-weight: 500; }}
+        .word-cloud-item.size-4 {{ font-size: 1.4rem; font-weight: 600; }}
+        .word-cloud-item.size-5 {{ font-size: 1.8rem; font-weight: 700; color: var(--color-accent); opacity: 1; }}
+        .word-cloud-item.size-6 {{ font-size: 2.2rem; font-weight: 800; color: var(--color-accent); opacity: 1; }}
+
+        /* ===== SECTION HEADERS ===== */
+        .section {{
+            margin-bottom: 4rem;
         }}
 
         .section-header {{
-            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--color-border);
         }}
 
-        .section-header h2 {{
+        .section-title {{
             font-family: var(--font-primary);
-            font-size: var(--font-size-h2);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }}
 
-        .section-header p {{
+        .section-title::before {{
+            content: '';
+            width: 4px;
+            height: 1.5rem;
+            background: var(--color-accent);
+            border-radius: 2px;
+        }}
+
+        .section-count {{
+            font-size: 0.85rem;
             color: var(--color-muted);
+            background: var(--color-card-bg);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
         }}
 
-        /* Bento Grid */
-        .bento-grid {{
+        /* ===== TOP STORIES GRID ===== */
+        .top-stories {{
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: minmax(200px, auto);
-            gap: var(--gap);
+            gap: 1.5rem;
+            margin-bottom: 4rem;
         }}
 
-        .card {{
+        /* Layout variants for top stories */
+        .layout-newspaper .top-stories {{
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: auto auto;
+        }}
+
+        .layout-newspaper .top-stories .story-card:first-child {{
+            grid-row: span 2;
+        }}
+
+        .layout-magazine .top-stories {{
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 400px 200px;
+        }}
+
+        .layout-magazine .top-stories .story-card:first-child {{
+            grid-column: span 2;
+        }}
+
+        .layout-dashboard .top-stories {{
+            grid-template-columns: repeat(4, 1fr);
+        }}
+
+        .layout-minimal .top-stories {{
+            grid-template-columns: 1fr;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }}
+
+        .layout-bold .top-stories {{
+            grid-template-columns: 1fr;
+        }}
+
+        .layout-bold .top-stories .story-card:first-child {{
+            padding: 3rem;
+        }}
+
+        .layout-mosaic .top-stories {{
+            grid-template-columns: repeat(6, 1fr);
+            grid-auto-rows: 150px;
+        }}
+
+        .layout-mosaic .top-stories .story-card:nth-child(1) {{
+            grid-column: span 4;
+            grid-row: span 2;
+        }}
+
+        .layout-mosaic .top-stories .story-card:nth-child(2) {{
+            grid-column: span 2;
+            grid-row: span 2;
+        }}
+
+        .layout-mosaic .top-stories .story-card:nth-child(3),
+        .layout-mosaic .top-stories .story-card:nth-child(4) {{
+            grid-column: span 3;
+        }}
+
+        /* ===== STORY CARDS ===== */
+        .story-card {{
             position: relative;
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
-            padding: var(--padding);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             transition: transform var(--transition), box-shadow var(--transition);
         }}
 
-        .card:hover {{
+        .story-card:hover {{
             transform: translateY(-4px);
-            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
         }}
 
-        .card::before {{
+        .story-card.has-image {{
+            background-size: cover;
+            background-position: center;
+        }}
+
+        .story-card.has-image::before {{
             content: '';
             position: absolute;
             inset: 0;
-            background: inherit;
-            opacity: 0.5;
-            z-index: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.8) 100%);
         }}
 
-        .card-content {{
+        .story-card.featured {{
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary));
+            border: none;
+        }}
+
+        .story-content {{
             position: relative;
-            z-index: 1;
-            height: 100%;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
+            height: 100%;
+            z-index: 1;
         }}
 
-        .card-meta {{
-            font-size: 0.8rem;
-            color: var(--color-accent);
+        .story-source {{
+            font-size: 0.7rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
             margin-bottom: 0.75rem;
         }}
 
-        .card h3 {{
+        .story-card.featured .story-source,
+        .story-card.has-image .story-source {{
+            color: rgba(255,255,255,0.8);
+        }}
+
+        .story-title {{
             font-family: var(--font-primary);
-            font-size: clamp(1.1rem, 2vw, 1.4rem);
+            font-size: 1.1rem;
             font-weight: 600;
             line-height: 1.3;
             margin-bottom: 0.75rem;
             flex-grow: 1;
         }}
 
-        .card p {{
+        .story-card:first-child .story-title {{
+            font-size: 1.5rem;
+        }}
+
+        .story-description {{
             font-size: 0.9rem;
             color: var(--color-muted);
             line-height: 1.5;
@@ -344,219 +731,292 @@ class WebsiteBuilder:
             overflow: hidden;
         }}
 
-        .card-link {{
+        .story-card.featured .story-description,
+        .story-card.has-image .story-description {{
+            color: rgba(255,255,255,0.9);
+        }}
+
+        .story-link {{
             position: absolute;
             inset: 0;
             z-index: 2;
         }}
 
-        /* Card Variants */
-        .card.featured {{
-            grid-column: span 2;
-            grid-row: span 2;
+        /* ===== CATEGORY GRIDS ===== */
+        .category-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
         }}
 
-        .card.wide {{
-            grid-column: span 2;
+        .layout-newspaper .category-grid {{
+            grid-template-columns: repeat(3, 1fr);
         }}
 
-        .card.tall {{
-            grid-row: span 2;
+        .layout-minimal .category-grid {{
+            grid-template-columns: 1fr;
         }}
 
-        .card.has-image {{
-            background-size: cover;
-            background-position: center;
-        }}
-
-        .card.has-image::before {{
-            background: linear-gradient(
-                180deg,
-                rgba(0, 0, 0, 0.3) 0%,
-                rgba(0, 0, 0, 0.8) 100%
-            );
-            opacity: 1;
-        }}
-
-        .card.accent-bg {{
-            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary));
-            border-color: transparent;
-        }}
-
-        .card.accent-bg .card-meta {{
-            color: rgba(255, 255, 255, 0.8);
-        }}
-
-        .card.accent-bg p {{
-            color: rgba(255, 255, 255, 0.9);
-        }}
-
-        /* Keywords Section */
-        .keywords {{
+        /* ===== COMPACT CARDS ===== */
+        .compact-card {{
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-top: 2rem;
-        }}
-
-        .keyword {{
-            padding: 0.5rem 1rem;
+            gap: 1rem;
+            padding: 1rem;
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
-            border-radius: 100px;
-            font-size: 0.85rem;
-            color: var(--color-muted);
+            border-radius: var(--radius-sm);
             transition: all var(--transition);
         }}
 
-        .keyword:hover {{
+        .compact-card:hover {{
             border-color: var(--color-accent);
-            color: var(--color-accent);
+            background: rgba(99, 102, 241, 0.05);
         }}
 
-        /* Footer */
+        .compact-card-number {{
+            font-family: var(--font-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-accent);
+            opacity: 0.5;
+            min-width: 2rem;
+        }}
+
+        .compact-card-content {{
+            flex: 1;
+        }}
+
+        .compact-card-source {{
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
+            margin-bottom: 0.25rem;
+        }}
+
+        .compact-card-title {{
+            font-family: var(--font-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }}
+
+        /* ===== STATS BAR ===== */
+        .stats-bar {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+            background: var(--color-card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            margin: 4rem 0;
+        }}
+
+        .stat {{
+            text-align: center;
+        }}
+
+        .stat-value {{
+            font-family: var(--font-primary);
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+
+        .stat-label {{
+            font-size: 0.8rem;
+            color: var(--color-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }}
+
+        /* ===== FOOTER ===== */
         footer {{
             border-top: 1px solid var(--color-border);
-            padding: 3rem 1.5rem;
-            text-align: center;
+            padding: 4rem 2rem;
+            margin-top: 4rem;
         }}
 
         .footer-content {{
             max-width: var(--max-width);
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 4rem;
         }}
 
-        .footer-logo {{
+        .footer-brand {{
             font-family: var(--font-primary);
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }}
+
+        .footer-description {{
+            color: var(--color-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }}
+
+        .footer-section-title {{
+            font-family: var(--font-primary);
             font-weight: 600;
             margin-bottom: 1rem;
         }}
 
-        .footer-meta {{
+        .footer-links {{
+            list-style: none;
+        }}
+
+        .footer-links li {{
+            margin-bottom: 0.5rem;
+        }}
+
+        .footer-links a {{
+            color: var(--color-muted);
+            font-size: 0.9rem;
+            transition: color var(--transition);
+        }}
+
+        .footer-links a:hover {{
+            color: var(--color-accent);
+        }}
+
+        .footer-bottom {{
+            max-width: var(--max-width);
+            margin: 3rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 0.85rem;
             color: var(--color-muted);
-            margin-bottom: 1.5rem;
         }}
 
-        .credits {{
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 1rem;
-            font-size: 0.8rem;
-            color: var(--color-muted);
-        }}
-
-        .credits a {{
-            color: var(--color-accent);
-            text-decoration: none;
-        }}
-
-        .credits a:hover {{
-            text-decoration: underline;
-        }}
-
-        /* Archive Link */
-        .archive-link {{
+        .archive-btn {{
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            margin-top: 2rem;
             padding: 0.75rem 1.5rem;
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
             color: var(--color-text);
-            text-decoration: none;
             font-size: 0.9rem;
             transition: all var(--transition);
         }}
 
-        .archive-link:hover {{
+        .archive-btn:hover {{
             border-color: var(--color-accent);
-            transform: translateY(-2px);
+            background: rgba(99, 102, 241, 0.1);
         }}
 
-        /* Animations */
-        @keyframes fadeInUp {{
-            from {{
-                opacity: 0;
-                transform: translateY(30px);
-            }}
-            to {{
-                opacity: 1;
-                transform: translateY(0);
-            }}
-        }}
-
-        @keyframes bounce {{
-            0%, 20%, 50%, 80%, 100% {{
-                transform: translateX(-50%) translateY(0);
-            }}
-            40% {{
-                transform: translateX(-50%) translateY(-10px);
-            }}
-            60% {{
-                transform: translateX(-50%) translateY(-5px);
-            }}
-        }}
-
+        /* ===== ANIMATIONS ===== */
         @keyframes ticker {{
-            0% {{
-                transform: translateX(0);
-            }}
-            100% {{
-                transform: translateX(-50%);
-            }}
+            0% {{ transform: translateX(0); }}
+            100% {{ transform: translateX(-50%); }}
         }}
 
-        /* Responsive */
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; }}
+            50% {{ opacity: 0.5; }}
+        }}
+
+        @keyframes gradientShift {{
+            0%, 100% {{ transform: rotate(0deg) scale(1); }}
+            50% {{ transform: rotate(180deg) scale(1.5); }}
+        }}
+
+        @keyframes fadeInUp {{
+            from {{ opacity: 0; transform: translateY(20px); }}
+            to {{ opacity: 1; transform: translateY(0); }}
+        }}
+
+        .animate-in {{
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }}
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {{
-            .bento-grid {{
-                grid-template-columns: repeat(2, 1fr);
+            .layout-newspaper .top-stories,
+            .layout-mosaic .top-stories {{
+                grid-template-columns: 1fr 1fr;
             }}
 
-            .card.featured {{
+            .layout-newspaper .top-stories .story-card:first-child,
+            .layout-mosaic .top-stories .story-card:first-child {{
                 grid-column: span 2;
                 grid-row: span 1;
             }}
 
-            .card.tall {{
-                grid-row: span 1;
+            .layout-mosaic .top-stories .story-card {{
+                grid-column: span 1 !important;
+                grid-row: span 1 !important;
+            }}
+
+            .footer-content {{
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }}
+
+            .nav-links {{
+                display: none;
             }}
         }}
 
         @media (max-width: 768px) {{
-            :root {{
-                --padding: 1.25rem;
-                --gap: 1rem;
+            .hero {{
+                padding: 5rem 1rem 2rem;
+                min-height: 70vh;
             }}
 
-            .bento-grid {{
+            .hero-split .hero {{
                 grid-template-columns: 1fr;
             }}
 
-            .card.featured,
-            .card.wide {{
-                grid-column: span 1;
+            .top-stories,
+            .layout-newspaper .top-stories,
+            .layout-magazine .top-stories,
+            .layout-dashboard .top-stories,
+            .layout-mosaic .top-stories {{
+                grid-template-columns: 1fr;
             }}
 
-            .hero {{
-                min-height: 80vh;
-                padding: 1.5rem;
+            .top-stories .story-card:first-child {{
+                grid-column: span 1 !important;
+                grid-row: span 1 !important;
             }}
 
-            .ticker-item {{
-                padding: 0 1.5rem;
+            .category-grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            .stats-bar {{
+                grid-template-columns: repeat(2, 1fr);
+            }}
+
+            .word-cloud {{
+                padding: 1rem;
             }}
 
             main {{
                 padding: 2rem 1rem;
             }}
+
+            .footer-bottom {{
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }}
         }}
 
-        /* Reduced Motion */
+        /* ===== REDUCED MOTION ===== */
         @media (prefers-reduced-motion: reduce) {{
             *, *::before, *::after {{
                 animation-duration: 0.01ms !important;
@@ -566,149 +1026,306 @@ class WebsiteBuilder:
         }}
     </style>"""
 
+    def _build_nav(self) -> str:
+        """Build the navigation bar."""
+        categories = list(self.grouped_trends.keys())[:5]
+
+        links = '\n'.join(
+            f'                <li><a href="#{cat.lower().replace(" ", "-")}">{cat}</a></li>'
+            for cat in categories
+        )
+
+        return f"""
+    <nav class="nav" id="nav">
+        <div class="nav-logo">
+            <span>Trend Watch</span>
+        </div>
+        <ul class="nav-links">
+{links}
+        </ul>
+        <div class="nav-date">{self.ctx.generated_at}</div>
+    </nav>"""
+
     def _build_hero(self) -> str:
         """Build the hero section."""
         headline = html.escape(self.design.get('headline', "Today's Trends"))
         subheadline = html.escape(self.design.get('subheadline', 'What the world is talking about'))
 
+        total_trends = len(self.ctx.trends)
+        total_sources = len(set(t.get('source', '').split('_')[0] for t in self.ctx.trends))
+
         return f"""
-    <section class="hero">
+    <header class="hero">
         <div class="hero-content">
-            <h1>{headline}</h1>
-            <p>{subheadline}</p>
-            <span class="hero-date">{self.ctx.generated_at}</span>
+            <div class="hero-eyebrow">
+                <span>Live</span> Trending Now
+            </div>
+            <h1 class="headline-xl">{headline}</h1>
+            <p class="hero-subtitle">{subheadline}</p>
+            <div class="hero-meta">
+                <span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Updated {self.ctx.generated_at}
+                </span>
+                <span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20V10"></path>
+                        <path d="M18 20V4"></path>
+                        <path d="M6 20v-4"></path>
+                    </svg>
+                    {total_trends} stories from {total_sources} sources
+                </span>
+                <span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    Layout: {self.layout.title()}
+                </span>
+            </div>
         </div>
-        <div class="scroll-indicator">
-            <span></span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-        </div>
-    </section>"""
+    </header>"""
 
-    def _build_ticker(self) -> str:
-        """Build the trending ticker."""
-        # Get keywords for ticker
-        keywords = self.ctx.keywords[:20] if self.ctx.keywords else []
+    def _build_breaking_ticker(self) -> str:
+        """Build the breaking news ticker."""
+        # Get top 10 trends for ticker
+        top_trends = self.ctx.trends[:15]
 
-        if not keywords:
-            keywords = ['trending', 'news', 'technology', 'world', 'today']
+        items = []
+        for trend in top_trends:
+            source = trend.get('source', '').replace('_', ' ').title()
+            title = html.escape(trend.get('title', '')[:80])
+            items.append(f'''
+            <div class="ticker-item">
+                <span class="ticker-source">{source}</span>
+                <strong>{title}</strong>
+            </div>''')
 
-        # Double the keywords for seamless loop
-        items = keywords + keywords
-
-        ticker_items = '\n'.join(
-            f'            <div class="ticker-item">{html.escape(kw.title())}</div>'
-            for kw in items
-        )
+        # Double for seamless loop
+        ticker_content = ''.join(items) + ''.join(items)
 
         return f"""
     <div class="ticker-wrap">
+        <div class="ticker-label">TRENDING</div>
         <div class="ticker">
-{ticker_items}
+            {ticker_content}
         </div>
     </div>"""
 
-    def _build_main_content(self) -> str:
-        """Build the main content section with bento grid."""
-        trends = self.ctx.trends[:12]
-        images = self.ctx.images[1:] if len(self.ctx.images) > 1 else []
+    def _build_word_cloud(self) -> str:
+        """Build the word cloud visualization."""
+        if not self.keyword_freq:
+            return ""
 
-        cards_html = []
+        max_freq = self.keyword_freq[0][1] if self.keyword_freq else 1
 
-        for i, trend in enumerate(trends):
-            # Determine card variant
-            variant = ""
-            if i == 0:
-                variant = "featured"
-            elif i == 1:
-                variant = "featured accent-bg"
-            elif i == 3:
-                variant = "wide"
-            elif i == 5:
-                variant = "tall"
+        words_html = []
+        for word, freq in self.keyword_freq[:40]:
+            # Calculate size class (1-6)
+            ratio = freq / max_freq
+            if ratio > 0.8:
+                size = 6
+            elif ratio > 0.6:
+                size = 5
+            elif ratio > 0.4:
+                size = 4
+            elif ratio > 0.25:
+                size = 3
+            elif ratio > 0.1:
+                size = 2
+            else:
+                size = 1
 
-            # Check for image
-            image = images[i] if i < len(images) else None
-            bg_style = ""
-            if image and variant not in ["accent-bg"]:
-                bg_style = f'style="background-image: url(\'{image.get("url_medium", "")}\');"'
-                variant += " has-image"
+            words_html.append(
+                f'<span class="word-cloud-item size-{size}">{html.escape(word.title())}</span>'
+            )
 
-            # Build card HTML
-            title = html.escape(trend.get('title', 'Untitled'))
-            source = trend.get('source', 'unknown').replace('_', ' ').title()
-            desc = html.escape(trend.get('description', '')[:150]) if trend.get('description') else ''
-            url = trend.get('url', '#')
-
-            card_html = f"""
-            <article class="card {variant}" {bg_style}>
-                <div class="card-content">
-                    <span class="card-meta">{source}</span>
-                    <h3>{title}</h3>
-                    {f'<p>{desc}</p>' if desc else ''}
-                </div>
-                <a href="{html.escape(url)}" class="card-link" target="_blank" rel="noopener" aria-label="Read more about {title}"></a>
-            </article>"""
-
-            cards_html.append(card_html)
-
-        # Build keywords section
-        keywords_html = '\n'.join(
-            f'            <span class="keyword">{html.escape(kw.title())}</span>'
-            for kw in self.ctx.keywords[:12]
-        )
+        # Shuffle for visual variety
+        self.rng.shuffle(words_html)
 
         return f"""
-    <main>
+    <section class="word-cloud-section section">
         <div class="section-header">
-            <h2>Trending Now</h2>
-            <p>The stories shaping today's conversation</p>
+            <h2 class="section-title">What's Trending</h2>
+            <span class="section-count">{len(self.keyword_freq)} keywords</span>
         </div>
+        <div class="word-cloud">
+            {' '.join(words_html)}
+        </div>
+    </section>"""
 
-        <div class="bento-grid">
-{''.join(cards_html)}
-        </div>
+    def _build_top_stories(self) -> str:
+        """Build the top stories section."""
+        top = self.ctx.trends[:6]
+        images = self.ctx.images[1:7] if len(self.ctx.images) > 1 else []
 
-        <div class="keywords">
-{keywords_html}
+        cards_html = []
+        for i, trend in enumerate(top):
+            title = html.escape(trend.get('title', 'Untitled'))
+            source = trend.get('source', '').replace('_', ' ').title()
+            desc = html.escape(trend.get('description', '')[:120]) if trend.get('description') else ''
+            url = trend.get('url', '#')
+
+            # Add image to first few cards
+            image = images[i] if i < len(images) else None
+            image_style = ""
+            extra_class = ""
+
+            if i == 0:
+                extra_class = "featured"
+            elif image:
+                image_style = f'style="background-image: url(\'{image.get("url_medium", "")}\');"'
+                extra_class = "has-image"
+
+            cards_html.append(f'''
+            <article class="story-card {extra_class}" {image_style}>
+                <div class="story-content">
+                    <span class="story-source">{source}</span>
+                    <h3 class="story-title">{title}</h3>
+                    {f'<p class="story-description">{desc}</p>' if desc else ''}
+                </div>
+                <a href="{html.escape(url)}" class="story-link" target="_blank" rel="noopener"></a>
+            </article>''')
+
+        return f"""
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">Top Stories</h2>
+            <span class="section-count">{len(top)} featured</span>
         </div>
-    </main>"""
+        <div class="top-stories">
+            {''.join(cards_html)}
+        </div>
+    </section>"""
+
+    def _build_category_sections(self) -> str:
+        """Build sections for each category."""
+        sections_html = []
+
+        # Sort categories by number of trends
+        sorted_categories = sorted(
+            self.grouped_trends.items(),
+            key=lambda x: len(x[1]),
+            reverse=True
+        )
+
+        for category, trends in sorted_categories[:8]:
+            if len(trends) < 2:
+                continue
+
+            section_id = category.lower().replace(' ', '-')
+
+            cards_html = []
+            for i, trend in enumerate(trends[:6]):
+                title = html.escape(trend.get('title', 'Untitled'))
+                source = trend.get('source', '').replace('_', ' ').title()
+                url = trend.get('url', '#')
+
+                cards_html.append(f'''
+                <a href="{html.escape(url)}" class="compact-card" target="_blank" rel="noopener">
+                    <span class="compact-card-number">{i + 1:02d}</span>
+                    <div class="compact-card-content">
+                        <span class="compact-card-source">{source}</span>
+                        <h4 class="compact-card-title">{title}</h4>
+                    </div>
+                </a>''')
+
+            sections_html.append(f'''
+    <section class="section" id="{section_id}">
+        <div class="section-header">
+            <h2 class="section-title">{category}</h2>
+            <span class="section-count">{len(trends)} stories</span>
+        </div>
+        <div class="category-grid">
+            {''.join(cards_html)}
+        </div>
+    </section>''')
+
+        return '\n'.join(sections_html)
+
+    def _build_stats_bar(self) -> str:
+        """Build statistics bar."""
+        total_trends = len(self.ctx.trends)
+        total_sources = len(set(t.get('source', '') for t in self.ctx.trends))
+        total_categories = len(self.grouped_trends)
+        total_keywords = len(self.keyword_freq)
+
+        return f"""
+    <div class="stats-bar">
+        <div class="stat">
+            <div class="stat-value">{total_trends}</div>
+            <div class="stat-label">Stories</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{total_sources}</div>
+            <div class="stat-label">Sources</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{total_categories}</div>
+            <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value">{total_keywords}</div>
+            <div class="stat-label">Keywords</div>
+        </div>
+    </div>"""
 
     def _build_footer(self) -> str:
-        """Build the footer with attributions."""
-        # Build image credits
-        credits_html = []
-
+        """Build the footer."""
+        # Image credits
+        credits = []
         photographers = set()
         for img in self.ctx.images[:5]:
             photographer = img.get('photographer', '')
-            source = img.get('source', '').title()
-            url = img.get('photographer_url', '#')
-
             if photographer and photographer not in photographers:
                 photographers.add(photographer)
-                credits_html.append(
-                    f'<span>Photo by <a href="{html.escape(url)}" target="_blank" rel="noopener">{html.escape(photographer)}</a> on {source}</span>'
-                )
+                source = img.get('source', '').title()
+                url = img.get('photographer_url', '#')
+                credits.append(f'<li><a href="{html.escape(url)}" target="_blank">{html.escape(photographer)}</a> ({source})</li>')
 
-        credits = '\n            '.join(credits_html) if credits_html else '<span>Gradient backgrounds</span>'
+        credits_html = '\n                '.join(credits) if credits else '<li>Gradient backgrounds</li>'
+
+        # Source links
+        sources = list(self.grouped_trends.keys())[:6]
+        source_links = '\n                '.join(
+            f'<li><a href="#{s.lower().replace(" ", "-")}">{s}</a></li>'
+            for s in sources
+        )
 
         return f"""
     <footer>
         <div class="footer-content">
-            <div class="footer-logo">Trend Watch</div>
-            <p class="footer-meta">
-                Generated on {self.ctx.generated_at}<br>
-                Design: {html.escape(self.design.get('theme_name', 'Auto-generated'))}
-            </p>
-
-            <div class="credits">
-                {credits}
+            <div>
+                <div class="footer-brand">Trend Watch</div>
+                <p class="footer-description">
+                    An autonomous trend aggregation website that regenerates daily
+                    with fresh content from multiple sources worldwide.
+                </p>
+                <p class="footer-description">
+                    Design: {html.escape(self.design.get('theme_name', 'Auto-generated'))} |
+                    Layout: {self.layout.title()}
+                </p>
             </div>
-
-            <a href="./archive/" class="archive-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div>
+                <h4 class="footer-section-title">Categories</h4>
+                <ul class="footer-links">
+                    {source_links}
+                </ul>
+            </div>
+            <div>
+                <h4 class="footer-section-title">Photo Credits</h4>
+                <ul class="footer-links">
+                    {credits_html}
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>Generated on {self.ctx.generated_at}</span>
+            <a href="./archive/" class="archive-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 3h18v18H3z"></path>
                     <path d="M21 9H3"></path>
                     <path d="M9 21V9"></path>
@@ -719,9 +1336,34 @@ class WebsiteBuilder:
     </footer>"""
 
     def _build_scripts(self) -> str:
-        """Build any necessary JavaScript."""
+        """Build JavaScript for interactivity."""
         return """
     <script>
+        // Navbar scroll effect
+        const nav = document.getElementById('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // Animate elements on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = `${index * 0.1}s`;
+                    entry.target.classList.add('animate-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.story-card, .compact-card, .stat').forEach(el => {
+            observer.observe(el);
+        });
+
         // Pause ticker on hover
         const ticker = document.querySelector('.ticker');
         if (ticker) {
@@ -732,54 +1374,39 @@ class WebsiteBuilder:
                 ticker.style.animationPlayState = 'running';
             });
         }
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
     </script>"""
 
     def save(self, filepath: str):
         """Save the built website to a file."""
         html_content = self.build()
 
-        # Ensure directory exists
         os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else '.', exist_ok=True)
 
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(html_content)
 
         print(f"Website saved to {filepath}")
+        print(f"  Layout: {self.layout}")
+        print(f"  Hero style: {self.hero_style}")
+        print(f"  Categories: {len(self.grouped_trends)}")
         return filepath
 
 
 def main():
-    """Main entry point for testing website building."""
-    # Sample data for testing
+    """Main entry point for testing."""
     sample_trends = [
-        {"title": "AI Revolution in Healthcare", "source": "google_trends", "description": "Artificial intelligence is transforming medical diagnostics and treatment planning.", "url": "#"},
-        {"title": "Climate Summit Reaches Historic Agreement", "source": "rss_nyt", "description": "World leaders commit to ambitious carbon reduction targets.", "url": "#"},
-        {"title": "SpaceX Starship Launch Success", "source": "hackernews", "description": "The largest rocket ever built completes its first orbital test flight.", "url": "#"},
-        {"title": "New iPhone Features Leaked", "source": "rss_verge", "description": "Apple's next smartphone rumored to include revolutionary camera system.", "url": "#"},
-        {"title": "Global Markets Rally", "source": "reddit_worldnews", "description": "Stock indices reach all-time highs on positive economic data.", "url": "#"},
-        {"title": "Breakthrough in Quantum Computing", "source": "hackernews", "description": "Researchers achieve quantum advantage in practical applications.", "url": "#"},
-        {"title": "Electric Vehicle Sales Surge", "source": "rss_techcrunch", "description": "EVs now account for 20% of global car sales.", "url": "#"},
-        {"title": "Social Media Platform Launches New Feature", "source": "google_trends", "description": "Major platform introduces AI-powered content recommendations.", "url": "#"},
-    ]
-
-    sample_images = [
-        {"url_large": "https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg", "url_medium": "https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=800", "photographer": "Pixabay", "photographer_url": "https://pexels.com/@pixabay", "source": "pexels"},
+        {"title": "AI Revolution in Healthcare", "source": "news_nyt", "description": "AI transforms medical diagnostics.", "url": "#", "keywords": ["ai", "healthcare", "medicine"]},
+        {"title": "Climate Summit Reaches Agreement", "source": "news_bbc", "description": "World leaders commit to carbon reduction.", "url": "#", "keywords": ["climate", "environment"]},
+        {"title": "SpaceX Launch Success", "source": "tech_verge", "description": "Starship completes orbital test.", "url": "#", "keywords": ["space", "spacex", "rocket"]},
+        {"title": "New Framework Released", "source": "hackernews", "description": "Developer tool gains popularity.", "url": "#", "keywords": ["programming", "framework"]},
+        {"title": "Global Markets Rally", "source": "reddit_business", "description": "Stock indices reach highs.", "url": "#", "keywords": ["markets", "stocks", "finance"]},
+        {"title": "Quantum Computing Breakthrough", "source": "reddit_science", "description": "Researchers achieve milestone.", "url": "#", "keywords": ["quantum", "computing", "science"]},
+        {"title": "Movie Breaks Records", "source": "reddit_movies", "description": "Box office success.", "url": "#", "keywords": ["movie", "entertainment"]},
+        {"title": "Sports Championship", "source": "reddit_sports", "description": "Team wins title.", "url": "#", "keywords": ["sports", "championship"]},
     ]
 
     sample_design = {
         "theme_name": "Midnight Indigo",
-        "mood": "professional",
         "font_primary": "Space Grotesk",
         "font_secondary": "Inter",
         "color_bg": "#0a0a0a",
@@ -793,21 +1420,16 @@ def main():
         "subheadline": "What the world is talking about"
     }
 
-    sample_keywords = ["ai", "climate", "space", "technology", "markets", "quantum", "electric", "social"]
-
     ctx = BuildContext(
         trends=sample_trends,
-        images=sample_images,
+        images=[],
         design=sample_design,
-        keywords=sample_keywords
+        keywords=["ai", "climate", "space", "tech", "markets", "quantum"]
     )
 
     builder = WebsiteBuilder(ctx)
     output_path = os.path.join(os.path.dirname(__file__), '..', 'public', 'index.html')
     builder.save(output_path)
-
-    print(f"\nWebsite built successfully!")
-    print(f"Open {output_path} in a browser to view.")
 
 
 if __name__ == "__main__":
