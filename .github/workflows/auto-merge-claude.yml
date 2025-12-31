@@ -1,5 +1,7 @@
 name: Auto-merge Claude branches
 
+# Automatically merges claude/* branches to main via PR
+
 on:
   push:
     branches:
