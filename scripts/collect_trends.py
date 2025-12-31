@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 """
 Trend Collector - Aggregates trending topics from multiple sources.
-Sources: Google Trends, Google News RSS, NYT/BBC/Verge RSS, Hacker News API, Reddit API
+
+Sources:
+- Google Trends (daily trending searches)
+- News RSS: AP News, NPR, NYT, BBC, Guardian, Reuters, Al Jazeera, ABC, CBS, France24
+- Tech RSS: Verge, Ars Technica, Wired, TechCrunch, Engadget, MIT Tech Review, etc.
+- Hacker News API (top stories)
+- Reddit (20+ subreddits: news, worldnews, technology, science, sports, etc.)
+- GitHub Trending (daily trending repositories)
+- Wikipedia Current Events Portal
 """
 
 import os
@@ -91,9 +99,12 @@ class TrendCollector:
 
         collectors = [
             ("Google Trends", self._collect_google_trends),
-            ("RSS Feeds", self._collect_rss_feeds),
+            ("News RSS Feeds", self._collect_news_rss),
+            ("Tech RSS Feeds", self._collect_tech_rss),
             ("Hacker News", self._collect_hackernews),
             ("Reddit", self._collect_reddit),
+            ("GitHub Trending", self._collect_github_trending),
+            ("Wikipedia Current Events", self._collect_wikipedia_current),
         ]
 
         for name, collector in collectors:
@@ -148,18 +159,23 @@ class TrendCollector:
 
         return trends
 
-    def _collect_rss_feeds(self) -> List[Trend]:
+    def _collect_news_rss(self) -> List[Trend]:
         """Collect trends from major news RSS feeds."""
         trends = []
 
         feeds = [
+            ('AP News', 'https://rsshub.app/apnews/topics/apf-topnews'),
+            ('NPR', 'https://feeds.npr.org/1001/rss.xml'),
             ('NYT', 'https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml'),
             ('BBC', 'https://feeds.bbci.co.uk/news/rss.xml'),
-            ('Verge', 'https://www.theverge.com/rss/index.xml'),
-            ('Ars Technica', 'https://feeds.arstechnica.com/arstechnica/index'),
-            ('Wired', 'https://www.wired.com/feed/rss'),
-            ('TechCrunch', 'https://techcrunch.com/feed/'),
-            ('Reuters', 'https://www.reutersagency.com/feed/'),
+            ('BBC World', 'https://feeds.bbci.co.uk/news/world/rss.xml'),
+            ('Guardian', 'https://www.theguardian.com/world/rss'),
+            ('Guardian US', 'https://www.theguardian.com/us-news/rss'),
+            ('Reuters', 'https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best'),
+            ('ABC News', 'https://abcnews.go.com/abcnews/topstories'),
+            ('CBS News', 'https://www.cbsnews.com/latest/rss/main'),
+            ('Al Jazeera', 'https://www.aljazeera.com/xml/rss/all.xml'),
+            ('France24', 'https://www.france24.com/en/rss'),
         ]
 
         for name, url in feeds:
@@ -169,19 +185,69 @@ class TrendCollector:
 
                 feed = feedparser.parse(response.content)
 
-                for entry in feed.entries[:10]:
+                for entry in feed.entries[:8]:
+                    title = entry.get('title', '').strip()
+
+                    # Clean up common suffixes
+                    title = re.sub(r'\s+', ' ', title)
+                    for suffix in [' - The New York Times', ' - BBC News', ' | AP News',
+                                   ' - ABC News', ' | Reuters', ' - NPR', ' | The Guardian']:
+                        title = title.replace(suffix, '')
+
+                    if title and len(title) > 10:
+                        trend = Trend(
+                            title=title,
+                            source=f'news_{name.lower().replace(" ", "_")}',
+                            url=entry.get('link'),
+                            description=self._clean_html(entry.get('summary', '')),
+                            score=1.8  # News sources get good score
+                        )
+                        trends.append(trend)
+
+            except Exception as e:
+                print(f"      {name} RSS error: {e}")
+                continue
+
+            time.sleep(0.15)
+
+        return trends
+
+    def _collect_tech_rss(self) -> List[Trend]:
+        """Collect trends from tech-focused RSS feeds."""
+        trends = []
+
+        feeds = [
+            ('Verge', 'https://www.theverge.com/rss/index.xml'),
+            ('Ars Technica', 'https://feeds.arstechnica.com/arstechnica/index'),
+            ('Wired', 'https://www.wired.com/feed/rss'),
+            ('TechCrunch', 'https://techcrunch.com/feed/'),
+            ('Engadget', 'https://www.engadget.com/rss.xml'),
+            ('MIT Tech Review', 'https://www.technologyreview.com/feed/'),
+            ('Gizmodo', 'https://gizmodo.com/rss'),
+            ('CNET', 'https://www.cnet.com/rss/news/'),
+            ('Mashable', 'https://mashable.com/feeds/rss/all'),
+            ('VentureBeat', 'https://venturebeat.com/feed/'),
+        ]
+
+        for name, url in feeds:
+            try:
+                response = self.session.get(url, timeout=10)
+                response.raise_for_status()
+
+                feed = feedparser.parse(response.content)
+
+                for entry in feed.entries[:6]:
                     title = entry.get('title', '').strip()
 
                     # Clean up title
                     title = re.sub(r'\s+', ' ', title)
-                    title = title.replace(' - The New York Times', '')
-                    title = title.replace(' - BBC News', '')
                     title = title.replace(' | Ars Technica', '')
+                    title = title.replace(' - The Verge', '')
 
-                    if title:
+                    if title and len(title) > 10:
                         trend = Trend(
                             title=title,
-                            source=f'rss_{name.lower().replace(" ", "_")}',
+                            source=f'tech_{name.lower().replace(" ", "_")}',
                             url=entry.get('link'),
                             description=self._clean_html(entry.get('summary', '')),
                             score=1.5
@@ -192,7 +258,7 @@ class TrendCollector:
                 print(f"      {name} RSS error: {e}")
                 continue
 
-            time.sleep(0.2)
+            time.sleep(0.15)
 
         return trends
 
@@ -242,11 +308,40 @@ class TrendCollector:
         """Collect trending posts from Reddit."""
         trends = []
 
-        subreddits = ['technology', 'worldnews', 'science', 'futurology', 'programming']
+        # Diverse mix of subreddits for different topics
+        subreddits = [
+            # News & World
+            ('news', 8),
+            ('worldnews', 8),
+            ('politics', 5),
+            ('UpliftingNews', 4),
+            # Tech & Science
+            ('technology', 6),
+            ('science', 6),
+            ('futurology', 4),
+            ('programming', 4),
+            ('gadgets', 4),
+            # Business & Finance
+            ('business', 4),
+            ('economics', 4),
+            # Entertainment & Culture
+            ('movies', 4),
+            ('television', 4),
+            ('music', 4),
+            ('books', 3),
+            # Sports
+            ('sports', 4),
+            ('nba', 3),
+            ('soccer', 3),
+            # General Interest
+            ('todayilearned', 4),
+            ('Documentaries', 3),
+            ('space', 4),
+        ]
 
-        for subreddit in subreddits:
+        for subreddit, limit in subreddits:
             try:
-                url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit=10"
+                url = f"https://www.reddit.com/r/{subreddit}/hot.json?limit={limit}"
 
                 response = self.session.get(url, timeout=10)
                 response.raise_for_status()
@@ -258,7 +353,7 @@ class TrendCollector:
                     post_data = post.get('data', {})
                     title = post_data.get('title', '').strip()
 
-                    if title and not post_data.get('stickied'):
+                    if title and not post_data.get('stickied') and len(title) > 15:
                         ups = post_data.get('ups', 0)
                         normalized_score = min(ups / 1000, 2.0)
 
@@ -266,7 +361,7 @@ class TrendCollector:
                             title=title,
                             source=f'reddit_{subreddit}',
                             url=f"https://reddit.com{post_data.get('permalink', '')}",
-                            score=1.0 + normalized_score
+                            score=1.2 + normalized_score
                         )
                         trends.append(trend)
 
@@ -274,7 +369,103 @@ class TrendCollector:
                 print(f"      Reddit r/{subreddit} error: {e}")
                 continue
 
-            time.sleep(0.3)
+            time.sleep(0.2)
+
+        return trends
+
+    def _collect_github_trending(self) -> List[Trend]:
+        """Collect trending repositories from GitHub."""
+        trends = []
+
+        try:
+            # GitHub trending page (scraping since no official API for trending)
+            url = "https://github.com/trending?since=daily"
+            response = self.session.get(url, timeout=15)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+            repos = soup.select('article.Box-row')[:15]
+
+            for repo in repos:
+                # Get repo name
+                name_elem = repo.select_one('h2 a')
+                if not name_elem:
+                    continue
+
+                repo_name = name_elem.get_text(strip=True).replace('\n', '').replace(' ', '')
+
+                # Get description
+                desc_elem = repo.select_one('p')
+                description = desc_elem.get_text(strip=True) if desc_elem else ''
+
+                # Get stars today
+                stars_elem = repo.select_one('.float-sm-right')
+                stars_text = stars_elem.get_text(strip=True) if stars_elem else '0'
+                stars = int(re.sub(r'[^\d]', '', stars_text) or 0)
+
+                # Get language
+                lang_elem = repo.select_one('[itemprop="programmingLanguage"]')
+                language = lang_elem.get_text(strip=True) if lang_elem else ''
+
+                title = f"{repo_name}"
+                if language:
+                    title += f" ({language})"
+                if description:
+                    title += f": {description[:80]}"
+
+                trend = Trend(
+                    title=title[:120],
+                    source='github_trending',
+                    url=f"https://github.com{name_elem.get('href', '')}",
+                    description=description,
+                    score=1.3 + min(stars / 500, 1.5)
+                )
+                trends.append(trend)
+
+        except Exception as e:
+            print(f"    GitHub Trending error: {e}")
+
+        return trends
+
+    def _collect_wikipedia_current(self) -> List[Trend]:
+        """Collect current events from Wikipedia."""
+        trends = []
+
+        try:
+            # Wikipedia Current Events Portal
+            url = "https://en.wikipedia.org/wiki/Portal:Current_events"
+            response = self.session.get(url, timeout=15)
+            response.raise_for_status()
+
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Find the current events content
+            content = soup.select('.current-events-content li')[:20]
+
+            for item in content:
+                text = item.get_text(strip=True)
+
+                # Clean up the text
+                text = re.sub(r'\s+', ' ', text)
+                text = re.sub(r'\[.*?\]', '', text)  # Remove citations
+
+                if text and len(text) > 20 and len(text) < 200:
+                    # Get the first link if available
+                    link = item.select_one('a')
+                    url = None
+                    if link and link.get('href', '').startswith('/wiki/'):
+                        url = f"https://en.wikipedia.org{link.get('href')}"
+
+                    trend = Trend(
+                        title=text[:150],
+                        source='wikipedia_current',
+                        url=url,
+                        score=1.4
+                    )
+                    trends.append(trend)
+
+        except Exception as e:
+            print(f"    Wikipedia Current Events error: {e}")
 
         return trends
 
