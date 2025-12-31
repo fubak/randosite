@@ -36,8 +36,7 @@ jobs:
             echo "Created PR: $PR_URL"
           else
             echo "PR #$EXISTING_PR already exists"
-            PR_URL="$EXISTING_PR"
           fi
 
-          # Enable auto-merge (squash)
-          gh pr merge "${{ github.ref_name }}" --auto --squash --delete-branch
+          # Merge immediately (squash)
+          gh pr merge "${{ github.ref_name }}" --squash --delete-branch
