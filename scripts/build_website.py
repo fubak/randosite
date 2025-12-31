@@ -863,6 +863,46 @@ class WebsiteBuilder:
             color: #1a1a2e;
         }}
 
+        /* Light mode card style variants */
+        body.light-mode .card-style-glass .story-card {{
+            background: rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }}
+
+        body.light-mode .card-style-glass .compact-card {{
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }}
+
+        body.light-mode .card-style-minimal .story-card,
+        body.light-mode .card-style-minimal .compact-card {{
+            background: transparent;
+            border-bottom-color: #e2e8f0;
+        }}
+
+        body.light-mode .card-style-outline .story-card,
+        body.light-mode .card-style-outline .compact-card {{
+            background: transparent;
+            border-color: #e2e8f0;
+        }}
+
+        body.light-mode .card-style-shadow .story-card {{
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+        }}
+
+        body.light-mode .card-style-shadow .compact-card {{
+            box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.08);
+        }}
+
+        /* Light mode hover effects */
+        body.light-mode .hover-lift .story-card:hover {{
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+        }}
+
+        body.light-mode .hover-lift .compact-card:hover {{
+            box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.12);
+        }}
+
         /* ===== HERO SECTION ===== */
         .hero {{
             min-height: 100vh;
