@@ -140,6 +140,191 @@ class WebsiteBuilder:
         sorted_freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
         return sorted_freq[:50]
 
+    def _get_top_topic(self) -> str:
+        """Get the main topic for SEO title."""
+        # Try to get from top trend
+        if self.ctx.trends:
+            top_trend = self.ctx.trends[0]
+            title = top_trend.get('title', '')
+            # Truncate to reasonable length for title
+            if len(title) > 60:
+                words = title.split()[:8]
+                title = ' '.join(words)
+                if len(title) > 60:
+                    title = title[:57] + '...'
+            return title
+
+        # Fall back to top keywords
+        if self.keyword_freq:
+            top_kws = [kw.title() for kw, _ in self.keyword_freq[:3]]
+            return ', '.join(top_kws) + ' Trends'
+
+        return "Today's Top Trends"
+
+    def _build_meta_description(self) -> str:
+        """Build SEO-friendly meta description."""
+        date_str = datetime.now().strftime("%B %d, %Y")
+
+        # Get category counts
+        categories = list(self.grouped_trends.keys())[:4]
+        category_str = ', '.join(categories) if categories else 'News, Technology, Science'
+
+        # Get top keywords
+        top_kws = [kw.title() for kw, _ in self.keyword_freq[:5]]
+        kw_str = ', '.join(top_kws) if top_kws else 'trending topics'
+
+        total_stories = len(self.ctx.trends)
+        total_sources = len(set(t.get('source', '').split('_')[0] for t in self.ctx.trends))
+
+        description = (
+            f"Daily trending topics for {date_str}. "
+            f"Discover {total_stories}+ stories from {total_sources} sources covering {category_str}. "
+            f"Top trends: {kw_str}. Updated daily with the latest news and viral content."
+        )
+
+        # Truncate to optimal length (150-160 chars)
+        if len(description) > 160:
+            description = description[:157] + '...'
+
+        return description
+
+    def _build_og_image(self) -> str:
+        """Build Open Graph image meta tag."""
+        if self.ctx.images:
+            img = self.ctx.images[0]
+            url = img.get('url_large') or img.get('url_medium', '')
+            if url:
+                return f'<meta property="og:image" content="{html.escape(url)}">'
+        return '<meta property="og:image" content="https://dailytrending.info/og-image.png">'
+
+    def _build_twitter_image(self) -> str:
+        """Build Twitter Card image meta tag."""
+        if self.ctx.images:
+            img = self.ctx.images[0]
+            url = img.get('url_large') or img.get('url_medium', '')
+            if url:
+                return f'<meta name="twitter:image" content="{html.escape(url)}">'
+        return '<meta name="twitter:image" content="https://dailytrending.info/og-image.png">'
+
+    def _build_structured_data(self) -> str:
+        """Build JSON-LD structured data for LLMs and search engines."""
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        iso_date = datetime.now().isoformat()
+
+        # Get top stories for article list
+        top_stories = []
+        for i, trend in enumerate(self.ctx.trends[:10]):
+            story = {
+                "@type": "Article",
+                "position": i + 1,
+                "name": trend.get('title', 'Untitled'),
+                "url": trend.get('url', ''),
+                "description": trend.get('description', '')[:200] if trend.get('description') else '',
+            }
+            top_stories.append(story)
+
+        # Get category list
+        categories = [{"@type": "Thing", "name": cat} for cat in self.grouped_trends.keys()]
+
+        # Build main structured data
+        structured_data = {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "WebSite",
+                    "@id": "https://dailytrending.info/#website",
+                    "url": "https://dailytrending.info/",
+                    "name": "DailyTrending.info",
+                    "description": "Daily aggregated trending topics from news, technology, social media, and more",
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "DailyTrending.info",
+                        "url": "https://dailytrending.info/"
+                    },
+                    "inLanguage": "en-US"
+                },
+                {
+                    "@type": "WebPage",
+                    "@id": "https://dailytrending.info/#webpage",
+                    "url": "https://dailytrending.info/",
+                    "name": f"DailyTrending.info - {self._get_top_topic()}",
+                    "isPartOf": {"@id": "https://dailytrending.info/#website"},
+                    "datePublished": date_str,
+                    "dateModified": iso_date,
+                    "description": self._build_meta_description(),
+                    "breadcrumb": {
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://dailytrending.info/"}
+                        ]
+                    },
+                    "inLanguage": "en-US",
+                    "potentialAction": {
+                        "@type": "ReadAction",
+                        "target": "https://dailytrending.info/"
+                    }
+                },
+                {
+                    "@type": "ItemList",
+                    "name": "Today's Trending Topics",
+                    "description": f"Top {len(top_stories)} trending stories for {date_str}",
+                    "numberOfItems": len(top_stories),
+                    "itemListElement": top_stories
+                },
+                {
+                    "@type": "CollectionPage",
+                    "name": "Trending Categories",
+                    "hasPart": categories,
+                    "about": {
+                        "@type": "Thing",
+                        "name": "Trending Topics",
+                        "description": "Aggregated trending content from multiple sources"
+                    }
+                }
+            ]
+        }
+
+        # Add FAQ schema for common questions (helps with LLM understanding)
+        faq_items = []
+        if self.keyword_freq:
+            top_kws = [kw.title() for kw, _ in self.keyword_freq[:3]]
+            faq_items.append({
+                "@type": "Question",
+                "name": "What are today's top trending topics?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": f"Today's top trending topics include: {', '.join(top_kws)}. We aggregate trends from {len(self.grouped_trends)} categories including news, technology, science, and entertainment."
+                }
+            })
+
+        total_stories = len(self.ctx.trends)
+        total_sources = len(set(t.get('source', '').split('_')[0] for t in self.ctx.trends))
+        faq_items.append({
+            "@type": "Question",
+            "name": "How many trending stories are featured today?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": f"Today we feature {total_stories} trending stories from {total_sources} different sources across {len(self.grouped_trends)} categories."
+            }
+        })
+
+        faq_items.append({
+            "@type": "Question",
+            "name": "How often is DailyTrending.info updated?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "DailyTrending.info is automatically regenerated every day at 6 AM UTC with fresh trending content from news outlets, social media, and technology sources."
+            }
+        })
+
+        if faq_items:
+            structured_data["@graph"].append({
+                "@type": "FAQPage",
+                "mainEntity": faq_items
+            })
+
+        return f'<script type="application/ld+json">\n{json.dumps(structured_data, indent=2)}\n    </script>'
+
     def build(self) -> str:
         """Build the complete HTML page."""
         # Get design system classes
@@ -162,29 +347,81 @@ class WebsiteBuilder:
         if text_transform != 'none':
             body_classes.append(f"text-transform-{text_transform}")
 
+        # Generate SEO-friendly title
+        top_topic = self._get_top_topic()
+        page_title = f"DailyTrending.info - {top_topic}"
+        meta_description = self._build_meta_description()
+
+        # Get top keywords for meta tags
+        top_keywords = [kw for kw, _ in self.keyword_freq[:15]]
+        keywords_str = ", ".join(top_keywords) if top_keywords else "trending, news, technology, world events"
+
         return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" itemscope itemtype="https://schema.org/WebPage">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Today's trending topics - {self.design.get('subheadline', 'What the world is talking about')}">
+
+    <!-- Primary Meta Tags -->
+    <title>{html.escape(page_title)}</title>
+    <meta name="title" content="{html.escape(page_title)}">
+    <meta name="description" content="{html.escape(meta_description)}">
+    <meta name="keywords" content="{html.escape(keywords_str)}">
+    <meta name="author" content="DailyTrending.info">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="googlebot" content="index, follow">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://dailytrending.info/">
+
+    <!-- Theme Color -->
     <meta name="theme-color" content="{self.design.get('color_bg', '#0a0a0a')}">
-    <title>{html.escape(self.design.get('headline', "Today's Trends"))} | Trend Watch</title>
+    <meta name="color-scheme" content="{'dark' if is_dark else 'light'}">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dailytrending.info/">
+    <meta property="og:title" content="{html.escape(page_title)}">
+    <meta property="og:description" content="{html.escape(meta_description)}">
+    <meta property="og:site_name" content="DailyTrending.info">
+    <meta property="og:locale" content="en_US">
+    {self._build_og_image()}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://dailytrending.info/">
+    <meta name="twitter:title" content="{html.escape(page_title)}">
+    <meta name="twitter:description" content="{html.escape(meta_description)}">
+    {self._build_twitter_image()}
+
+    <!-- Additional SEO -->
+    <meta name="generator" content="DailyTrending.info Autonomous Generator">
+    <meta name="date" content="{datetime.now().strftime('%Y-%m-%d')}">
+    <meta name="last-modified" content="{datetime.now().isoformat()}">
+
+    <!-- Structured Data for LLMs and Search Engines -->
+    {self._build_structured_data()}
+
+    <!-- Feeds -->
+    <link rel="alternate" type="application/rss+xml" title="DailyTrending.info RSS" href="https://dailytrending.info/feed.xml">
 
     {self._build_fonts()}
     {self._build_styles()}
 </head>
 <body class="{' '.join(body_classes)}">
     {self._build_nav()}
-    {self._build_hero()}
-    {self._build_breaking_ticker()}
 
-    <main>
-        {self._build_word_cloud()}
-        {self._build_top_stories()}
-        {self._build_category_sections()}
-        {self._build_stats_bar()}
-    </main>
+    <article itemscope itemtype="https://schema.org/Article">
+        {self._build_hero()}
+        {self._build_breaking_ticker()}
+
+        <main id="main-content" role="main">
+            {self._build_word_cloud()}
+            {self._build_top_stories()}
+            {self._build_category_sections()}
+            {self._build_stats_bar()}
+        </main>
+    </article>
 
     {self._build_footer()}
     {self._build_scripts()}
@@ -426,9 +663,30 @@ class WebsiteBuilder:
             color: var(--color-text);
         }}
 
+        .nav-actions {{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }}
+
         .nav-date {{
             font-size: 0.85rem;
             color: var(--color-muted);
+        }}
+
+        .nav-github {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            color: var(--color-muted);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition);
+        }}
+
+        .nav-github:hover {{
+            color: var(--color-text);
+            background: var(--color-card-bg);
         }}
 
         /* ===== HERO SECTION ===== */
@@ -1110,6 +1368,44 @@ class WebsiteBuilder:
             background: rgba(99, 102, 241, 0.1);
         }}
 
+        .footer-actions {{
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }}
+
+        .github-btn {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            color: var(--color-text);
+            font-size: 0.9rem;
+            transition: all var(--transition);
+        }}
+
+        .github-btn:hover {{
+            border-color: var(--color-accent);
+            background: rgba(99, 102, 241, 0.1);
+        }}
+
+        .footer-github {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            color: var(--color-muted);
+            font-size: 0.9rem;
+            transition: color var(--transition);
+        }}
+
+        .footer-github:hover {{
+            color: var(--color-accent);
+        }}
+
         /* ===== ANIMATIONS ===== */
         @keyframes ticker {{
             0% {{ transform: translateX(0); }}
@@ -1230,14 +1526,21 @@ class WebsiteBuilder:
         )
 
         return f"""
-    <nav class="nav" id="nav">
-        <div class="nav-logo">
-            <span>Trend Watch</span>
-        </div>
+    <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="/" class="nav-logo" aria-label="DailyTrending.info Home">
+            <span>DailyTrending.info</span>
+        </a>
         <ul class="nav-links">
 {links}
         </ul>
-        <div class="nav-date">{self.ctx.generated_at}</div>
+        <div class="nav-actions">
+            <span class="nav-date">{self.ctx.generated_at}</span>
+            <a href="https://github.com/fubak/randosite" class="nav-github" target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub" title="View source on GitHub">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+            </a>
+        </div>
     </nav>"""
 
     def _build_hero(self) -> str:
@@ -1490,10 +1793,10 @@ class WebsiteBuilder:
         )
 
         return f"""
-    <footer>
+    <footer role="contentinfo">
         <div class="footer-content">
             <div>
-                <div class="footer-brand">Trend Watch</div>
+                <div class="footer-brand">DailyTrending.info</div>
                 <p class="footer-description">
                     An autonomous trend aggregation website that regenerates daily
                     with fresh content from multiple sources worldwide.
@@ -1503,6 +1806,12 @@ class WebsiteBuilder:
                     Theme: {html.escape(self.design.get('theme_name', 'Auto-generated'))} |
                     Layout: {self.layout.title()}
                 </p>
+                <a href="https://github.com/fubak/randosite" class="footer-github" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View Source on GitHub
+                </a>
             </div>
             <div>
                 <h4 class="footer-section-title">Categories</h4>
@@ -1519,14 +1828,22 @@ class WebsiteBuilder:
         </div>
         <div class="footer-bottom">
             <span>Generated on {self.ctx.generated_at}</span>
-            <a href="./archive/" class="archive-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3 3h18v18H3z"></path>
-                    <path d="M21 9H3"></path>
-                    <path d="M9 21V9"></path>
-                </svg>
-                View Archive
-            </a>
+            <div class="footer-actions">
+                <a href="./archive/" class="archive-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3h18v18H3z"></path>
+                        <path d="M21 9H3"></path>
+                        <path d="M9 21V9"></path>
+                    </svg>
+                    View Archive
+                </a>
+                <a href="https://github.com/fubak/randosite" class="github-btn" target="_blank" rel="noopener noreferrer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
         </div>
     </footer>"""
 
