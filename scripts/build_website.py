@@ -347,6 +347,27 @@ class WebsiteBuilder:
         if text_transform != 'none':
             body_classes.append(f"text-transform-{text_transform}")
 
+        # Add background pattern based on personality (for variety)
+        # Some personalities get patterns, others stay clean
+        personality = self.design.get('personality', '')
+        pattern_map = {
+            'brutalist': ['dots', 'grid', 'lines'],
+            'tech': ['grid', 'dots', 'noise'],
+            'dashboard': ['grid', 'dots'],
+            'news': ['dots', 'noise'],
+            'magazine': ['noise'],
+            'editorial': [],  # Clean
+            'minimal': [],  # Clean
+            'corporate': [],  # Clean
+            'playful': ['dots', 'cross'],
+        }
+        patterns = pattern_map.get(personality, [])
+        if patterns:
+            # Use date-based random for consistency
+            selected_pattern = self.rng.choice(patterns + [''])  # Include no pattern option
+            if selected_pattern:
+                body_classes.append(f"pattern-{selected_pattern}")
+
         # Generate SEO-friendly title
         top_topic = self._get_top_topic()
         page_title = f"DailyTrending.info - {top_topic}"
@@ -1292,6 +1313,97 @@ class WebsiteBuilder:
         .hover-none .story-card:hover {{
             transform: none;
             box-shadow: none;
+        }}
+
+        /* ===== BACKGROUND PATTERNS FOR VARIETY ===== */
+        /* Dots pattern */
+        .pattern-dots .main-content::before {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
+            background-size: 24px 24px;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: -1;
+        }}
+
+        /* Grid pattern */
+        .pattern-grid .main-content::before {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: -1;
+        }}
+
+        /* Diagonal lines */
+        .pattern-lines .main-content::before {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                var(--color-border) 10px,
+                var(--color-border) 11px
+            );
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: -1;
+        }}
+
+        /* Cross pattern */
+        .pattern-cross .main-content::before {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle, transparent 45%, var(--color-border) 55%, transparent 55%);
+            background-size: 16px 16px;
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: -1;
+        }}
+
+        /* Noise texture */
+        .pattern-noise .main-content::before {{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: -1;
+        }}
+
+        /* Light mode pattern adjustments */
+        body.light-mode.pattern-dots .main-content::before,
+        body.light-mode.pattern-grid .main-content::before,
+        body.light-mode.pattern-lines .main-content::before,
+        body.light-mode.pattern-cross .main-content::before {{
+            opacity: 0.08;
         }}
 
         .story-card.has-image {{

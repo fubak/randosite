@@ -143,8 +143,14 @@ class Pipeline:
         print(f"  Collected {len(self.trends)} unique trends")
         print(f"  Extracted {len(self.keywords)} keywords")
 
-        if not self.trends:
-            raise Exception("No trends collected - check network connectivity")
+        # Quality gate: Ensure minimum content before proceeding
+        MIN_TRENDS = 5
+        if len(self.trends) < MIN_TRENDS:
+            raise Exception(
+                f"Insufficient content: Only {len(self.trends)} trends found. "
+                f"Minimum required is {MIN_TRENDS}. "
+                "Aborting to prevent deploying a broken site."
+            )
 
     def _step_fetch_images(self):
         """Fetch images based on trending keywords."""
