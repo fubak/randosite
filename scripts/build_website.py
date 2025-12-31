@@ -68,9 +68,9 @@ class WebsiteBuilder:
         date_seed = datetime.now().strftime("%Y-%m-%d")
         self.rng = random.Random(date_seed)
 
-        # Select layout and hero style for today
-        self.layout = self.rng.choice(LAYOUT_TEMPLATES)
-        self.hero_style = self.rng.choice(HERO_STYLES)
+        # Use layout and hero style from design spec if available, otherwise random
+        self.layout = self.design.get('layout_style') or self.rng.choice(LAYOUT_TEMPLATES)
+        self.hero_style = self.design.get('hero_style') or self.rng.choice(HERO_STYLES)
 
         # Group trends by category
         self.grouped_trends = self._group_trends()
@@ -142,6 +142,26 @@ class WebsiteBuilder:
 
     def build(self) -> str:
         """Build the complete HTML page."""
+        # Get design system classes
+        card_style = self.design.get('card_style', 'bordered')
+        hover_effect = self.design.get('hover_effect', 'lift')
+        text_transform = self.design.get('text_transform_headings', 'none')
+        animation_level = self.design.get('animation_level', 'subtle')
+        is_dark = self.design.get('is_dark_mode', True)
+
+        # Build body classes
+        body_classes = [
+            f"layout-{self.layout}",
+            f"hero-{self.hero_style}",
+            f"card-style-{card_style}",
+            f"hover-{hover_effect}",
+            f"animation-{animation_level}",
+            "dark-mode" if is_dark else "light-mode",
+        ]
+
+        if text_transform != 'none':
+            body_classes.append(f"text-transform-{text_transform}")
+
         return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -154,7 +174,7 @@ class WebsiteBuilder:
     {self._build_fonts()}
     {self._build_styles()}
 </head>
-<body class="layout-{self.layout} hero-{self.hero_style}">
+<body class="{' '.join(body_classes)}">
     {self._build_nav()}
     {self._build_hero()}
     {self._build_breaking_ticker()}
@@ -193,6 +213,35 @@ class WebsiteBuilder:
         else:
             hero_bg = FallbackImageGenerator.get_gradient_css()
 
+        # Extract design system properties with fallbacks
+        card_style = d.get('card_style', 'bordered')
+        card_radius = d.get('card_radius', '1rem')
+        card_padding = d.get('card_padding', '1.5rem')
+        hover_effect = d.get('hover_effect', 'lift')
+        animation_level = d.get('animation_level', 'subtle')
+        text_transform = d.get('text_transform_headings', 'none')
+        is_dark = d.get('is_dark_mode', True)
+        use_gradients = d.get('use_gradients', True)
+        use_blur = d.get('use_blur', False)
+        spacing = d.get('spacing', 'comfortable')
+
+        # Map spacing to section gaps
+        spacing_map = {
+            'compact': '2rem',
+            'comfortable': '3rem',
+            'spacious': '4rem'
+        }
+        section_gap = spacing_map.get(spacing, '3rem')
+
+        # Animation duration based on level
+        animation_map = {
+            'none': '0s',
+            'subtle': '0.3s',
+            'moderate': '0.4s',
+            'playful': '0.5s'
+        }
+        anim_duration = animation_map.get(animation_level, '0.3s')
+
         return f"""
     <style>
         /* ===== CSS CUSTOM PROPERTIES ===== */
@@ -208,13 +257,21 @@ class WebsiteBuilder:
             --font-primary: '{d.get('font_primary', 'Space Grotesk')}', system-ui, sans-serif;
             --font-secondary: '{d.get('font_secondary', 'Inter')}', system-ui, sans-serif;
 
-            --radius-sm: 0.5rem;
-            --radius: 1rem;
-            --radius-lg: 1.5rem;
-            --radius-xl: 2rem;
+            /* Dynamic radius from design spec */
+            --radius-sm: calc({card_radius} * 0.5);
+            --radius: {card_radius};
+            --radius-lg: calc({card_radius} * 1.5);
+            --radius-xl: calc({card_radius} * 2);
 
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --max-width: 1400px;
+            /* Dynamic spacing */
+            --card-padding: {card_padding};
+            --section-gap: {section_gap};
+
+            /* Animation speed */
+            --transition: {anim_duration} cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: calc({anim_duration} * 0.5) cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: calc({anim_duration} * 1.5) cubic-bezier(0.4, 0, 0.2, 1);
+            --max-width: {d.get('max_width', '1400px')};
 
             --hero-bg: {hero_bg};
         }}
@@ -275,6 +332,43 @@ class WebsiteBuilder:
 
         .text-muted {{
             color: var(--color-muted);
+        }}
+
+        /* Text transform variants */
+        .text-transform-uppercase .headline-xl,
+        .text-transform-uppercase .headline-lg,
+        .text-transform-uppercase .headline-md,
+        .text-transform-uppercase .section-title,
+        .text-transform-uppercase .story-title {{
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }}
+
+        .text-transform-capitalize .headline-xl,
+        .text-transform-capitalize .headline-lg,
+        .text-transform-capitalize .headline-md,
+        .text-transform-capitalize .section-title,
+        .text-transform-capitalize .story-title {{
+            text-transform: capitalize;
+        }}
+
+        /* Animation level variants */
+        .animation-none *, .animation-none *::before, .animation-none *::after {{
+            animation: none !important;
+            transition: none !important;
+        }}
+
+        .animation-playful .story-card {{
+            transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }}
+
+        .animation-playful .word-cloud-item:hover {{
+            animation: bounce 0.5s ease;
+        }}
+
+        @keyframes bounce {{
+            0%, 100% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.2); }}
         }}
 
         /* ===== NAVIGATION ===== */
@@ -549,7 +643,7 @@ class WebsiteBuilder:
 
         /* ===== SECTION HEADERS ===== */
         .section {{
-            margin-bottom: 4rem;
+            margin-bottom: var(--section-gap);
         }}
 
         .section-header {{
@@ -655,17 +749,68 @@ class WebsiteBuilder:
         .story-card {{
             position: relative;
             background: var(--color-card-bg);
-            border: 1px solid var(--color-border);
             border-radius: var(--radius);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: transform var(--transition), box-shadow var(--transition);
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
         }}
 
-        .story-card:hover {{
+        /* Card style variants */
+        .card-style-bordered .story-card {{
+            border: 1px solid var(--color-border);
+        }}
+
+        .card-style-shadow .story-card {{
+            border: none;
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.2);
+        }}
+
+        .card-style-glass .story-card {{
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }}
+
+        .card-style-minimal .story-card {{
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 0;
+        }}
+
+        .card-style-accent .story-card {{
+            border: none;
+            border-left: 4px solid var(--color-accent);
+        }}
+
+        .card-style-outline .story-card {{
+            background: transparent;
+            border: 2px solid var(--color-border);
+        }}
+
+        /* Hover effect variants */
+        .hover-lift .story-card:hover {{
             transform: translateY(-4px);
             box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
+        }}
+
+        .hover-glow .story-card:hover {{
+            box-shadow: 0 0 30px -5px var(--color-accent);
+        }}
+
+        .hover-scale .story-card:hover {{
+            transform: scale(1.02);
+        }}
+
+        .hover-border .story-card:hover {{
+            border-color: var(--color-accent);
+        }}
+
+        .hover-none .story-card:hover {{
+            transform: none;
+            box-shadow: none;
         }}
 
         .story-card.has-image {{
@@ -687,7 +832,7 @@ class WebsiteBuilder:
 
         .story-content {{
             position: relative;
-            padding: 1.5rem;
+            padding: var(--card-padding);
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -761,16 +906,65 @@ class WebsiteBuilder:
         .compact-card {{
             display: flex;
             gap: 1rem;
-            padding: 1rem;
+            padding: var(--card-padding);
             background: var(--color-card-bg);
-            border: 1px solid var(--color-border);
             border-radius: var(--radius-sm);
             transition: all var(--transition);
         }}
 
-        .compact-card:hover {{
+        /* Apply card styles to compact cards */
+        .card-style-bordered .compact-card {{
+            border: 1px solid var(--color-border);
+        }}
+
+        .card-style-shadow .compact-card {{
+            box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.15);
+        }}
+
+        .card-style-glass .compact-card {{
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+        }}
+
+        .card-style-minimal .compact-card {{
+            background: transparent;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }}
+
+        .card-style-accent .compact-card {{
+            border-left: 3px solid var(--color-accent);
+            padding-left: calc(var(--card-padding) - 3px);
+        }}
+
+        .card-style-outline .compact-card {{
+            background: transparent;
+            border: 1px solid var(--color-border);
+        }}
+
+        /* Apply hover effects to compact cards */
+        .hover-lift .compact-card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.3);
+        }}
+
+        .hover-glow .compact-card:hover {{
+            box-shadow: 0 0 20px -5px var(--color-accent);
+        }}
+
+        .hover-scale .compact-card:hover {{
+            transform: scale(1.01);
+        }}
+
+        .hover-border .compact-card:hover {{
             border-color: var(--color-accent);
-            background: rgba(99, 102, 241, 0.05);
+        }}
+
+        .hover-none .compact-card:hover {{
+            transform: none;
         }}
 
         .compact-card-number {{
@@ -1305,7 +1499,8 @@ class WebsiteBuilder:
                     with fresh content from multiple sources worldwide.
                 </p>
                 <p class="footer-description">
-                    Design: {html.escape(self.design.get('theme_name', 'Auto-generated'))} |
+                    Style: {html.escape(self.design.get('personality', 'modern').title())} |
+                    Theme: {html.escape(self.design.get('theme_name', 'Auto-generated'))} |
                     Layout: {self.layout.title()}
                 </p>
             </div>
@@ -1386,8 +1581,11 @@ class WebsiteBuilder:
             f.write(html_content)
 
         print(f"Website saved to {filepath}")
-        print(f"  Layout: {self.layout}")
-        print(f"  Hero style: {self.hero_style}")
+        print(f"  Personality: {self.design.get('personality', 'modern')}")
+        print(f"  Layout: {self.layout} / Hero: {self.hero_style}")
+        print(f"  Card style: {self.design.get('card_style', 'bordered')}")
+        print(f"  Hover effect: {self.design.get('hover_effect', 'lift')}")
+        print(f"  Animation: {self.design.get('animation_level', 'subtle')}")
         print(f"  Categories: {len(self.grouped_trends)}")
         return filepath
 
@@ -1407,6 +1605,7 @@ def main():
 
     sample_design = {
         "theme_name": "Midnight Indigo",
+        "personality": "tech",
         "font_primary": "Space Grotesk",
         "font_secondary": "Inter",
         "color_bg": "#0a0a0a",
@@ -1417,7 +1616,18 @@ def main():
         "color_card_bg": "#18181b",
         "color_border": "#27272a",
         "headline": "Today's Pulse",
-        "subheadline": "What the world is talking about"
+        "subheadline": "What the world is talking about",
+        "card_style": "glass",
+        "card_radius": "1rem",
+        "card_padding": "1.5rem",
+        "hover_effect": "glow",
+        "animation_level": "moderate",
+        "text_transform_headings": "none",
+        "is_dark_mode": True,
+        "use_gradients": True,
+        "spacing": "comfortable",
+        "layout_style": "magazine",
+        "hero_style": "gradient"
     }
 
     ctx = BuildContext(
