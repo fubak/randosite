@@ -30,6 +30,7 @@ class BuildContext:
     images: List[Dict]
     design: Dict
     keywords: List[str]
+    enriched_content: Optional[Dict] = None  # Word of Day, Grokipedia, summaries
     generated_at: str = ""
 
     def __post_init__(self):
@@ -493,6 +494,8 @@ class WebsiteBuilder:
             {self._build_top_stories()}
 
             {self._build_ad_unit(ad_format="horizontal")}
+
+            {self._build_enriched_content_section()}
 
             {self._build_category_sections()}
             {self._build_stats_bar()}
@@ -2032,6 +2035,149 @@ class WebsiteBuilder:
             letter-spacing: 0.05em;
         }}
 
+        /* ===== ENRICHED CONTENT (Word of Day, Grokipedia) ===== */
+        .enriched-content {{
+            margin: 3rem 0;
+        }}
+
+        .enriched-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }}
+
+        .enriched-card {{
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }}
+
+        .enriched-card:hover {{
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }}
+
+        .enriched-card-icon {{
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }}
+
+        .enriched-card-label {{
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }}
+
+        /* Word of the Day styles */
+        .word-of-the-day .wotd-word {{
+            font-family: var(--font-primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            color: var(--color-text);
+        }}
+
+        .word-of-the-day .wotd-pos {{
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            font-style: italic;
+            display: block;
+            margin-bottom: 1rem;
+        }}
+
+        .word-of-the-day .wotd-definition {{
+            font-size: 1rem;
+            line-height: 1.6;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+        }}
+
+        .word-of-the-day .wotd-example {{
+            font-style: italic;
+            color: var(--color-muted);
+            border-left: 3px solid var(--color-accent);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }}
+
+        .word-of-the-day .wotd-origin {{
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            margin-top: 1rem;
+        }}
+
+        .word-of-the-day .wotd-why {{
+            font-size: 0.85rem;
+            color: var(--color-accent);
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-border);
+        }}
+
+        /* Grokipedia Article styles */
+        .grokipedia-article .grok-title {{
+            font-family: var(--font-primary);
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            color: var(--color-text);
+        }}
+
+        .grokipedia-article .grok-summary {{
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--color-text);
+            margin-bottom: 1.5rem;
+        }}
+
+        .grokipedia-article .grok-footer {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+        }}
+
+        .grokipedia-article .grok-wordcount {{
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }}
+
+        .grokipedia-article .grok-link {{
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }}
+
+        .grokipedia-article .grok-link:hover {{
+            color: var(--color-accent-secondary);
+        }}
+
+        @media (max-width: 768px) {{
+            .enriched-grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            .word-of-the-day .wotd-word {{
+                font-size: 1.5rem;
+            }}
+
+            .grokipedia-article .grok-title {{
+                font-size: 1.25rem;
+            }}
+        }}
+
         /* ===== FOOTER ===== */
         footer {{
             border-top: 1px solid var(--color-border);
@@ -2760,6 +2906,98 @@ class WebsiteBuilder:
     </section>''')
 
         return '\n'.join(sections_html)
+
+    def _build_enriched_content_section(self) -> str:
+        """Build the enriched content section with Word of Day and Grokipedia."""
+        if not self.ctx.enriched_content:
+            return ""
+
+        sections = []
+
+        # Word of the Day
+        word_section = self._build_word_of_the_day()
+        if word_section:
+            sections.append(word_section)
+
+        # Grokipedia Article
+        article_section = self._build_grokipedia_article()
+        if article_section:
+            sections.append(article_section)
+
+        if not sections:
+            return ""
+
+        return f"""
+    <section class="section enriched-content" id="daily-features">
+        <div class="section-header">
+            <h2 class="section-title">Daily Features</h2>
+            <span class="section-count">Learn something new</span>
+        </div>
+        <div class="enriched-grid">
+            {''.join(sections)}
+        </div>
+    </section>"""
+
+    def _build_word_of_the_day(self) -> str:
+        """Build the Word of the Day card."""
+        if not self.ctx.enriched_content:
+            return ""
+
+        wotd = self.ctx.enriched_content.get('word_of_the_day')
+        if not wotd:
+            return ""
+
+        word = html.escape(wotd.get('word', ''))
+        pos = html.escape(wotd.get('part_of_speech', ''))
+        definition = html.escape(wotd.get('definition', ''))
+        example = html.escape(wotd.get('example_usage', ''))
+        origin = html.escape(wotd.get('origin', '') or '')
+        why_chosen = html.escape(wotd.get('why_chosen', '') or '')
+
+        origin_html = f'<p class="wotd-origin"><strong>Origin:</strong> {origin}</p>' if origin else ''
+        why_html = f'<p class="wotd-why">{why_chosen}</p>' if why_chosen else ''
+
+        return f"""
+            <div class="enriched-card word-of-the-day">
+                <div class="enriched-card-icon">📚</div>
+                <div class="enriched-card-label">Word of the Day</div>
+                <h3 class="wotd-word">{word}</h3>
+                <span class="wotd-pos">{pos}</span>
+                <p class="wotd-definition">{definition}</p>
+                <blockquote class="wotd-example">"{example}"</blockquote>
+                {origin_html}
+                {why_html}
+            </div>"""
+
+    def _build_grokipedia_article(self) -> str:
+        """Build the Grokipedia Article of the Day card."""
+        if not self.ctx.enriched_content:
+            return ""
+
+        article = self.ctx.enriched_content.get('grokipedia_article')
+        if not article:
+            return ""
+
+        title = html.escape(article.get('title', ''))
+        summary = html.escape(article.get('summary', ''))
+        url = html.escape(article.get('url', ''))
+        word_count = article.get('word_count', 0)
+
+        word_count_html = f'<span class="grok-wordcount">{word_count:,} words</span>' if word_count else ''
+
+        return f"""
+            <div class="enriched-card grokipedia-article">
+                <div class="enriched-card-icon">📖</div>
+                <div class="enriched-card-label">From Grokipedia</div>
+                <h3 class="grok-title">{title}</h3>
+                <p class="grok-summary">{summary}</p>
+                <div class="grok-footer">
+                    {word_count_html}
+                    <a href="{url}" class="grok-link" target="_blank" rel="noopener">
+                        Read full article →
+                    </a>
+                </div>
+            </div>"""
 
     def _build_stats_bar(self) -> str:
         """Build statistics bar."""
