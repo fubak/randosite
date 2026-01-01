@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-01 23:45 UTC | [fix: Improve hero text readability and add Articles nav link](https://github.com/fubak/daily-trending-info/commit/755dca984f481861c50392e374103394d6d8f0d0) |
 | 2026-01-01 23:33 UTC | [fix: Use solid color for KPI stats instead of unreliable gradient text](https://github.com/fubak/daily-trending-info/commit/8ee5c140fc2566851dc80c7dc0843496b89a504e) |
 | 2026-01-01 22:56 UTC | [fix: Rename toast animation to prevent conflict with main fadeInUp](https://github.com/fubak/daily-trending-info/commit/592ab2d22fc36d683a4851faef827c45f547b61e) |
 | 2026-01-01 22:45 UTC | [fix: Adjust card layout for badges and actions](https://github.com/fubak/daily-trending-info/commit/4a23762eac46ca916c8ded00ce5ef0e9ca23d77e) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-01 20:02 UTC | [fix: Optimize layout space and make hero image relevant to content](https://github.com/fubak/daily-trending-info/commit/a44e958912198643bb8216c64a74560e8a35d839) |
 | 2026-01-01 19:53 UTC | [feat: Add modular architecture, PWA, sitemap, and accessibility improvements](https://github.com/fubak/daily-trending-info/commit/bc797e447d56db4e5a5873255f0147b400596d4a) |
 | 2026-01-01 19:28 UTC | [fix: Handle None values in content sentiment analysis](https://github.com/fubak/daily-trending-info/commit/8daf0af13e72be93f8849dae0f0040933fe1ad97) |
-| 2026-01-01 19:24 UTC | [feat: Add enhanced design system with animations and accessibility](https://github.com/fubak/daily-trending-info/commit/3decb8543f438223fbbac084ea9ef8798074b25d) |
 <!-- CHANGELOG_END -->
 
 ## Features
