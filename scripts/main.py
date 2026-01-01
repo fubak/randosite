@@ -40,6 +40,8 @@ from archive_manager import ArchiveManager
 from generate_rss import generate_rss_feed
 from enrich_content import ContentEnricher, EnrichedContent
 from keyword_tracker import KeywordTracker
+from pwa_generator import save_pwa_assets
+from sitemap_generator import save_sitemap
 
 # Setup logging
 logger = setup_logging("pipeline")
@@ -163,11 +165,19 @@ class Pipeline:
             if not dry_run:
                 self._step_generate_rss()
 
-            # Step 8: Cleanup old archives
+            # Step 8: Generate PWA assets
+            if not dry_run:
+                self._step_generate_pwa()
+
+            # Step 9: Generate sitemap
+            if not dry_run:
+                self._step_generate_sitemap()
+
+            # Step 10: Cleanup old archives
             if archive and not dry_run:
                 self._step_cleanup()
 
-            # Step 9: Save pipeline data
+            # Step 11: Save pipeline data
             self._save_data()
 
             logger.info("=" * 60)
@@ -190,7 +200,7 @@ class Pipeline:
 
     def _step_archive(self):
         """Archive the previous website."""
-        logger.info("[1/9] Archiving previous website...")
+        logger.info("[1/11] Archiving previous website...")
 
         # Try to load previous design metadata
         previous_design = None
@@ -206,7 +216,7 @@ class Pipeline:
 
     def _step_collect_trends(self):
         """Collect trends from all sources."""
-        logger.info("[2/9] Collecting trends...")
+        logger.info("[2/11] Collecting trends...")
 
         self.trends = self.trend_collector.collect_all()
         self.keywords = self.trend_collector.get_all_keywords()
@@ -252,7 +262,7 @@ class Pipeline:
 
     def _step_fetch_images(self):
         """Fetch images based on trending keywords."""
-        logger.info("[3/9] Fetching images...")
+        logger.info("[3/11] Fetching images...")
 
         # Prioritize global keywords (meta-trends) for image search
         # These are words appearing in 3+ stories, more likely to be relevant
@@ -284,7 +294,7 @@ class Pipeline:
 
     def _step_enrich_content(self):
         """Enrich content with Word of Day, Grokipedia article, and story summaries."""
-        logger.info("[4/9] Enriching content...")
+        logger.info("[4/11] Enriching content...")
 
         # Convert trends to dict format
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
@@ -301,7 +311,7 @@ class Pipeline:
 
     def _step_generate_design(self):
         """Generate the design specification."""
-        logger.info("[5/9] Generating design...")
+        logger.info("[5/11] Generating design...")
 
         # Convert trends to dict format for the generator
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
@@ -314,7 +324,7 @@ class Pipeline:
 
     def _step_build_website(self):
         """Build the final HTML website."""
-        logger.info("[6/9] Building website...")
+        logger.info("[6/11] Building website...")
         logger.info(f"Building with {len(self.trends)} trends, {len(self.images)} images")
 
         # Convert data to proper format
@@ -360,7 +370,7 @@ class Pipeline:
 
     def _step_generate_rss(self):
         """Generate RSS feed."""
-        logger.info("[7/9] Generating RSS feed...")
+        logger.info("[7/11] Generating RSS feed...")
 
         # Convert trends to dict format
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
@@ -371,9 +381,23 @@ class Pipeline:
 
         logger.info(f"RSS feed saved to {output_path}")
 
+    def _step_generate_pwa(self):
+        """Generate PWA assets (manifest, service worker, offline page)."""
+        logger.info("[8/11] Generating PWA assets...")
+
+        save_pwa_assets(self.public_dir)
+        logger.info("PWA assets generated")
+
+    def _step_generate_sitemap(self):
+        """Generate sitemap.xml and robots.txt."""
+        logger.info("[9/11] Generating sitemap...")
+
+        save_sitemap(self.public_dir)
+        logger.info("Sitemap generated")
+
     def _step_cleanup(self):
         """Clean up old archives."""
-        logger.info("[8/9] Cleaning up old archives...")
+        logger.info("[10/11] Cleaning up old archives...")
 
         removed = self.archive_manager.cleanup_old(keep_days=30)
         logger.info(f"Removed {removed} old archives")

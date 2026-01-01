@@ -162,23 +162,45 @@ class WebsiteBuilder:
         return sorted_freq[:50]
 
     def _get_top_topic(self) -> str:
-        """Get the main topic for SEO title."""
+        """Get the main topic for SEO title.
+
+        Ensures the topic portion fits within SEO best practices:
+        - Full title will be "DailyTrending.info - {topic}" (21 char prefix)
+        - Total title should be under 60 chars for optimal display
+        - Topic portion should be max 38 chars to stay under 60 total
+        """
+        max_topic_length = 38  # 60 - 21 (prefix) - 1 (buffer)
+
         # Try to get from top trend
         if self.ctx.trends:
             top_trend = self.ctx.trends[0]
             title = top_trend.get('title', '')
-            # Truncate to reasonable length for title
-            if len(title) > 60:
-                words = title.split()[:8]
-                title = ' '.join(words)
-                if len(title) > 60:
-                    title = title[:57] + '...'
+
+            # Smart truncation: try to break at word boundary
+            if len(title) > max_topic_length:
+                # Find a good break point (word boundary or punctuation)
+                truncated = title[:max_topic_length]
+                last_space = truncated.rfind(' ')
+                last_dash = truncated.rfind(' - ')
+                last_colon = truncated.rfind(': ')
+
+                # Use the latest clean break point
+                break_point = max(last_space, last_dash + 2 if last_dash > 0 else 0, last_colon + 1 if last_colon > 0 else 0)
+
+                if break_point > max_topic_length // 2:  # Only use if not too short
+                    title = title[:break_point].rstrip()
+                else:
+                    title = title[:max_topic_length - 3].rstrip() + '...'
+
             return title
 
         # Fall back to top keywords
         if self.keyword_freq:
             top_kws = [kw.title() for kw, _ in self.keyword_freq[:3]]
-            return ', '.join(top_kws) + ' Trends'
+            topic = ', '.join(top_kws) + ' Trends'
+            if len(topic) > max_topic_length:
+                topic = topic[:max_topic_length - 3] + '...'
+            return topic
 
         return "Today's Top Trends"
 
@@ -453,6 +475,13 @@ class WebsiteBuilder:
 
     <!-- Feeds -->
     <link rel="alternate" type="application/rss+xml" title="DailyTrending.info RSS" href="https://dailytrending.info/feed.xml">
+
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DailyTrending">
 
     {self._build_fonts()}
     {self._build_styles()}
@@ -3242,14 +3271,22 @@ class WebsiteBuilder:
                 image_style = f'style="background-image: url(\'{safe_img_url}\');"'
                 extra_class = "has-image"
 
+            # Build accessibility attributes for cards with images
+            img_attrs = ""
+            if image and i > 0:
+                # Get image description or fall back to story title for alt text
+                img_desc = image.get("description", "") or trend.get('title', '')
+                safe_img_desc = html.escape(img_desc[:100]) if img_desc else "Story image"
+                img_attrs = f'role="img" aria-label="Image: {safe_img_desc}"'
+
             cards_html.append(f'''
-            <article class="story-card {extra_class}" {image_style}>
+            <article class="story-card {extra_class}" {image_style} {img_attrs}>
                 <div class="story-content">
                     <span class="story-source">{source}</span>
                     <h3 class="story-title">{title}</h3>
                     {f'<p class="story-description">{desc}</p>' if desc else ''}
                 </div>
-                <a href="{html.escape(url)}" class="story-link" target="_blank" rel="noopener"></a>
+                <a href="{html.escape(url)}" class="story-link" target="_blank" rel="noopener" aria-label="Read more about {title[:50]}"></a>
             </article>''')
 
         return f"""

@@ -6,6 +6,7 @@ Features: Daily snapshots, browsable index, retention policy.
 
 import os
 import json
+import re
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -43,8 +44,32 @@ class ArchiveManager:
 
         archive_path.mkdir(parents=True, exist_ok=True)
 
-        # Copy the current index.html
-        shutil.copy2(current_index, archive_path / "index.html")
+        # Copy the current index.html and add canonical URL
+        with open(current_index, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+
+        # Add canonical URL for the archive page
+        canonical_url = f"https://dailytrending.info/archive/{today}/"
+        canonical_tag = f'<link rel="canonical" href="{canonical_url}">'
+
+        # Replace existing canonical or add new one
+        if '<link rel="canonical"' in html_content:
+            html_content = re.sub(
+                r'<link rel="canonical"[^>]*>',
+                canonical_tag,
+                html_content
+            )
+        else:
+            # Insert after <head>
+            html_content = html_content.replace(
+                '<head>',
+                f'<head>\n    {canonical_tag}',
+                1
+            )
+
+        # Write the modified HTML
+        with open(archive_path / "index.html", 'w', encoding='utf-8') as f:
+            f.write(html_content)
 
         # Save metadata
         metadata = {
@@ -156,7 +181,9 @@ class ArchiveManager:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive | Trend Watch</title>
+    <title>Archive | DailyTrending.info</title>
+    <meta name="description" content="Browse the archive of daily trending topic designs. Each day features a unique layout, color scheme, and curated content.">
+    <link rel="canonical" href="https://dailytrending.info/archive/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
