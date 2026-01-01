@@ -1181,12 +1181,18 @@ class WebsiteBuilder:
         body.light-mode .nav-links a,
         body.light-mode .nav-date,
         body.light-mode .text-muted,
-        body.light-mode .hero-subtitle,
-        body.light-mode .hero-meta,
         body.light-mode .story-description,
         body.light-mode .footer-description,
         body.light-mode .section-count {{
             color: #64748b;
+        }}
+
+        /* Hero text needs special handling in light mode for readability over images */
+        body.light-mode .hero-subtitle,
+        body.light-mode .hero-meta,
+        body.light-mode .hero-secondary {{
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
         }}
 
         body.light-mode .section-header {{
@@ -1330,7 +1336,8 @@ class WebsiteBuilder:
 
         .hero-subtitle {{
             font-size: clamp(1.1rem, 2vw, 1.35rem);
-            color: var(--color-muted);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5);
             max-width: 700px;
             margin-bottom: 2rem;
             animation: fadeInUp 0.8s ease-out 0.2s both;
@@ -1366,7 +1373,8 @@ class WebsiteBuilder:
         }}
 
         .hero-secondary {{
-            color: var(--color-muted);
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
             font-size: 0.95rem;
         }}
 
@@ -1389,7 +1397,8 @@ class WebsiteBuilder:
             flex-wrap: wrap;
             gap: 1.5rem;
             font-size: 0.9rem;
-            color: var(--color-muted);
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
             animation: fadeInUp 0.8s ease-out 0.3s both;
         }}
 
@@ -3391,6 +3400,9 @@ class WebsiteBuilder:
         for category, _ in self._sorted_categories[:4]:
             section_id = category.lower().replace(' ', '-')
             links_list.append(f'<li><a href="#{section_id}">{category}</a></li>')
+
+        # Add Articles link
+        links_list.append('<li><a href="/articles/">Articles</a></li>')
 
         links = '\n                '.join(links_list)
 

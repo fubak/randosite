@@ -39,7 +39,7 @@
     <!-- Additional SEO -->
     <meta name="generator" content="DailyTrending.info Autonomous Generator">
     <meta name="date" content="2026-01-01">
-    <meta name="last-modified" content="2026-01-01T14:18:37.607727">
+    <meta name="last-modified" content="2026-01-01T18:44:25.620261">
 
     <!-- Structured Data for LLMs and Search Engines -->
     <script type="application/ld+json">
@@ -68,7 +68,7 @@
         "@id": "https://dailytrending.info/#website"
       },
       "datePublished": "2026-01-01",
-      "dateModified": "2026-01-01T14:18:37.607734",
+      "dateModified": "2026-01-01T18:44:25.620281",
       "description": "Daily trending topics for January 01, 2026. Discover 8+ stories from 4 sources covering World News, Technology, Hacker News, Business. Top trends: Ai, Climat...",
       "breadcrumb": {
         "@type": "BreadcrumbList",
@@ -218,6 +218,132 @@
           }
         }
       ]
+    },
+    {
+      "@type": "HowTo",
+      "name": "How to stay informed with DailyTrending.info",
+      "description": "Get a quick overview of what's trending across news, technology, and social media",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Browse trending topics",
+          "text": "Scan the hero section and top stories for the biggest news of the day"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Explore by category",
+          "text": "Navigate to specific sections like Technology, World News, or Social for focused content"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Save stories for later",
+          "text": "Click the bookmark icon on any story to save it to your personal reading list"
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Subscribe via RSS",
+          "text": "Use the RSS feed at /feed.xml to get updates in your favorite reader"
+        }
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://dailytrending.info/#speakable",
+      "speakable": {
+        "@type": "SpeakableSpecification",
+        "cssSelector": [
+          ".headline-xl",
+          ".hero-subheadline",
+          ".story-title"
+        ]
+      }
+    },
+    {
+      "@type": "Article",
+      "@id": "https://dailytrending.info/#article",
+      "headline": "Today's Pulse",
+      "datePublished": "2026-01-01",
+      "dateModified": "2026-01-01T18:44:25.620281",
+      "mentions": [
+        {
+          "@type": "Thing",
+          "name": "Ai",
+          "description": "Trending topic appearing in 2 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Climate",
+          "description": "Trending topic appearing in 2 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Space",
+          "description": "Trending topic appearing in 2 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Markets",
+          "description": "Trending topic appearing in 2 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Quantum",
+          "description": "Trending topic appearing in 2 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Healthcare",
+          "description": "Trending topic appearing in 1 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Medicine",
+          "description": "Trending topic appearing in 1 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Environment",
+          "description": "Trending topic appearing in 1 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Spacex",
+          "description": "Trending topic appearing in 1 stories today"
+        },
+        {
+          "@type": "Thing",
+          "name": "Rocket",
+          "description": "Trending topic appearing in 1 stories today"
+        }
+      ],
+      "about": [
+        {
+          "@type": "Thing",
+          "name": "World News"
+        },
+        {
+          "@type": "Thing",
+          "name": "Technology"
+        },
+        {
+          "@type": "Thing",
+          "name": "Hacker News"
+        },
+        {
+          "@type": "Thing",
+          "name": "Business"
+        },
+        {
+          "@type": "Thing",
+          "name": "Science"
+        }
+      ],
+      "wordCount": 56,
+      "timeRequired": "PT1M"
     }
   ]
 }
@@ -225,6 +351,13 @@
 
     <!-- Feeds -->
     <link rel="alternate" type="application/rss+xml" title="DailyTrending.info RSS" href="https://dailytrending.info/feed.xml">
+
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DailyTrending">
 
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -262,7 +395,7 @@
             --transition-slow: calc(0.4s * 1.5) cubic-bezier(0.4, 0, 0.2, 1);
             --max-width: 1400px;
 
-            --hero-bg: linear-gradient(180deg, #0c0c0c, #1a1a2e);
+            --hero-bg: linear-gradient(135deg, #a8edea, #fed6e3);
         }
 
         /* ===== RESET & BASE ===== */
@@ -571,12 +704,18 @@
         body.light-mode .nav-links a,
         body.light-mode .nav-date,
         body.light-mode .text-muted,
-        body.light-mode .hero-subtitle,
-        body.light-mode .hero-meta,
         body.light-mode .story-description,
         body.light-mode .footer-description,
         body.light-mode .section-count {
             color: #64748b;
+        }
+
+        /* Hero text needs special handling in light mode for readability over images */
+        body.light-mode .hero-subtitle,
+        body.light-mode .hero-meta,
+        body.light-mode .hero-secondary {
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
         }
 
         body.light-mode .section-header {
@@ -644,11 +783,12 @@
 
         /* ===== HERO SECTION ===== */
         .hero {
-            min-height: 100vh;
+            min-height: 50vh;
+            max-height: 60vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 6rem 2rem 4rem;
+            padding: 4rem 2rem 3rem;
             position: relative;
             overflow: hidden;
         }
@@ -719,7 +859,8 @@
 
         .hero-subtitle {
             font-size: clamp(1.1rem, 2vw, 1.35rem);
-            color: var(--color-muted);
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5);
             max-width: 700px;
             margin-bottom: 2rem;
             animation: fadeInUp 0.8s ease-out 0.2s both;
@@ -755,7 +896,8 @@
         }
 
         .hero-secondary {
-            color: var(--color-muted);
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
             font-size: 0.95rem;
         }
 
@@ -778,7 +920,8 @@
             flex-wrap: wrap;
             gap: 1.5rem;
             font-size: 0.9rem;
-            color: var(--color-muted);
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
             animation: fadeInUp 0.8s ease-out 0.3s both;
         }
 
@@ -1229,27 +1372,32 @@
         /* ===== TOP STORIES GRID ===== */
         .top-stories {
             display: grid;
-            gap: 1.5rem;
-            margin-bottom: 4rem;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
-        /* Layout variants for top stories */
+        /* Ensure all cards have consistent compact height */
+        .top-stories .story-card {
+            min-height: 160px;
+            max-height: 200px;
+        }
+
+        /* Layout variants for top stories - all optimized for horizontal display */
         .layout-newspaper .top-stories {
-            grid-template-columns: 2fr 1fr 1fr;
-            grid-template-rows: auto auto;
+            grid-template-columns: repeat(4, 1fr);
         }
 
         .layout-newspaper .top-stories .story-card:first-child {
-            grid-row: span 2;
+            grid-row: span 1;
         }
 
         .layout-magazine .top-stories {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 400px 200px;
+            grid-template-columns: repeat(4, 1fr);
         }
 
         .layout-magazine .top-stories .story-card:first-child {
-            grid-column: span 2;
+            grid-column: span 1;
         }
 
         .layout-dashboard .top-stories {
@@ -1257,38 +1405,27 @@
         }
 
         .layout-minimal .top-stories {
-            grid-template-columns: 1fr;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            grid-template-columns: repeat(4, 1fr);
         }
 
         .layout-bold .top-stories {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(4, 1fr);
         }
 
         .layout-bold .top-stories .story-card:first-child {
-            padding: 3rem;
+            padding: 1rem;
         }
 
         .layout-mosaic .top-stories {
-            grid-template-columns: repeat(6, 1fr);
-            grid-auto-rows: 150px;
+            grid-template-columns: repeat(4, 1fr);
         }
 
-        .layout-mosaic .top-stories .story-card:nth-child(1) {
-            grid-column: span 4;
-            grid-row: span 2;
-        }
-
-        .layout-mosaic .top-stories .story-card:nth-child(2) {
-            grid-column: span 2;
-            grid-row: span 2;
-        }
-
+        .layout-mosaic .top-stories .story-card:nth-child(1),
+        .layout-mosaic .top-stories .story-card:nth-child(2),
         .layout-mosaic .top-stories .story-card:nth-child(3),
         .layout-mosaic .top-stories .story-card:nth-child(4) {
-            grid-column: span 3;
+            grid-column: span 1;
+            grid-row: span 1;
         }
 
         /* ===== STORY CARDS ===== */
@@ -1357,6 +1494,175 @@
         .hover-none .story-card:hover {
             transform: none;
             box-shadow: none;
+        }
+
+        /* ===== STORY BADGES & INDICATORS ===== */
+        .story-badges {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 5;
+        }
+
+        .comparison-badge {
+            font-size: 1rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+
+        .velocity-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            letter-spacing: 0.05em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .velocity-hot {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: white;
+            animation: pulse-hot 2s infinite;
+        }
+
+        .velocity-rising {
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            color: #1a1a1a;
+        }
+
+        .velocity-steady {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        @keyframes pulse-hot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.05); }
+        }
+
+        /* ===== STORY ACTIONS (Save & Share) ===== */
+        .story-actions {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .story-card:hover .story-actions,
+        .story-card:focus-within .story-actions {
+            opacity: 1;
+        }
+
+        .save-btn, .share-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-sm);
+            color: var(--color-muted);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .save-btn:hover, .share-btn:hover {
+            background: var(--color-accent);
+            color: white;
+            border-color: var(--color-accent);
+        }
+
+        .save-btn.saved {
+            background: var(--color-accent);
+            color: white;
+        }
+
+        .save-btn.saved svg {
+            fill: currentColor;
+        }
+
+        /* ===== READING TIME ===== */
+        .section-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .reading-time {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }
+
+        .reading-time svg {
+            opacity: 0.7;
+        }
+
+        /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+        .skip-link {
+            position: absolute;
+            top: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            background: var(--color-accent);
+            color: white;
+            border-radius: var(--radius);
+            font-weight: 600;
+            z-index: 9999;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 1rem;
+        }
+
+        /* Focus visible for keyboard navigation */
+        *:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* Screen reader only content */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .story-card {
+                border: 2px solid var(--color-text);
+            }
+            .velocity-badge, .comparison-badge {
+                border: 1px solid currentColor;
+            }
         }
 
         /* ===== BACKGROUND PATTERNS FOR VARIETY ===== */
@@ -1459,7 +1765,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%);
         }
 
         /* Improve text legibility on image backgrounds */
@@ -1493,6 +1799,7 @@
         .story-content {
             position: relative;
             padding: var(--card-padding);
+            padding-top: calc(var(--card-padding) + 1.5rem); /* Extra space for badges */
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -1523,15 +1830,15 @@
         }
 
         .story-card:first-child .story-title {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
         }
 
         .story-description {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--color-muted);
-            line-height: 1.5;
+            line-height: 1.4;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -1720,10 +2027,7 @@
             font-family: var(--font-primary);
             font-size: 2.5rem;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--color-accent);
         }
 
         .stat-label {
@@ -2451,8 +2755,9 @@
 
         @media (max-width: 768px) {
             .hero {
-                padding: 5rem 1rem 2rem;
-                min-height: 70vh;
+                padding: 3rem 1rem 2rem;
+                min-height: 40vh;
+                max-height: 50vh;
             }
 
             .hero-split .hero {
@@ -2463,8 +2768,15 @@
             .layout-newspaper .top-stories,
             .layout-magazine .top-stories,
             .layout-dashboard .top-stories,
-            .layout-mosaic .top-stories {
-                grid-template-columns: 1fr;
+            .layout-mosaic .top-stories,
+            .layout-bold .top-stories,
+            .layout-minimal .top-stories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .top-stories .story-card {
+                min-height: 140px;
+                max-height: 180px;
             }
 
             .top-stories .story-card:first-child {
@@ -2596,6 +2908,7 @@
 <li><a href="#whats-trending">Trending</a></li>
                 <li><a href="#top-stories">Top Stories</a></li>
                 <li><a href="#world-news">World News</a></li>
+                <li><a href="/articles/">Articles</a></li>
         </ul>
         <div class="nav-actions">
             <span class="nav-date">January 01, 2026</span>
@@ -2755,48 +3068,102 @@
             <span class="section-count">21 keywords</span>
         </div>
         <div class="word-cloud">
-            <span class="word-cloud-item size-4">Healthcare</span> <span class="word-cloud-item size-4">Environment</span> <span class="word-cloud-item size-4">Championship</span> <span class="word-cloud-item size-4">Rocket</span> <span class="word-cloud-item size-4">Computing</span> <span class="word-cloud-item size-4">Spacex</span> <span class="word-cloud-item size-4">Stocks</span> <span class="word-cloud-item size-4">Tech</span> <span class="word-cloud-item size-4">Programming</span> <span class="word-cloud-item size-6">Ai</span> <span class="word-cloud-item size-6">Markets</span> <span class="word-cloud-item size-6">Climate</span> <span class="word-cloud-item size-4">Framework</span> <span class="word-cloud-item size-4">Entertainment</span> <span class="word-cloud-item size-4">Movie</span> <span class="word-cloud-item size-4">Medicine</span> <span class="word-cloud-item size-4">Science</span> <span class="word-cloud-item size-4">Sports</span> <span class="word-cloud-item size-4">Finance</span> <span class="word-cloud-item size-6">Quantum</span> <span class="word-cloud-item size-6">Space</span>
+            <span class="word-cloud-item size-4">Rocket</span> <span class="word-cloud-item size-4">Sports</span> <span class="word-cloud-item size-4">Tech</span> <span class="word-cloud-item size-6">Markets</span> <span class="word-cloud-item size-4">Computing</span> <span class="word-cloud-item size-4">Healthcare</span> <span class="word-cloud-item size-4">Stocks</span> <span class="word-cloud-item size-4">Entertainment</span> <span class="word-cloud-item size-4">Championship</span> <span class="word-cloud-item size-4">Science</span> <span class="word-cloud-item size-4">Programming</span> <span class="word-cloud-item size-4">Spacex</span> <span class="word-cloud-item size-4">Framework</span> <span class="word-cloud-item size-4">Medicine</span> <span class="word-cloud-item size-4">Environment</span> <span class="word-cloud-item size-4">Movie</span> <span class="word-cloud-item size-6">Climate</span> <span class="word-cloud-item size-4">Finance</span> <span class="word-cloud-item size-6">Space</span> <span class="word-cloud-item size-6">Ai</span> <span class="word-cloud-item size-6">Quantum</span>
         </div>
     </section>
             
     <section class="section" id="top-stories">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
-            <span class="section-count">4 featured</span>
+            <div class="section-meta">
+                <span class="section-count">4 featured</span>
+                <span class="reading-time" title="Estimated reading time">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    1 min read
+                </span>
+            </div>
         </div>
         <div class="top-stories">
             
-            <article class="story-card featured" >
+            <article class="story-card featured"  >
+                <div class="story-badges">
+                    <span class="comparison-badge" title="New today">🆕</span>
+                    
+                </div>
                 <div class="story-content">
                     <span class="story-source">News Nyt</span>
                     <h3 class="story-title">AI Revolution in Healthcare</h3>
                     <p class="story-description">AI transforms medical diagnostics.</p>
                 </div>
-                <a href="#" class="story-link" target="_blank" rel="noopener"></a>
+                <div class="story-actions">
+                    <button class="save-btn" data-url="#" data-title="AI Revolution in Healthcare" data-source="News Nyt" aria-label="Save for later" title="Save for later">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+                    <button class="share-btn" data-url="#" data-title="AI Revolution in Healthcare" aria-label="Share story" title="Share">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+                </div>
+                <a href="#" class="story-link" target="_blank" rel="noopener" aria-label="Read more about AI Revolution in Healthcare"></a>
             </article>
-            <article class="story-card " >
+            <article class="story-card "  >
+                <div class="story-badges">
+                    <span class="comparison-badge" title="New today">🆕</span>
+                    
+                </div>
                 <div class="story-content">
                     <span class="story-source">News Bbc</span>
                     <h3 class="story-title">Climate Summit Reaches Agreement</h3>
                     <p class="story-description">World leaders commit to carbon reduction.</p>
                 </div>
-                <a href="#" class="story-link" target="_blank" rel="noopener"></a>
+                <div class="story-actions">
+                    <button class="save-btn" data-url="#" data-title="Climate Summit Reaches Agreement" data-source="News Bbc" aria-label="Save for later" title="Save for later">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+                    <button class="share-btn" data-url="#" data-title="Climate Summit Reaches Agreement" aria-label="Share story" title="Share">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+                </div>
+                <a href="#" class="story-link" target="_blank" rel="noopener" aria-label="Read more about Climate Summit Reaches Agreement"></a>
             </article>
-            <article class="story-card " >
+            <article class="story-card "  >
+                <div class="story-badges">
+                    <span class="comparison-badge" title="New today">🆕</span>
+                    
+                </div>
                 <div class="story-content">
                     <span class="story-source">Tech Verge</span>
                     <h3 class="story-title">SpaceX Launch Success</h3>
                     <p class="story-description">Starship completes orbital test.</p>
                 </div>
-                <a href="#" class="story-link" target="_blank" rel="noopener"></a>
+                <div class="story-actions">
+                    <button class="save-btn" data-url="#" data-title="SpaceX Launch Success" data-source="Tech Verge" aria-label="Save for later" title="Save for later">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+                    <button class="share-btn" data-url="#" data-title="SpaceX Launch Success" aria-label="Share story" title="Share">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+                </div>
+                <a href="#" class="story-link" target="_blank" rel="noopener" aria-label="Read more about SpaceX Launch Success"></a>
             </article>
-            <article class="story-card " >
+            <article class="story-card "  >
+                <div class="story-badges">
+                    <span class="comparison-badge" title="New today">🆕</span>
+                    
+                </div>
                 <div class="story-content">
                     <span class="story-source">Hackernews</span>
                     <h3 class="story-title">New Framework Released</h3>
                     <p class="story-description">Developer tool gains popularity.</p>
                 </div>
-                <a href="#" class="story-link" target="_blank" rel="noopener"></a>
+                <div class="story-actions">
+                    <button class="save-btn" data-url="#" data-title="New Framework Released" data-source="Hackernews" aria-label="Save for later" title="Save for later">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+                    <button class="share-btn" data-url="#" data-title="New Framework Released" aria-label="Share story" title="Share">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
+                </div>
+                <a href="#" class="story-link" target="_blank" rel="noopener" aria-label="Read more about New Framework Released"></a>
             </article>
         </div>
     </section>
@@ -3044,6 +3411,274 @@
                 ticker.style.animationPlayState = 'running';
             });
         }
+
+        // =====================================================
+        // SAVE STORY FEATURE - localStorage persistence
+        // =====================================================
+        const SavedStories = {
+            STORAGE_KEY: 'dailytrending_saved_stories',
+            MAX_SAVED: 50,
+            MAX_AGE_DAYS: 30,
+
+            getAll() {
+                try {
+                    const data = localStorage.getItem(this.STORAGE_KEY);
+                    const stories = data ? JSON.parse(data) : [];
+                    const cutoff = Date.now() - (this.MAX_AGE_DAYS * 24 * 60 * 60 * 1000);
+                    return stories.filter(s => s.savedAt > cutoff);
+                } catch (e) {
+                    return [];
+                }
+            },
+
+            save(story) {
+                const stories = this.getAll();
+                if (stories.some(s => s.url === story.url)) return false;
+                stories.unshift({ ...story, savedAt: Date.now() });
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stories.slice(0, this.MAX_SAVED)));
+                this.updateUI();
+                return true;
+            },
+
+            remove(url) {
+                const stories = this.getAll().filter(s => s.url !== url);
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stories));
+                this.updateUI();
+            },
+
+            isSaved(url) {
+                return this.getAll().some(s => s.url === url);
+            },
+
+            updateUI() {
+                document.querySelectorAll('.save-btn').forEach(btn => {
+                    const isSaved = this.isSaved(btn.dataset.url);
+                    btn.classList.toggle('saved', isSaved);
+                    btn.setAttribute('aria-label', isSaved ? 'Remove from saved' : 'Save for later');
+                });
+                const badge = document.getElementById('saved-count');
+                if (badge) {
+                    const count = this.getAll().length;
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? 'flex' : 'none';
+                }
+                this.renderSavedPanel();
+            },
+
+            renderSavedPanel() {
+                const panel = document.getElementById('saved-panel');
+                if (!panel) return;
+                const list = panel.querySelector('.saved-list');
+                if (!list) return;
+                const stories = this.getAll();
+
+                // Clear existing content safely
+                while (list.firstChild) list.removeChild(list.firstChild);
+
+                if (stories.length === 0) {
+                    const p = document.createElement('p');
+                    p.className = 'empty-state';
+                    p.textContent = 'No saved stories yet. Click the bookmark icon to save.';
+                    list.appendChild(p);
+                    return;
+                }
+
+                stories.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'saved-item';
+
+                    const link = document.createElement('a');
+                    link.href = s.url;
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                    link.textContent = s.title;
+
+                    const meta = document.createElement('span');
+                    meta.className = 'saved-meta';
+                    meta.textContent = s.source + ' - ' + new Date(s.savedAt).toLocaleDateString();
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-saved';
+                    removeBtn.textContent = 'x';
+                    removeBtn.setAttribute('aria-label', 'Remove');
+                    removeBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.remove(s.url);
+                    });
+
+                    div.appendChild(link);
+                    div.appendChild(meta);
+                    div.appendChild(removeBtn);
+                    list.appendChild(div);
+                });
+            },
+
+            init() {
+                document.querySelectorAll('.save-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const { url, title, source } = btn.dataset;
+                        if (this.isSaved(url)) {
+                            this.remove(url);
+                        } else {
+                            this.save({ url, title, source });
+                        }
+                    });
+                });
+
+                const toggle = document.getElementById('saved-toggle');
+                const panel = document.getElementById('saved-panel');
+                if (toggle && panel) {
+                    toggle.addEventListener('click', () => {
+                        panel.classList.toggle('open');
+                        this.renderSavedPanel();
+                    });
+                    document.addEventListener('click', (e) => {
+                        if (!panel.contains(e.target) && !toggle.contains(e.target)) {
+                            panel.classList.remove('open');
+                        }
+                    });
+                }
+                this.updateUI();
+            }
+        };
+
+        SavedStories.init();
+
+        // =====================================================
+        // WEB SHARE API - Native sharing functionality
+        // =====================================================
+        const ShareHandler = {
+            init() {
+                document.querySelectorAll('.share-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const { url, title } = btn.dataset;
+
+                        if (navigator.share) {
+                            try {
+                                await navigator.share({
+                                    title: title,
+                                    text: `Check out: ${title}`,
+                                    url: url
+                                });
+                            } catch (err) {
+                                if (err.name !== 'AbortError') {
+                                    this.fallbackShare(url);
+                                }
+                            }
+                        } else {
+                            this.fallbackShare(url);
+                        }
+                    });
+                });
+            },
+
+            fallbackShare(url) {
+                // Fallback: copy to clipboard
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        this.showToast('Link copied to clipboard!');
+                    });
+                } else {
+                    // Final fallback: prompt
+                    prompt('Copy this link:', url);
+                }
+            },
+
+            showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'share-toast';
+                toast.textContent = message;
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 2rem;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 0.75rem 1.5rem;
+                    background: var(--color-accent);
+                    color: white;
+                    border-radius: var(--radius);
+                    font-size: 0.9rem;
+                    z-index: 9999;
+                    animation: toastFadeIn 0.3s ease;
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        };
+        ShareHandler.init();
+
+        // =====================================================
+        // KEYBOARD NAVIGATION - Accessibility enhancement
+        // =====================================================
+        const KeyboardNav = {
+            init() {
+                // Arrow key navigation for story cards
+                const cards = Array.from(document.querySelectorAll('.story-card, .compact-card'));
+                let currentIndex = -1;
+
+                document.addEventListener('keydown', (e) => {
+                    if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape'].includes(e.key)) return;
+                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+                    const focusedCard = document.activeElement.closest('.story-card, .compact-card');
+                    if (focusedCard) {
+                        currentIndex = cards.indexOf(focusedCard);
+                    }
+
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        currentIndex = Math.min(currentIndex + 1, cards.length - 1);
+                        cards[currentIndex]?.focus();
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        currentIndex = Math.max(currentIndex - 1, 0);
+                        cards[currentIndex]?.focus();
+                    } else if (e.key === 'Enter' && focusedCard) {
+                        const link = focusedCard.querySelector('.story-link') || focusedCard;
+                        if (link.href) window.open(link.href, '_blank');
+                    } else if (e.key === 'Escape') {
+                        document.activeElement.blur();
+                        currentIndex = -1;
+                    }
+                });
+
+                // Make cards focusable
+                cards.forEach(card => {
+                    if (!card.hasAttribute('tabindex')) {
+                        card.setAttribute('tabindex', '0');
+                    }
+                });
+            }
+        };
+        KeyboardNav.init();
+
+        // =====================================================
+        // LIVE REGION - Announce dynamic updates to screen readers
+        // =====================================================
+        const liveRegion = document.createElement('div');
+        liveRegion.setAttribute('role', 'status');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.className = 'sr-only';
+        document.body.appendChild(liveRegion);
+
+        function announce(message) {
+            liveRegion.textContent = '';
+            setTimeout(() => { liveRegion.textContent = message; }, 100);
+        }
+
+        // Add toast animation (unique name to avoid conflict with main fadeInUp)
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes toastFadeIn {
+                from { opacity: 0; transform: translate(-50%, 10px); }
+                to { opacity: 1; transform: translate(-50%, 0); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
