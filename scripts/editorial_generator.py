@@ -249,9 +249,9 @@ Respond with ONLY a valid JSON object:
         top_stories = trends[:count]
 
         for story in top_stories:
-            title = story.get('title', '')
-            url = story.get('url', '')
-            desc = story.get('description', '')[:200]
+            title = story.get('title', '') or ''
+            url = story.get('url', '') or ''
+            desc = (story.get('description') or '')[:200]
 
             prompt = f"""Analyze this news story and explain why it matters to readers.
 
@@ -290,9 +290,9 @@ Respond with ONLY a valid JSON object:
         """Build rich context for editorial generation."""
         story_lines = []
         for i, s in enumerate(stories):
-            title = s.get('title', '')
-            source = s.get('source', 'unknown').replace('_', ' ').title()
-            desc = (s.get('description', '') or '')[:200]
+            title = s.get('title') or ''
+            source = (s.get('source') or 'unknown').replace('_', ' ').title()
+            desc = (s.get('description') or '')[:200]
             story_lines.append(f"{i+1}. [{source}] {title}")
             if desc:
                 story_lines.append(f"   Summary: {desc}")
@@ -332,8 +332,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         science_count = 0
 
         for story in stories:
-            source = story.get('source', '').lower()
-            title = story.get('title', '').lower()
+            source = (story.get('source') or '').lower()
+            title = (story.get('title') or '').lower()
 
             if source in ['hackernews', 'lobsters', 'github_trending'] or any(
                 kw in title for kw in ['ai', 'tech', 'software', 'code', 'app', 'google', 'apple', 'microsoft']
@@ -351,7 +351,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         for kw in keywords[:30]:
             kw_lower = kw.lower()
             for story in stories:
-                if kw_lower in story.get('title', '').lower() or kw_lower in (story.get('description', '') or '').lower():
+                if kw_lower in (story.get('title') or '').lower() or kw_lower in (story.get('description') or '').lower():
                     keyword_freq[kw] = keyword_freq.get(kw, 0) + 1
 
         # Find most connected keywords (appear in multiple stories)
