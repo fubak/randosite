@@ -18,7 +18,8 @@ import xml.etree.ElementTree as ET
 def generate_sitemap(
     base_url: str = "https://dailytrending.info",
     archive_dates: Optional[List[str]] = None,
-    public_dir: Optional[Path] = None
+    public_dir: Optional[Path] = None,
+    extra_urls: Optional[List[str]] = None
 ) -> str:
     """
     Generate XML sitemap for the website.
@@ -27,6 +28,7 @@ def generate_sitemap(
         base_url: Base URL of the website
         archive_dates: List of archive dates (YYYY-MM-DD format)
         public_dir: Path to public directory to scan for archives
+        extra_urls: Additional URLs to include (articles, topic pages, etc.)
 
     Returns:
         XML string for sitemap.xml
@@ -80,6 +82,32 @@ def generate_sitemap(
             ET.SubElement(archive_page, 'changefreq').text = 'never'  # Archives don't change
             ET.SubElement(archive_page, 'priority').text = '0.5'
 
+    # Add articles index page
+    articles_index = ET.SubElement(urlset, 'url')
+    ET.SubElement(articles_index, 'loc').text = f"{base_url}/articles/"
+    ET.SubElement(articles_index, 'lastmod').text = today
+    ET.SubElement(articles_index, 'changefreq').text = 'daily'
+    ET.SubElement(articles_index, 'priority').text = '0.9'
+
+    # Add extra URLs (articles, topic pages, etc.)
+    if extra_urls:
+        for url in extra_urls:
+            if not url:
+                continue
+            page = ET.SubElement(urlset, 'url')
+            # Ensure URL starts with base_url
+            full_url = url if url.startswith('http') else f"{base_url}{url}"
+            ET.SubElement(page, 'loc').text = full_url
+            ET.SubElement(page, 'lastmod').text = today
+
+            # Set priority based on URL type
+            if '/articles/' in url:
+                ET.SubElement(page, 'changefreq').text = 'never'  # Articles are permanent
+                ET.SubElement(page, 'priority').text = '0.7'
+            else:
+                ET.SubElement(page, 'changefreq').text = 'daily'  # Topic pages update daily
+                ET.SubElement(page, 'priority').text = '0.8'
+
     # Convert to string with declaration
     xml_string = ET.tostring(urlset, encoding='unicode', method='xml')
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
@@ -110,7 +138,8 @@ Disallow: /sw.js
 
 def save_sitemap(
     public_dir: Path,
-    base_url: str = "https://dailytrending.info"
+    base_url: str = "https://dailytrending.info",
+    extra_urls: Optional[List[str]] = None
 ):
     """
     Save sitemap.xml and robots.txt to the public directory.
@@ -118,9 +147,14 @@ def save_sitemap(
     Args:
         public_dir: Path to the public output directory
         base_url: Base URL of the website
+        extra_urls: Additional URLs to include (articles, topic pages, etc.)
     """
     # Generate and save sitemap
-    sitemap_content = generate_sitemap(base_url=base_url, public_dir=public_dir)
+    sitemap_content = generate_sitemap(
+        base_url=base_url,
+        public_dir=public_dir,
+        extra_urls=extra_urls
+    )
     sitemap_path = public_dir / 'sitemap.xml'
     sitemap_path.write_text(sitemap_content)
     print(f"  Created {sitemap_path}")

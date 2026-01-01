@@ -1134,26 +1134,76 @@ class DesignGenerator:
             self._store_theme(theme_name)
         return chosen
 
-    def _try_ai_generation(self, trends: List[Dict], keywords: List[str]) -> Optional[Dict]:
-        """Try to get AI-generated design elements."""
-        trend_titles = [t.get('title', '') for t in trends[:10]]
-        keyword_str = ', '.join(keywords[:15])
+    def _build_rich_context(self, trends: List[Dict], keywords: List[str]) -> str:
+        """
+        Build rich context for AI design generation.
 
-        # Build trend context with sources for richer understanding
-        trend_context = []
-        for t in trends[:10]:
-            title = t.get('title', '')
-            source = t.get('source', '').replace('_', ' ').title()
-            trend_context.append(f"- {title} ({source})")
+        Expands from basic titles to include descriptions, source distribution,
+        and categorical analysis for better mood detection.
+        """
+        # Expand to 30 trends with descriptions for richer understanding
+        trend_lines = []
+        for i, t in enumerate(trends[:30]):
+            source = t.get('source', 'unknown').replace('_', ' ').title()
+            title = t.get('title', '')[:80]
+            desc = (t.get('description', '') or '')[:120]
+
+            # Format: [Source] Title
+            trend_lines.append(f"{i+1}. [{source}] {title}")
+            if desc and len(desc) > 20:
+                # Add truncated description for context
+                trend_lines.append(f"   → {desc}...")
+
+        # Calculate source distribution for category awareness
+        sources = {}
+        for t in trends:
+            src = t.get('source', 'other')
+            # Normalize source names
+            if 'rss' in src.lower():
+                category = 'News' if 'news' in src.lower() else 'Tech'
+            elif src in ['hackernews', 'lobsters', 'github_trending']:
+                category = 'Tech'
+            elif src == 'reddit':
+                category = 'Social'
+            else:
+                category = src.replace('_', ' ').title()
+            sources[category] = sources.get(category, 0) + 1
+
+        # Sort by count descending
+        distribution = ", ".join(
+            f"{count} {cat}"
+            for cat, count in sorted(sources.items(), key=lambda x: -x[1])[:5]
+        )
+
+        # Detect breaking news / urgency signals
+        urgency_keywords = ['breaking', 'urgent', 'just in', 'developing', 'alert']
+        breaking_count = sum(
+            1 for t in trends
+            if any(kw in t.get('title', '').lower() for kw in urgency_keywords)
+        )
+        urgency_note = f"BREAKING NEWS DETECTED: {breaking_count} urgent stories" if breaking_count > 0 else ""
+
+        context = f"""TODAY'S TRENDING STORIES ({len(trends)} total):
+{chr(10).join(trend_lines)}
+
+SOURCE DISTRIBUTION: {distribution}
+TOP KEYWORDS: {', '.join(keywords[:25])}"""
+
+        if urgency_note:
+            context += f"\n{urgency_note}"
+
+        return context
+
+    def _try_ai_generation(self, trends: List[Dict], keywords: List[str]) -> Optional[Dict]:
+        """Try to get AI-generated design elements with rich context."""
+        # Build rich context with expanded trend information
+        rich_context = self._build_rich_context(trends, keywords)
 
         prompt = f"""You are a creative director designing a daily news aggregation website.
 
 Analyze today's trending topics and create a cohesive design system that reflects the mood and themes of the day.
 
-TODAY'S TRENDING STORIES:
-{chr(10).join(trend_context)}
-
-TOP KEYWORDS: {keyword_str}
+{rich_context}
 
 Create multiple design variants that capture the essence of today's news cycle. Consider:
 - Is the news mood serious, hopeful, chaotic, or transformative?

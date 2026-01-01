@@ -31,6 +31,10 @@ class BuildContext:
     design: Dict
     keywords: List[str]
     enriched_content: Optional[Dict] = None  # Word of Day, Grokipedia, summaries
+    why_this_matters: Optional[List[Dict]] = None  # Context explanations for top stories
+    yesterday_trends: Optional[List[Dict]] = None  # Previous day's trends for comparison
+    editorial_article: Optional[Dict] = None  # Today's editorial article
+    keyword_history: Optional[Dict] = None  # Historical keyword data for timeline
     generated_at: str = ""
 
     def __post_init__(self):
@@ -209,6 +213,107 @@ class WebsiteBuilder:
         # Sort by frequency
         sorted_freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
         return sorted_freq[:50]
+
+    def _calculate_reading_time(self, word_count: int) -> int:
+        """Calculate reading time in minutes (200 WPM average)."""
+        return max(1, round(word_count / 200))
+
+    def _get_total_reading_time(self) -> int:
+        """Get total reading time for all trends on the page."""
+        total_words = 0
+        for trend in self.ctx.trends:
+            title_words = len((trend.get('title', '') or '').split())
+            desc_words = len((trend.get('description', '') or '').split())
+            total_words += title_words + desc_words
+        return self._calculate_reading_time(total_words)
+
+    def _calculate_velocity(self, trend: Dict) -> Dict:
+        """
+        Calculate trending velocity for a story.
+
+        Returns dict with:
+        - score: 0-100 velocity score
+        - label: 'hot', 'rising', 'steady', 'cooling'
+        - sources: number of sources mentioning similar topic
+        """
+        title = (trend.get('title', '') or '').lower()
+        source = trend.get('source', '')
+
+        # Count how many other stories share keywords with this one
+        trend_keywords = set(trend.get('keywords', []))
+        title_words = set(title.split())
+
+        cross_mentions = 0
+        for other in self.ctx.trends:
+            if other.get('url') == trend.get('url'):
+                continue
+            other_title = (other.get('title', '') or '').lower()
+            other_keywords = set(other.get('keywords', []))
+
+            # Check for keyword overlap
+            keyword_overlap = len(trend_keywords & other_keywords)
+            title_overlap = len(title_words & set(other_title.split())) - 3  # Subtract common words
+
+            if keyword_overlap >= 2 or title_overlap >= 2:
+                cross_mentions += 1
+
+        # Calculate base score from cross-mentions
+        score = min(100, cross_mentions * 20 + 20)
+
+        # Boost for fresh content (has timestamp)
+        if trend.get('timestamp'):
+            score = min(100, score + 10)
+
+        # Determine label
+        if score >= 80:
+            label = 'hot'
+        elif score >= 50:
+            label = 'rising'
+        elif score >= 30:
+            label = 'steady'
+        else:
+            label = 'new'
+
+        return {
+            'score': score,
+            'label': label,
+            'sources': cross_mentions + 1
+        }
+
+    def _get_comparison_indicator(self, trend: Dict) -> Dict:
+        """
+        Compare trend to yesterday's data.
+
+        Returns dict with:
+        - status: 'new', 'returning', 'rising', 'steady'
+        - icon: emoji/symbol
+        - tooltip: description
+        """
+        if not self.ctx.yesterday_trends:
+            return {'status': 'new', 'icon': '🆕', 'tooltip': 'New today'}
+
+        title = (trend.get('title', '') or '').lower()
+        url = trend.get('url', '')
+
+        # Check for exact URL match
+        yesterday_urls = {t.get('url', '') for t in self.ctx.yesterday_trends}
+        if url in yesterday_urls:
+            return {'status': 'steady', 'icon': '📊', 'tooltip': 'Continuing trend'}
+
+        # Check for similar titles (fuzzy match)
+        title_words = set(title.split())
+        for yt in self.ctx.yesterday_trends:
+            yt_title = (yt.get('title', '') or '').lower()
+            yt_words = set(yt_title.split())
+
+            # Calculate word overlap (excluding common stop words)
+            stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'in', 'on', 'to', 'for', 'of', 'and'}
+            overlap = (title_words - stop_words) & (yt_words - stop_words)
+
+            if len(overlap) >= 3:
+                return {'status': 'rising', 'icon': '🔥', 'tooltip': 'Trending up from yesterday'}
+
+        return {'status': 'new', 'icon': '🆕', 'tooltip': 'New today'}
 
     def _get_top_topic(self) -> str:
         """Get the main topic for SEO title.
@@ -411,6 +516,71 @@ class WebsiteBuilder:
             structured_data["@graph"].append({
                 "@type": "FAQPage",
                 "mainEntity": faq_items
+            })
+
+        # Add HowTo schema for using the site (helps LLMs understand site purpose)
+        structured_data["@graph"].append({
+            "@type": "HowTo",
+            "name": "How to stay informed with DailyTrending.info",
+            "description": "Get a quick overview of what's trending across news, technology, and social media",
+            "step": [
+                {
+                    "@type": "HowToStep",
+                    "position": 1,
+                    "name": "Browse trending topics",
+                    "text": "Scan the hero section and top stories for the biggest news of the day"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 2,
+                    "name": "Explore by category",
+                    "text": "Navigate to specific sections like Technology, World News, or Social for focused content"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 3,
+                    "name": "Save stories for later",
+                    "text": "Click the bookmark icon on any story to save it to your personal reading list"
+                },
+                {
+                    "@type": "HowToStep",
+                    "position": 4,
+                    "name": "Subscribe via RSS",
+                    "text": "Use the RSS feed at /feed.xml to get updates in your favorite reader"
+                }
+            ]
+        })
+
+        # Add speakable property for voice assistants
+        structured_data["@graph"].append({
+            "@type": "WebPage",
+            "@id": "https://dailytrending.info/#speakable",
+            "speakable": {
+                "@type": "SpeakableSpecification",
+                "cssSelector": [".headline-xl", ".hero-subheadline", ".story-title"]
+            }
+        })
+
+        # Add mentions for key entities (helps LLMs understand content relationships)
+        mentions = []
+        for kw, freq in self.keyword_freq[:10]:
+            mentions.append({
+                "@type": "Thing",
+                "name": kw.title(),
+                "description": f"Trending topic appearing in {freq} stories today"
+            })
+
+        if mentions:
+            structured_data["@graph"].append({
+                "@type": "Article",
+                "@id": "https://dailytrending.info/#article",
+                "headline": self.design.get('headline', "Today's Trending Topics"),
+                "datePublished": date_str,
+                "dateModified": iso_date,
+                "mentions": mentions,
+                "about": [{"@type": "Thing", "name": cat} for cat in list(self.grouped_trends.keys())[:5]],
+                "wordCount": sum(len((t.get('title', '') + ' ' + (t.get('description', '') or '')).split()) for t in self.ctx.trends),
+                "timeRequired": f"PT{self._get_total_reading_time()}M"
             })
 
         return f'<script type="application/ld+json">\n{json.dumps(structured_data, indent=2)}\n    </script>'
@@ -1792,6 +1962,175 @@ class WebsiteBuilder:
         .hover-none .story-card:hover {{
             transform: none;
             box-shadow: none;
+        }}
+
+        /* ===== STORY BADGES & INDICATORS ===== */
+        .story-badges {{
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 5;
+        }}
+
+        .comparison-badge {{
+            font-size: 1rem;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }}
+
+        .velocity-badge {{
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.5rem;
+            border-radius: 999px;
+            letter-spacing: 0.05em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }}
+
+        .velocity-hot {{
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: white;
+            animation: pulse-hot 2s infinite;
+        }}
+
+        .velocity-rising {{
+            background: linear-gradient(135deg, #f59e0b, #eab308);
+            color: #1a1a1a;
+        }}
+
+        .velocity-steady {{
+            background: var(--color-accent);
+            color: white;
+        }}
+
+        @keyframes pulse-hot {{
+            0%, 100% {{ opacity: 1; transform: scale(1); }}
+            50% {{ opacity: 0.9; transform: scale(1.05); }}
+        }}
+
+        /* ===== STORY ACTIONS (Save & Share) ===== */
+        .story-actions {{
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }}
+
+        .story-card:hover .story-actions,
+        .story-card:focus-within .story-actions {{
+            opacity: 1;
+        }}
+
+        .save-btn, .share-btn {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-sm);
+            color: var(--color-muted);
+            cursor: pointer;
+            transition: all var(--transition);
+        }}
+
+        .save-btn:hover, .share-btn:hover {{
+            background: var(--color-accent);
+            color: white;
+            border-color: var(--color-accent);
+        }}
+
+        .save-btn.saved {{
+            background: var(--color-accent);
+            color: white;
+        }}
+
+        .save-btn.saved svg {{
+            fill: currentColor;
+        }}
+
+        /* ===== READING TIME ===== */
+        .section-meta {{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }}
+
+        .reading-time {{
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }}
+
+        .reading-time svg {{
+            opacity: 0.7;
+        }}
+
+        /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+        .skip-link {{
+            position: absolute;
+            top: -100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            background: var(--color-accent);
+            color: white;
+            border-radius: var(--radius);
+            font-weight: 600;
+            z-index: 9999;
+            transition: top 0.3s;
+        }}
+
+        .skip-link:focus {{
+            top: 1rem;
+        }}
+
+        /* Focus visible for keyboard navigation */
+        *:focus-visible {{
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }}
+
+        /* Screen reader only content */
+        .sr-only {{
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }}
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {{
+            *, *::before, *::after {{
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }}
+        }}
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {{
+            .story-card {{
+                border: 2px solid var(--color-text);
+            }}
+            .velocity-badge, .comparison-badge {{
+                border: 1px solid currentColor;
+            }}
         }}
 
         /* ===== BACKGROUND PATTERNS FOR VARIETY ===== */
@@ -3329,21 +3668,58 @@ class WebsiteBuilder:
                 safe_img_desc = html.escape(img_desc[:100]) if img_desc else "Story image"
                 img_attrs = f'role="img" aria-label="Image: {safe_img_desc}"'
 
+            # Calculate velocity and comparison indicators
+            velocity = self._calculate_velocity(trend)
+            comparison = self._get_comparison_indicator(trend)
+
+            # Velocity badge HTML
+            velocity_class = f"velocity-{velocity['label']}"
+            velocity_html = f'<span class="velocity-badge {velocity_class}" title="{velocity["sources"]} sources">{velocity["label"].upper()}</span>' if velocity['label'] in ('hot', 'rising') else ''
+
+            # Comparison indicator HTML
+            comparison_html = f'<span class="comparison-badge" title="{comparison["tooltip"]}">{comparison["icon"]}</span>'
+
+            # Save button HTML
+            safe_title = html.escape(title).replace("'", "\\'")
+            save_btn = f'''<button class="save-btn" data-url="{html.escape(url)}" data-title="{safe_title}" data-source="{source}" aria-label="Save for later" title="Save for later">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            </button>'''
+
+            # Share button HTML (uses Web Share API)
+            share_btn = f'''<button class="share-btn" data-url="{html.escape(url)}" data-title="{safe_title}" aria-label="Share story" title="Share">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>'''
+
             cards_html.append(f'''
             <article class="story-card {extra_class}" {image_style} {img_attrs}>
+                <div class="story-badges">
+                    {comparison_html}
+                    {velocity_html}
+                </div>
                 <div class="story-content">
                     <span class="story-source">{source}</span>
                     <h3 class="story-title">{title}</h3>
                     {f'<p class="story-description">{desc}</p>' if desc else ''}
                 </div>
+                <div class="story-actions">
+                    {save_btn}
+                    {share_btn}
+                </div>
                 <a href="{html.escape(url)}" class="story-link" target="_blank" rel="noopener" aria-label="Read more about {title[:50]}"></a>
             </article>''')
 
+        reading_time = self._get_total_reading_time()
         return f"""
     <section class="section" id="top-stories">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
-            <span class="section-count">{len(top)} featured</span>
+            <div class="section-meta">
+                <span class="section-count">{len(top)} featured</span>
+                <span class="reading-time" title="Estimated reading time">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    {reading_time} min read
+                </span>
+            </div>
         </div>
         <div class="top-stories">
             {''.join(cards_html)}
@@ -3722,6 +4098,274 @@ class WebsiteBuilder:
                 ticker.style.animationPlayState = 'running';
             });
         }
+
+        // =====================================================
+        // SAVE STORY FEATURE - localStorage persistence
+        // =====================================================
+        const SavedStories = {
+            STORAGE_KEY: 'dailytrending_saved_stories',
+            MAX_SAVED: 50,
+            MAX_AGE_DAYS: 30,
+
+            getAll() {
+                try {
+                    const data = localStorage.getItem(this.STORAGE_KEY);
+                    const stories = data ? JSON.parse(data) : [];
+                    const cutoff = Date.now() - (this.MAX_AGE_DAYS * 24 * 60 * 60 * 1000);
+                    return stories.filter(s => s.savedAt > cutoff);
+                } catch (e) {
+                    return [];
+                }
+            },
+
+            save(story) {
+                const stories = this.getAll();
+                if (stories.some(s => s.url === story.url)) return false;
+                stories.unshift({ ...story, savedAt: Date.now() });
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stories.slice(0, this.MAX_SAVED)));
+                this.updateUI();
+                return true;
+            },
+
+            remove(url) {
+                const stories = this.getAll().filter(s => s.url !== url);
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(stories));
+                this.updateUI();
+            },
+
+            isSaved(url) {
+                return this.getAll().some(s => s.url === url);
+            },
+
+            updateUI() {
+                document.querySelectorAll('.save-btn').forEach(btn => {
+                    const isSaved = this.isSaved(btn.dataset.url);
+                    btn.classList.toggle('saved', isSaved);
+                    btn.setAttribute('aria-label', isSaved ? 'Remove from saved' : 'Save for later');
+                });
+                const badge = document.getElementById('saved-count');
+                if (badge) {
+                    const count = this.getAll().length;
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? 'flex' : 'none';
+                }
+                this.renderSavedPanel();
+            },
+
+            renderSavedPanel() {
+                const panel = document.getElementById('saved-panel');
+                if (!panel) return;
+                const list = panel.querySelector('.saved-list');
+                if (!list) return;
+                const stories = this.getAll();
+
+                // Clear existing content safely
+                while (list.firstChild) list.removeChild(list.firstChild);
+
+                if (stories.length === 0) {
+                    const p = document.createElement('p');
+                    p.className = 'empty-state';
+                    p.textContent = 'No saved stories yet. Click the bookmark icon to save.';
+                    list.appendChild(p);
+                    return;
+                }
+
+                stories.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'saved-item';
+
+                    const link = document.createElement('a');
+                    link.href = s.url;
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                    link.textContent = s.title;
+
+                    const meta = document.createElement('span');
+                    meta.className = 'saved-meta';
+                    meta.textContent = s.source + ' - ' + new Date(s.savedAt).toLocaleDateString();
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'remove-saved';
+                    removeBtn.textContent = 'x';
+                    removeBtn.setAttribute('aria-label', 'Remove');
+                    removeBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.remove(s.url);
+                    });
+
+                    div.appendChild(link);
+                    div.appendChild(meta);
+                    div.appendChild(removeBtn);
+                    list.appendChild(div);
+                });
+            },
+
+            init() {
+                document.querySelectorAll('.save-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const { url, title, source } = btn.dataset;
+                        if (this.isSaved(url)) {
+                            this.remove(url);
+                        } else {
+                            this.save({ url, title, source });
+                        }
+                    });
+                });
+
+                const toggle = document.getElementById('saved-toggle');
+                const panel = document.getElementById('saved-panel');
+                if (toggle && panel) {
+                    toggle.addEventListener('click', () => {
+                        panel.classList.toggle('open');
+                        this.renderSavedPanel();
+                    });
+                    document.addEventListener('click', (e) => {
+                        if (!panel.contains(e.target) && !toggle.contains(e.target)) {
+                            panel.classList.remove('open');
+                        }
+                    });
+                }
+                this.updateUI();
+            }
+        };
+
+        SavedStories.init();
+
+        // =====================================================
+        // WEB SHARE API - Native sharing functionality
+        // =====================================================
+        const ShareHandler = {
+            init() {
+                document.querySelectorAll('.share-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const { url, title } = btn.dataset;
+
+                        if (navigator.share) {
+                            try {
+                                await navigator.share({
+                                    title: title,
+                                    text: `Check out: ${title}`,
+                                    url: url
+                                });
+                            } catch (err) {
+                                if (err.name !== 'AbortError') {
+                                    this.fallbackShare(url);
+                                }
+                            }
+                        } else {
+                            this.fallbackShare(url);
+                        }
+                    });
+                });
+            },
+
+            fallbackShare(url) {
+                // Fallback: copy to clipboard
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        this.showToast('Link copied to clipboard!');
+                    });
+                } else {
+                    // Final fallback: prompt
+                    prompt('Copy this link:', url);
+                }
+            },
+
+            showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'share-toast';
+                toast.textContent = message;
+                toast.style.cssText = `
+                    position: fixed;
+                    bottom: 2rem;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    padding: 0.75rem 1.5rem;
+                    background: var(--color-accent);
+                    color: white;
+                    border-radius: var(--radius);
+                    font-size: 0.9rem;
+                    z-index: 9999;
+                    animation: fadeInUp 0.3s ease;
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        };
+        ShareHandler.init();
+
+        // =====================================================
+        // KEYBOARD NAVIGATION - Accessibility enhancement
+        // =====================================================
+        const KeyboardNav = {
+            init() {
+                // Arrow key navigation for story cards
+                const cards = Array.from(document.querySelectorAll('.story-card, .compact-card'));
+                let currentIndex = -1;
+
+                document.addEventListener('keydown', (e) => {
+                    if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape'].includes(e.key)) return;
+                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+                    const focusedCard = document.activeElement.closest('.story-card, .compact-card');
+                    if (focusedCard) {
+                        currentIndex = cards.indexOf(focusedCard);
+                    }
+
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                        e.preventDefault();
+                        currentIndex = Math.min(currentIndex + 1, cards.length - 1);
+                        cards[currentIndex]?.focus();
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault();
+                        currentIndex = Math.max(currentIndex - 1, 0);
+                        cards[currentIndex]?.focus();
+                    } else if (e.key === 'Enter' && focusedCard) {
+                        const link = focusedCard.querySelector('.story-link') || focusedCard;
+                        if (link.href) window.open(link.href, '_blank');
+                    } else if (e.key === 'Escape') {
+                        document.activeElement.blur();
+                        currentIndex = -1;
+                    }
+                });
+
+                // Make cards focusable
+                cards.forEach(card => {
+                    if (!card.hasAttribute('tabindex')) {
+                        card.setAttribute('tabindex', '0');
+                    }
+                });
+            }
+        };
+        KeyboardNav.init();
+
+        // =====================================================
+        // LIVE REGION - Announce dynamic updates to screen readers
+        // =====================================================
+        const liveRegion = document.createElement('div');
+        liveRegion.setAttribute('role', 'status');
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.className = 'sr-only';
+        document.body.appendChild(liveRegion);
+
+        function announce(message) {
+            liveRegion.textContent = '';
+            setTimeout(() => { liveRegion.textContent = message; }, 100);
+        }
+
+        // Add toast animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translate(-50%, 10px); }
+                to { opacity: 1; transform: translate(-50%, 0); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>"""
 
     def save(self, filepath: str):

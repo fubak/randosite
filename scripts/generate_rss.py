@@ -19,6 +19,38 @@ from config import (
 logger = setup_logging("rss")
 
 
+def _build_content_html(title: str, description: str, source: str, url: str, why_matters: str = "") -> str:
+    """
+    Build rich HTML content for RSS content:encoded element.
+
+    Args:
+        title: Story title
+        description: Story description
+        source: Source name
+        url: Story URL
+        why_matters: Optional 'Why This Matters' context
+
+    Returns:
+        HTML string wrapped in CDATA
+    """
+    source_formatted = source.replace('_', ' ').title() if source else 'Unknown'
+
+    html_parts = [f'<h3>{title}</h3>']
+
+    if description:
+        html_parts.append(f'<p>{description}</p>')
+
+    if why_matters:
+        html_parts.append(f'<blockquote><strong>Why This Matters:</strong> {why_matters}</blockquote>')
+
+    html_parts.append(f'<p><small>Source: {source_formatted}</small></p>')
+
+    if url and url.startswith('http'):
+        html_parts.append(f'<p><a href="{url}">Read full story →</a></p>')
+
+    return ''.join(html_parts)
+
+
 def generate_rss_feed(
     trends: List[Dict],
     output_path: Optional[Path] = None,
@@ -41,10 +73,12 @@ def generate_rss_feed(
     Returns:
         The RSS XML as a string
     """
-    # Create root element
+    # Create root element with content namespace for full text
     rss = ET.Element('rss', {
         'version': '2.0',
-        'xmlns:atom': 'http://www.w3.org/2005/Atom'
+        'xmlns:atom': 'http://www.w3.org/2005/Atom',
+        'xmlns:content': 'http://purl.org/rss/1.0/modules/content/',
+        'xmlns:dc': 'http://purl.org/dc/elements/1.1/'
     })
 
     # Create channel
@@ -136,6 +170,16 @@ def generate_rss_feed(
                 ET.SubElement(item, 'pubDate').text = build_date
         else:
             ET.SubElement(item, 'pubDate').text = build_date
+
+        # Dublin Core creator
+        ET.SubElement(item, '{http://purl.org/dc/elements/1.1/}creator').text = 'DailyTrending.info'
+
+        # Full content (content:encoded) with rich HTML
+        full_desc = trend.get('description') or trend.get('title', '')
+        why_matters = trend.get('why_this_matters', '')
+        content_html = _build_content_html(title_text, full_desc, source, url, why_matters)
+        content_encoded = ET.SubElement(item, '{http://purl.org/rss/1.0/modules/content/}encoded')
+        content_encoded.text = content_html
 
         items_added += 1
 

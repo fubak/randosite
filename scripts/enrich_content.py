@@ -157,6 +157,46 @@ class ContentEnricher:
     # PHASE 2: Word of the Day
     # =========================================================================
 
+    def _build_rich_context(self, trends: List[Dict], keywords: List[str], max_trends: int = 20) -> str:
+        """
+        Build rich context for AI content generation.
+
+        Provides expanded trend information with descriptions and source context.
+        """
+        trend_lines = []
+        for i, t in enumerate(trends[:max_trends]):
+            source = t.get('source', 'unknown').replace('_', ' ').title()
+            title = t.get('title', '')[:100]
+            desc = (t.get('description', '') or '')[:150]
+
+            trend_lines.append(f"{i+1}. [{source}] {title}")
+            if desc and len(desc) > 30:
+                trend_lines.append(f"   Context: {desc}")
+
+        # Calculate theme categories
+        categories = {}
+        category_map = {
+            'hackernews': 'Technology', 'lobsters': 'Technology',
+            'github_trending': 'Technology', 'tech_rss': 'Technology',
+            'news_rss': 'World News', 'reddit': 'Social/Viral',
+            'product_hunt': 'Startups', 'devto': 'Development',
+            'wikipedia': 'Current Events', 'google_trends': 'Popular Search'
+        }
+        for t in trends:
+            src = t.get('source', 'other')
+            cat = category_map.get(src, 'General')
+            categories[cat] = categories.get(cat, 0) + 1
+
+        category_summary = ", ".join(
+            f"{count} {cat}" for cat, count in
+            sorted(categories.items(), key=lambda x: -x[1])[:4]
+        )
+
+        return f"""TODAY'S STORIES ({len(trends)} total, {category_summary}):
+{chr(10).join(trend_lines)}
+
+TOP KEYWORDS: {', '.join(keywords[:40])}"""
+
     def _get_word_of_the_day(
         self,
         keywords: List[str],
@@ -171,17 +211,12 @@ class ContentEnricher:
         if not keywords:
             return None
 
-        # Get trend titles for context
-        trend_titles = [t.get('title', '') for t in trends[:10]]
-        keyword_str = ', '.join(keywords[:30])
+        # Build rich context with expanded trend information
+        rich_context = self._build_rich_context(trends, keywords, max_trends=15)
 
         prompt = f"""You are a lexicographer selecting an educational "Word of the Day" for a news website.
 
-TODAY'S TRENDING KEYWORDS:
-{keyword_str}
-
-TRENDING HEADLINES:
-{chr(10).join(f'- {t}' for t in trend_titles[:8])}
+{rich_context}
 
 Select ONE word from the keywords that would be most educational and interesting as Word of the Day.
 
@@ -264,15 +299,12 @@ Respond with ONLY a valid JSON object:
         keywords: List[str]
     ) -> Optional[str]:
         """Use LLM to select the best topic for Grokipedia lookup."""
-        trend_titles = [t.get('title', '') for t in trends[:8]]
-        keyword_str = ', '.join(keywords[:20])
+        # Build rich context for better topic selection
+        rich_context = self._build_rich_context(trends, keywords, max_trends=12)
 
         prompt = f"""You are selecting an encyclopedia article topic that relates to today's news.
 
-TODAY'S TRENDING STORIES:
-{chr(10).join(f'- {t}' for t in trend_titles)}
-
-TOP KEYWORDS: {keyword_str}
+{rich_context}
 
 Select ONE topic that would make an interesting encyclopedia article to feature alongside today's news.
 
