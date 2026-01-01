@@ -783,9 +783,14 @@ def analyze_content_sentiment(trends: list, keywords: list) -> str:
     negative_words = ["crisis", "disaster", "death", "crash", "fails", "warning", "threat"]
     entertainment_words = ["movie", "music", "celebrity", "game", "sports", "entertainment"]
 
-    # Count occurrences
-    text = " ".join([t.get("title", "") + " " + t.get("description", "") for t in trends]).lower()
-    text += " " + " ".join(keywords).lower()
+    # Count occurrences - handle None values safely
+    text_parts = []
+    for t in trends:
+        title = t.get("title") or ""
+        description = t.get("description") or ""
+        text_parts.append(f"{title} {description}")
+    text = " ".join(text_parts).lower()
+    text += " " + " ".join(k for k in keywords if k).lower()
 
     breaking_count = sum(1 for w in breaking_words if w in text)
     positive_count = sum(1 for w in positive_words if w in text)
