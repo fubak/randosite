@@ -89,6 +89,55 @@ class WebsiteBuilder:
         # Pre-compute sorted categories for consistent ordering across nav/sections/footer
         self._sorted_categories = self._get_sorted_categories()
 
+        # Find the best hero image based on headline content
+        self._hero_image = self._find_relevant_hero_image()
+
+    def _find_relevant_hero_image(self) -> Optional[Dict]:
+        """Find an image that matches the headline/top story content."""
+        if not self.ctx.images:
+            return None
+
+        # Get the headline and top trend for keyword matching
+        headline = self.design.get('headline', '').lower()
+        top_trend_title = ''
+        if self.ctx.trends:
+            top_trend_title = (self.ctx.trends[0].get('title') or '').lower()
+
+        # Extract keywords from headline and top trend
+        search_text = f"{headline} {top_trend_title}"
+        # Remove common words
+        stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+                      'should', 'may', 'might', 'must', 'shall', 'can', 'of', 'in', 'to',
+                      'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
+                      'and', 'or', 'but', 'if', 'then', 'than', 'so', 'that', 'this',
+                      'what', 'which', 'who', 'whom', 'how', 'when', 'where', 'why',
+                      "today's", "trends", "trending", "world", "talking", "about"}
+        words = [w.strip('.,!?()[]{}":;\'') for w in search_text.split()]
+        keywords = [w for w in words if len(w) > 2 and w not in stop_words]
+
+        # Score each image based on keyword matches in query/description
+        best_image = None
+        best_score = 0
+
+        for img in self.ctx.images:
+            img_text = f"{img.get('query', '')} {img.get('description', '')}".lower()
+            score = sum(1 for kw in keywords if kw in img_text)
+
+            # Prefer larger images
+            if img.get('width', 0) >= 1200:
+                score += 0.5
+
+            if score > best_score:
+                best_score = score
+                best_image = img
+
+        # If no good match, use the first image
+        if best_score == 0 and self.ctx.images:
+            return self.ctx.images[0]
+
+        return best_image
+
     def _get_sorted_categories(self) -> list:
         """Get categories sorted by trend count for consistent ordering."""
         sorted_cats = sorted(
@@ -233,18 +282,16 @@ class WebsiteBuilder:
 
     def _build_og_image(self) -> str:
         """Build Open Graph image meta tag."""
-        if self.ctx.images:
-            img = self.ctx.images[0]
-            url = img.get('url_large') or img.get('url_medium', '')
+        if self._hero_image:
+            url = self._hero_image.get('url_large') or self._hero_image.get('url_medium', '')
             if url:
                 return f'<meta property="og:image" content="{html.escape(url)}">'
         return '<meta property="og:image" content="https://dailytrending.info/og-image.png">'
 
     def _build_twitter_image(self) -> str:
         """Build Twitter Card image meta tag."""
-        if self.ctx.images:
-            img = self.ctx.images[0]
-            url = img.get('url_large') or img.get('url_medium', '')
+        if self._hero_image:
+            url = self._hero_image.get('url_large') or self._hero_image.get('url_medium', '')
             if url:
                 return f'<meta name="twitter:image" content="{html.escape(url)}">'
         return '<meta name="twitter:image" content="https://dailytrending.info/og-image.png">'
@@ -558,8 +605,8 @@ class WebsiteBuilder:
         """Build all CSS styles with layout variants."""
         d = self.design
 
-        # Get hero image if available
-        hero_image = self.ctx.images[0] if self.ctx.images else None
+        # Get hero image - use the pre-computed relevant image
+        hero_image = self._hero_image
         hero_bg = ""
         if hero_image:
             # Validate and sanitize URL for CSS injection prevention
@@ -1037,11 +1084,12 @@ class WebsiteBuilder:
 
         /* ===== HERO SECTION ===== */
         .hero {{
-            min-height: 100vh;
+            min-height: 50vh;
+            max-height: 60vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 6rem 2rem 4rem;
+            padding: 4rem 2rem 3rem;
             position: relative;
             overflow: hidden;
         }}
@@ -1638,7 +1686,7 @@ class WebsiteBuilder:
 
         .layout-magazine .top-stories {{
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 400px 200px;
+            grid-template-rows: 200px 150px;
         }}
 
         .layout-magazine .top-stories .story-card:first-child {{
@@ -1661,21 +1709,21 @@ class WebsiteBuilder:
         }}
 
         .layout-bold .top-stories .story-card:first-child {{
-            padding: 3rem;
+            padding: 1.5rem;
         }}
 
         .layout-mosaic .top-stories {{
             grid-template-columns: repeat(6, 1fr);
-            grid-auto-rows: 150px;
+            grid-auto-rows: 100px;
         }}
 
         .layout-mosaic .top-stories .story-card:nth-child(1) {{
-            grid-column: span 4;
+            grid-column: span 3;
             grid-row: span 2;
         }}
 
         .layout-mosaic .top-stories .story-card:nth-child(2) {{
-            grid-column: span 2;
+            grid-column: span 3;
             grid-row: span 2;
         }}
 
@@ -1916,15 +1964,15 @@ class WebsiteBuilder:
         }}
 
         .story-card:first-child .story-title {{
-            font-size: 1.5rem;
+            font-size: 1.25rem;
         }}
 
         .story-description {{
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--color-muted);
-            line-height: 1.5;
+            line-height: 1.4;
             display: -webkit-box;
-            -webkit-line-clamp: 3;
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }}
@@ -2844,8 +2892,9 @@ class WebsiteBuilder:
 
         @media (max-width: 768px) {{
             .hero {{
-                padding: 5rem 1rem 2rem;
-                min-height: 70vh;
+                padding: 3rem 1rem 2rem;
+                min-height: 40vh;
+                max-height: 50vh;
             }}
 
             .hero-split .hero {{
