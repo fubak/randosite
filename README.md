@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-01 23:33 UTC | [fix: Use solid color for KPI stats instead of unreliable gradient text](https://github.com/fubak/daily-trending-info/commit/8ee5c140fc2566851dc80c7dc0843496b89a504e) |
 | 2026-01-01 22:56 UTC | [fix: Rename toast animation to prevent conflict with main fadeInUp](https://github.com/fubak/daily-trending-info/commit/592ab2d22fc36d683a4851faef827c45f547b61e) |
 | 2026-01-01 22:45 UTC | [fix: Adjust card layout for badges and actions](https://github.com/fubak/daily-trending-info/commit/4a23762eac46ca916c8ded00ce5ef0e9ca23d77e) |
 | 2026-01-01 21:38 UTC | [fix: Handle None values in editorial generator to prevent TypeError](https://github.com/fubak/daily-trending-info/commit/9bdf4061c4fb30a663d1e7c9bddfd849bf9baa1f) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-01 19:53 UTC | [feat: Add modular architecture, PWA, sitemap, and accessibility improvements](https://github.com/fubak/daily-trending-info/commit/bc797e447d56db4e5a5873255f0147b400596d4a) |
 | 2026-01-01 19:28 UTC | [fix: Handle None values in content sentiment analysis](https://github.com/fubak/daily-trending-info/commit/8daf0af13e72be93f8849dae0f0040933fe1ad97) |
 | 2026-01-01 19:24 UTC | [feat: Add enhanced design system with animations and accessibility](https://github.com/fubak/daily-trending-info/commit/3decb8543f438223fbbac084ea9ef8798074b25d) |
-| 2025-12-31 22:37 UTC | [Enhance Groq design generation and surface AI CTA copy (#17)](https://github.com/fubak/daily-trending-info/commit/aae4ffc85223d450649b4534b4bbdc7aacddf6c1) |
 <!-- CHANGELOG_END -->
 
 ## Features
