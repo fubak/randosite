@@ -214,6 +214,12 @@ class Pipeline:
         logger.info(f"Identified {len(self.global_keywords)} global meta-trends")
         logger.info(f"Freshness ratio: {freshness_ratio:.0%} from past 24h")
 
+        # Log sample trends for debugging
+        if self.trends:
+            logger.info("Sample trends collected:")
+            for i, trend in enumerate(self.trends[:3]):
+                logger.info(f"  {i+1}. {trend.title[:50]}... (source: {trend.source})")
+
         # Record keywords for trending analysis
         self.keyword_tracker.record_keywords(self.keywords)
 
@@ -286,9 +292,11 @@ class Pipeline:
     def _step_build_website(self):
         """Build the final HTML website."""
         logger.info("[5/7] Building website...")
+        logger.info(f"Building with {len(self.trends)} trends, {len(self.images)} images")
 
         # Convert data to proper format
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+        logger.info(f"Converted {len(trends_data)} trends to dict format")
         images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
         design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
 
