@@ -638,24 +638,57 @@ class DesignGenerator:
 
     def _try_ai_generation(self, trends: List[Dict], keywords: List[str]) -> Optional[Dict]:
         """Try to get AI-generated design elements."""
-        trend_titles = [t.get('title', '') for t in trends[:8]]
-        keyword_str = ', '.join(keywords[:12])
+        trend_titles = [t.get('title', '') for t in trends[:10]]
+        keyword_str = ', '.join(keywords[:15])
 
-        prompt = f"""Based on today's trending topics, produce multiple design options and microcopy.
+        # Build trend context with sources for richer understanding
+        trend_context = []
+        for t in trends[:10]:
+            title = t.get('title', '')
+            source = t.get('source', '').replace('_', ' ').title()
+            trend_context.append(f"- {title} ({source})")
 
-Trending topics:
-{chr(10).join(f'- {t}' for t in trend_titles)}
+        prompt = f"""You are a creative director designing a daily news aggregation website.
 
-Keywords: {keyword_str}
+Analyze today's trending topics and create a cohesive design system that reflects the mood and themes of the day.
 
-Respond with ONLY a JSON object using this schema:
+TODAY'S TRENDING STORIES:
+{chr(10).join(trend_context)}
+
+TOP KEYWORDS: {keyword_str}
+
+Create multiple design variants that capture the essence of today's news cycle. Consider:
+- Is the news mood serious, hopeful, chaotic, or transformative?
+- What visual metaphors would resonate with these stories?
+- What colors evoke the right emotional response?
+
+Respond with ONLY a valid JSON object:
 {{
+  "mood_analysis": "1-2 sentence analysis of today's news mood",
   "variants": [
-    {{"theme_name": "2-3 word theme", "headline": "3-5 words", "subheadline": "<=10 words", "color_accent": "#RRGGBB", "color_accent_secondary": "#RRGGBB", "cta": "short CTA label"}},
-    {{"theme_name": "..."}}
+    {{
+      "theme_name": "Evocative 2-3 word theme name",
+      "headline": "Attention-grabbing 3-6 word headline",
+      "subheadline": "Contextual subheadline, max 12 words",
+      "color_accent": "#RRGGBB (mood-appropriate primary color)",
+      "color_accent_secondary": "#RRGGBB (complementary secondary)",
+      "cta": "Action-oriented CTA label"
+    }},
+    {{
+      "theme_name": "Alternative theme",
+      "headline": "Different angle headline",
+      "subheadline": "Alternative subheadline",
+      "color_accent": "#RRGGBB",
+      "color_accent_secondary": "#RRGGBB",
+      "cta": "Alternative CTA"
+    }}
   ],
-  "story_capsules": ["50-80 char summary of a top story", "..."],
-  "ctas": ["CTA text 1", "CTA text 2"]
+  "story_capsules": [
+    "50-80 char engaging summary of top story 1",
+    "50-80 char engaging summary of top story 2",
+    "50-80 char engaging summary of top story 3"
+  ],
+  "ctas": ["Primary CTA", "Secondary CTA", "Tertiary CTA"]
 }}"""
 
         providers = [
@@ -683,7 +716,7 @@ Respond with ONLY a JSON object using this schema:
             return bool(self.openrouter_key)
         return False
 
-    def _call_groq(self, prompt: str) -> Optional[str]:
+    def _call_groq(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
         if not self.groq_key:
             return None
 
@@ -694,17 +727,17 @@ Respond with ONLY a JSON object using this schema:
                 "Content-Type": "application/json"
             },
             json={
-                "model": "llama-3.1-8b-instant",
+                "model": "llama-3.3-70b-versatile",
                 "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 450,
-                "temperature": 0.75
+                "max_tokens": max_tokens,
+                "temperature": 0.7
             },
-            timeout=30
+            timeout=45
         )
         response.raise_for_status()
         return response.json().get('choices', [{}])[0].get('message', {}).get('content')
 
-    def _call_openrouter(self, prompt: str) -> Optional[str]:
+    def _call_openrouter(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
         if not self.openrouter_key:
             return None
 
@@ -715,12 +748,12 @@ Respond with ONLY a JSON object using this schema:
                 "Content-Type": "application/json"
             },
             json={
-                "model": "meta-llama/llama-3.1-8b-instruct:free",
+                "model": "meta-llama/llama-3.3-70b-instruct",
                 "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 450,
-                "temperature": 0.75
+                "max_tokens": max_tokens,
+                "temperature": 0.7
             },
-            timeout=30
+            timeout=45
         )
         response.raise_for_status()
         return response.json().get('choices', [{}])[0].get('message', {}).get('content')

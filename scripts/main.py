@@ -38,6 +38,7 @@ from generate_design import DesignGenerator, DesignSpec
 from build_website import WebsiteBuilder, BuildContext
 from archive_manager import ArchiveManager
 from generate_rss import generate_rss_feed
+from enrich_content import ContentEnricher, EnrichedContent
 from keyword_tracker import KeywordTracker
 
 # Setup logging
@@ -62,6 +63,7 @@ class Pipeline:
         self.design_generator = DesignGenerator()
         self.archive_manager = ArchiveManager(public_dir=str(self.public_dir))
         self.keyword_tracker = KeywordTracker()
+        self.content_enricher = ContentEnricher()
 
         # Pipeline data
         self.trends = []
@@ -69,6 +71,7 @@ class Pipeline:
         self.design = None
         self.keywords = []
         self.global_keywords = []
+        self.enriched_content = None
 
     def _validate_environment(self) -> List[str]:
         """
@@ -146,22 +149,25 @@ class Pipeline:
             # Step 3: Fetch images
             self._step_fetch_images()
 
-            # Step 4: Generate design
+            # Step 4: Enrich content (Word of Day, Grokipedia, summaries)
+            self._step_enrich_content()
+
+            # Step 5: Generate design
             self._step_generate_design()
 
-            # Step 5: Build website
+            # Step 6: Build website
             if not dry_run:
                 self._step_build_website()
 
-            # Step 6: Generate RSS feed
+            # Step 7: Generate RSS feed
             if not dry_run:
                 self._step_generate_rss()
 
-            # Step 7: Cleanup old archives
+            # Step 8: Cleanup old archives
             if archive and not dry_run:
                 self._step_cleanup()
 
-            # Step 8: Save pipeline data
+            # Step 9: Save pipeline data
             self._save_data()
 
             logger.info("=" * 60)
@@ -184,7 +190,7 @@ class Pipeline:
 
     def _step_archive(self):
         """Archive the previous website."""
-        logger.info("[1/7] Archiving previous website...")
+        logger.info("[1/9] Archiving previous website...")
 
         # Try to load previous design metadata
         previous_design = None
@@ -200,7 +206,7 @@ class Pipeline:
 
     def _step_collect_trends(self):
         """Collect trends from all sources."""
-        logger.info("[2/7] Collecting trends...")
+        logger.info("[2/9] Collecting trends...")
 
         self.trends = self.trend_collector.collect_all()
         self.keywords = self.trend_collector.get_all_keywords()
@@ -246,7 +252,7 @@ class Pipeline:
 
     def _step_fetch_images(self):
         """Fetch images based on trending keywords."""
-        logger.info("[3/7] Fetching images...")
+        logger.info("[3/9] Fetching images...")
 
         # Prioritize global keywords (meta-trends) for image search
         # These are words appearing in 3+ stories, more likely to be relevant
@@ -276,9 +282,26 @@ class Pipeline:
         else:
             logger.warning("No keywords for image search, using fallback gradients")
 
+    def _step_enrich_content(self):
+        """Enrich content with Word of Day, Grokipedia article, and story summaries."""
+        logger.info("[4/9] Enriching content...")
+
+        # Convert trends to dict format
+        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+
+        # Get enriched content
+        self.enriched_content = self.content_enricher.enrich(trends_data, self.keywords)
+
+        # Log results
+        if self.enriched_content.word_of_the_day:
+            logger.info(f"  Word of the Day: {self.enriched_content.word_of_the_day.word}")
+        if self.enriched_content.grokipedia_article:
+            logger.info(f"  Grokipedia Article: {self.enriched_content.grokipedia_article.title}")
+        logger.info(f"  Story summaries: {len(self.enriched_content.story_summaries)}")
+
     def _step_generate_design(self):
         """Generate the design specification."""
-        logger.info("[4/7] Generating design...")
+        logger.info("[5/9] Generating design...")
 
         # Convert trends to dict format for the generator
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
@@ -291,7 +314,7 @@ class Pipeline:
 
     def _step_build_website(self):
         """Build the final HTML website."""
-        logger.info("[5/7] Building website...")
+        logger.info("[6/9] Building website...")
         logger.info(f"Building with {len(self.trends)} trends, {len(self.images)} images")
 
         # Convert data to proper format
@@ -300,12 +323,22 @@ class Pipeline:
         images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
         design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
 
+        # Convert enriched content to dict format
+        enriched_data = None
+        if self.enriched_content:
+            enriched_data = {
+                'word_of_the_day': asdict(self.enriched_content.word_of_the_day) if self.enriched_content.word_of_the_day else None,
+                'grokipedia_article': asdict(self.enriched_content.grokipedia_article) if self.enriched_content.grokipedia_article else None,
+                'story_summaries': [asdict(s) for s in self.enriched_content.story_summaries] if self.enriched_content.story_summaries else []
+            }
+
         # Build context
         context = BuildContext(
             trends=trends_data,
             images=images_data,
             design=design_data,
-            keywords=self.keywords
+            keywords=self.keywords,
+            enriched_content=enriched_data
         )
 
         # Build and save
@@ -317,7 +350,7 @@ class Pipeline:
 
     def _step_generate_rss(self):
         """Generate RSS feed."""
-        logger.info("[6/7] Generating RSS feed...")
+        logger.info("[7/9] Generating RSS feed...")
 
         # Convert trends to dict format
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
@@ -330,7 +363,7 @@ class Pipeline:
 
     def _step_cleanup(self):
         """Clean up old archives."""
-        logger.info("[7/7] Cleaning up old archives...")
+        logger.info("[8/9] Cleaning up old archives...")
 
         removed = self.archive_manager.cleanup_old(keep_days=30)
         logger.info(f"Removed {removed} old archives")
@@ -374,6 +407,20 @@ class Pipeline:
             saved_files.append("keywords.json")
         except (IOError, OSError) as e:
             errors.append(f"keywords.json: {e}")
+
+        # Save enriched content
+        if self.enriched_content:
+            try:
+                with open(self.data_dir / "enriched.json", "w") as f:
+                    enriched_data = {
+                        'word_of_the_day': asdict(self.enriched_content.word_of_the_day) if self.enriched_content.word_of_the_day else None,
+                        'grokipedia_article': asdict(self.enriched_content.grokipedia_article) if self.enriched_content.grokipedia_article else None,
+                        'story_summaries': [asdict(s) for s in self.enriched_content.story_summaries] if self.enriched_content.story_summaries else []
+                    }
+                    json.dump(enriched_data, f, indent=2, default=str)
+                saved_files.append("enriched.json")
+            except (IOError, OSError) as e:
+                errors.append(f"enriched.json: {e}")
 
         if saved_files:
             logger.info(f"Pipeline data saved to {self.data_dir}: {', '.join(saved_files)}")
