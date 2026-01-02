@@ -1394,8 +1394,13 @@ Respond with ONLY a valid JSON object:
                     inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
                     return f'"{inner}"'
 
-                sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload)
-                data = json.loads(sanitized)
+                try:
+                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload)
+                    data = json.loads(sanitized)
+                except (json.JSONDecodeError, Exception):
+                    # Last resort: strip all control chars except structural whitespace
+                    stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', payload)
+                    data = json.loads(stripped)
 
             # Normalize single-variant responses
             if data and 'variants' not in data:

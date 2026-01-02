@@ -897,8 +897,13 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                         return f'"{inner}"'
 
                     # Match quoted strings (handles escaped quotes inside)
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
-                    return json.loads(sanitized)
+                    try:
+                        sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
+                        return json.loads(sanitized)
+                    except (json.JSONDecodeError, Exception):
+                        # Last resort: strip all control chars except structural whitespace
+                        stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', json_str)
+                        return json.loads(stripped)
         except (json.JSONDecodeError, Exception) as e:
             logger.warning(f"JSON parse error: {e}")
 
