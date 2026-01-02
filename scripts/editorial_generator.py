@@ -997,7 +997,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 </body>
 </html>'''
 
-    def _call_groq(self, prompt: str, max_tokens: int = 800, max_retries: int = 3) -> Optional[str]:
+    def _call_groq(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call LLM API - prioritizes Google AI, then OpenRouter, then Groq."""
         # Try Google AI first (most generous free tier)
         result = self._call_google_ai(prompt, max_tokens, max_retries)
@@ -1012,7 +1012,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         # Fall back to Groq if all else fails
         return self._call_groq_direct(prompt, max_tokens, max_retries)
 
-    def _call_google_ai(self, prompt: str, max_tokens: int = 800, max_retries: int = 3) -> Optional[str]:
+    def _call_google_ai(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
         if not self.google_key:
             logger.info("No Google AI API key available, skipping to next provider")
@@ -1071,11 +1071,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
-                    retry_after = response.headers.get('Retry-After', '60')
+                    retry_after = response.headers.get('Retry-After', '10')
                     try:
                         wait_time = float(retry_after)
                     except ValueError:
-                        wait_time = 60.0
+                        wait_time = 10.0
                     logger.warning(f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
                     time.sleep(wait_time)
                     continue
@@ -1093,7 +1093,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         prompt: str,
         schema: dict,
         max_tokens: int = 2000,
-        max_retries: int = 3
+        max_retries: int = 1
     ) -> Optional[Dict]:
         """
         Call Google AI with structured output (guaranteed valid JSON).
@@ -1167,11 +1167,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
-                    retry_after = response.headers.get('Retry-After', '60')
+                    retry_after = response.headers.get('Retry-After', '10')
                     try:
                         wait_time = float(retry_after)
                     except ValueError:
-                        wait_time = 60.0
+                        wait_time = 10.0
                     logger.warning(f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
                     time.sleep(wait_time)
                     continue
@@ -1184,7 +1184,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("Google AI structured output: Max retries exceeded")
         return None
 
-    def _call_openrouter(self, prompt: str, max_tokens: int = 800, max_retries: int = 3) -> Optional[str]:
+    def _call_openrouter(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call OpenRouter API with free models (primary)."""
         if not self.openrouter_key:
             logger.warning("No OpenRouter API key available")
@@ -1241,11 +1241,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
                         # Parse retry-after header if available
-                        retry_after = response.headers.get('Retry-After', '60')
+                        retry_after = response.headers.get('Retry-After', '10')
                         try:
                             wait_time = float(retry_after)
                         except ValueError:
-                            wait_time = 60.0
+                            wait_time = 10.0
                         logger.warning(f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
                         time.sleep(wait_time)
                         continue
@@ -1258,7 +1258,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("All OpenRouter models failed")
         return None
 
-    def _call_groq_direct(self, prompt: str, max_tokens: int = 800, max_retries: int = 3) -> Optional[str]:
+    def _call_groq_direct(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
         """Call Groq API directly (fallback)."""
         if not self.groq_key:
             return None
@@ -1306,11 +1306,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
                     # Parse retry-after header if available
-                    retry_after = response.headers.get('Retry-After', '60')
+                    retry_after = response.headers.get('Retry-After', '10')
                     try:
                         wait_time = float(retry_after)
                     except ValueError:
-                        wait_time = 60.0
+                        wait_time = 10.0
                     logger.warning(f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
                     time.sleep(wait_time)
                     continue

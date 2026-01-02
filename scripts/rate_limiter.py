@@ -165,11 +165,11 @@ class RateLimiter:
 
             elif response.status_code == 429:
                 # Already rate limited
-                retry_after = response.headers.get('Retry-After', '60')
+                retry_after = response.headers.get('Retry-After', '10')
                 try:
                     wait_seconds = float(retry_after)
                 except ValueError:
-                    wait_seconds = 60.0
+                    wait_seconds = 10.0
 
                 status = RateLimitStatus(
                     is_available=False,
