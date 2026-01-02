@@ -804,13 +804,70 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             line-height: 1.5;
         }}
 
-        @media (max-width: 640px) {{
+        @media (max-width: 768px) {{
             .container {{
                 padding: 1rem;
             }}
 
+            h1 {{
+                font-size: clamp(1.75rem, 5vw, 2.5rem);
+            }}
+
+            .article-summary {{
+                font-size: 1rem;
+            }}
+
             .article-content {{
                 font-size: 1rem;
+            }}
+
+            .article-content h2 {{
+                font-size: 1.25rem;
+            }}
+
+            .article-content blockquote {{
+                padding-left: 1rem;
+                margin: 1.5rem 0;
+            }}
+
+            .sources-section {{
+                padding: 1rem;
+            }}
+
+            .related-articles {{
+                grid-template-columns: 1fr;
+            }}
+
+            .breadcrumb {{
+                font-size: 0.8rem;
+            }}
+
+            .article-meta {{
+                flex-wrap: wrap;
+            }}
+        }}
+
+        @media (max-width: 480px) {{
+            .container {{
+                padding: 0.75rem;
+            }}
+
+            h1 {{
+                font-size: 1.5rem;
+            }}
+
+            .article-meta {{
+                font-size: 0.75rem;
+                gap: 0.5rem;
+            }}
+
+            .keywords {{
+                gap: 0.375rem;
+            }}
+
+            .keyword {{
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
             }}
         }}
 

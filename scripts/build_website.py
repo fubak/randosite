@@ -1075,6 +1075,98 @@ class WebsiteBuilder:
             background: var(--color-card-bg);
         }}
 
+        /* ===== MOBILE MENU ===== */
+        .mobile-menu-toggle {{
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+        }}
+
+        .hamburger-line {{
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--color-text);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }}
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(1) {{
+            transform: rotate(45deg) translate(5px, 5px);
+        }}
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(2) {{
+            opacity: 0;
+        }}
+
+        .mobile-menu-toggle.active .hamburger-line:nth-child(3) {{
+            transform: rotate(-45deg) translate(5px, -5px);
+        }}
+
+        @media (max-width: 1024px) {{
+            .mobile-menu-toggle {{
+                display: flex;
+            }}
+
+            .nav-links {{
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 2rem;
+                background: var(--color-bg);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+                z-index: 1000;
+            }}
+
+            .nav-links.active {{
+                opacity: 1;
+                visibility: visible;
+            }}
+
+            .nav-links li {{
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }}
+
+            .nav-links.active li {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+
+            .nav-links.active li:nth-child(1) {{ transition-delay: 0.1s; }}
+            .nav-links.active li:nth-child(2) {{ transition-delay: 0.15s; }}
+            .nav-links.active li:nth-child(3) {{ transition-delay: 0.2s; }}
+            .nav-links.active li:nth-child(4) {{ transition-delay: 0.25s; }}
+            .nav-links.active li:nth-child(5) {{ transition-delay: 0.3s; }}
+            .nav-links.active li:nth-child(6) {{ transition-delay: 0.35s; }}
+
+            .nav-links a {{
+                font-size: 1.5rem;
+                padding: 0.5rem 1rem;
+            }}
+
+            .nav-date {{
+                display: none;
+            }}
+        }}
+
         /* ===== THEME TOGGLE ===== */
         .theme-toggle {{
             display: flex;
@@ -2544,9 +2636,15 @@ class WebsiteBuilder:
 
         .enriched-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
             margin-top: 1.5rem;
+        }}
+
+        @media (max-width: 1024px) {{
+            .enriched-grid {{
+                grid-template-columns: repeat(2, 1fr);
+            }}
         }}
 
         .enriched-card {{
@@ -3332,17 +3430,42 @@ class WebsiteBuilder:
                 grid-template-columns: 1fr;
                 gap: 2rem;
             }}
-
-            .nav-links {{
-                display: none;
-            }}
         }}
 
         @media (max-width: 768px) {{
             .hero {{
-                padding: 3rem 1rem 2rem;
-                min-height: 40vh;
-                max-height: 50vh;
+                padding: 5rem 1rem 2rem;
+                min-height: 50vh;
+                max-height: 60vh;
+            }}
+
+            .hero h1 {{
+                font-size: clamp(1.5rem, 6vw, 2.5rem);
+            }}
+
+            .hero-subtitle {{
+                font-size: 1rem;
+                margin-bottom: 1.5rem;
+            }}
+
+            .hero-eyebrow {{
+                padding: 0.4rem 0.75rem;
+                font-size: 0.65rem;
+            }}
+
+            .hero-cta {{
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+            }}
+
+            .hero-capsule {{
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem;
+            }}
+
+            .hero-meta {{
+                font-size: 0.8rem;
+                gap: 1rem;
             }}
 
             .hero-split .hero {{
@@ -3385,10 +3508,73 @@ class WebsiteBuilder:
                 padding: 2rem 1rem;
             }}
 
+            .section-title {{
+                font-size: 1.25rem;
+            }}
+
             .footer-bottom {{
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
+            }}
+
+            .enriched-card {{
+                padding: 1.25rem;
+            }}
+
+            .enriched-card-icon {{
+                font-size: 1.5rem;
+            }}
+        }}
+
+        /* Small phones */
+        @media (max-width: 480px) {{
+            .hero {{
+                padding: 4.5rem 0.75rem 1.5rem;
+                min-height: 45vh;
+            }}
+
+            .hero h1 {{
+                font-size: 1.5rem;
+            }}
+
+            .hero-actions {{
+                flex-direction: column;
+                align-items: stretch;
+            }}
+
+            .hero-cta {{
+                text-align: center;
+                justify-content: center;
+            }}
+
+            .hero-secondary {{
+                text-align: center;
+            }}
+
+            .nav {{
+                padding: 0.75rem 1rem;
+            }}
+
+            .nav-logo {{
+                font-size: 1.2rem;
+            }}
+
+            .top-stories {{
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }}
+
+            .stats-bar {{
+                grid-template-columns: 1fr;
+            }}
+
+            main {{
+                padding: 1.5rem 0.75rem;
+            }}
+
+            .section {{
+                margin-bottom: 2rem;
             }}
         }}
 
@@ -3519,7 +3705,12 @@ class WebsiteBuilder:
         <a href="/" class="nav-logo" aria-label="DailyTrending.info Home">
             <span>DailyTrending.info</span>
         </a>
-        <ul class="nav-links">
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        <ul class="nav-links" id="nav-links">
 {links}
         </ul>
         <div class="nav-actions">
@@ -4168,6 +4359,44 @@ class WebsiteBuilder:
                     localStorage.setItem('theme', 'light');
                 }
             });
+        })();
+
+        // Mobile menu toggle functionality
+        (function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+
+            if (mobileMenuToggle && navLinks) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    const isActive = navLinks.classList.contains('active');
+                    navLinks.classList.toggle('active');
+                    mobileMenuToggle.classList.toggle('active');
+                    mobileMenuToggle.setAttribute('aria-expanded', !isActive);
+
+                    // Prevent body scroll when menu is open
+                    document.body.style.overflow = isActive ? '' : 'hidden';
+                });
+
+                // Close menu when clicking on a link
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', function() {
+                        navLinks.classList.remove('active');
+                        mobileMenuToggle.classList.remove('active');
+                        mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                        document.body.style.overflow = '';
+                    });
+                });
+
+                // Close menu on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && navLinks.classList.contains('active')) {
+                        navLinks.classList.remove('active');
+                        mobileMenuToggle.classList.remove('active');
+                        mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
         })();
 
         // Navbar scroll effect
