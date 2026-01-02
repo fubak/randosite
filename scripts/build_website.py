@@ -1123,6 +1123,7 @@ class WebsiteBuilder:
                 left: 0;
                 right: 0;
                 bottom: 0;
+                height: 100vh;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
@@ -1132,6 +1133,7 @@ class WebsiteBuilder:
                 visibility: hidden;
                 transition: opacity 0.3s ease, visibility 0.3s ease;
                 z-index: 1000;
+                overflow: hidden;
             }}
 
             .nav-links.active {{
@@ -1380,7 +1382,7 @@ class WebsiteBuilder:
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 4rem 2rem 3rem;
+            padding: 5rem 2rem 3rem;
             position: relative;
             overflow: hidden;
         }}
@@ -3547,7 +3549,7 @@ class WebsiteBuilder:
         /* Small phones */
         @media (max-width: 480px) {{
             .hero {{
-                padding: 4.5rem 0.75rem 1.5rem;
+                padding: 5.5rem 0.75rem 1.5rem;
                 min-height: 45vh;
             }}
 

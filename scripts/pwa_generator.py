@@ -33,44 +33,8 @@ def generate_manifest() -> str:
         "lang": "en-US",
         "icons": [
             {
-                "src": "/icons/icon-72.png",
-                "sizes": "72x72",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "/icons/icon-96.png",
-                "sizes": "96x96",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "/icons/icon-128.png",
-                "sizes": "128x128",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "/icons/icon-144.png",
-                "sizes": "144x144",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "/icons/icon-152.png",
-                "sizes": "152x152",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
                 "src": "/icons/icon-192.png",
                 "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "/icons/icon-384.png",
-                "sizes": "384x384",
                 "type": "image/png",
                 "purpose": "any maskable"
             },
@@ -81,22 +45,6 @@ def generate_manifest() -> str:
                 "purpose": "any maskable"
             }
         ],
-        "screenshots": [
-            {
-                "src": "/screenshots/desktop.png",
-                "sizes": "1280x720",
-                "type": "image/png",
-                "form_factor": "wide",
-                "label": "DailyTrending.info Desktop View"
-            },
-            {
-                "src": "/screenshots/mobile.png",
-                "sizes": "390x844",
-                "type": "image/png",
-                "form_factor": "narrow",
-                "label": "DailyTrending.info Mobile View"
-            }
-        ],
         "related_applications": [],
         "prefer_related_applications": False,
         "shortcuts": [
@@ -105,14 +53,14 @@ def generate_manifest() -> str:
                 "short_name": "Trends",
                 "description": "View today's trending topics",
                 "url": "/",
-                "icons": [{"src": "/icons/icon-96.png", "sizes": "96x96"}]
+                "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}]
             },
             {
                 "name": "Archive",
                 "short_name": "Archive",
                 "description": "Browse past daily designs",
                 "url": "/archive/",
-                "icons": [{"src": "/icons/icon-96.png", "sizes": "96x96"}]
+                "icons": [{"src": "/icons/icon-192.png", "sizes": "192x192"}]
             }
         ]
     }
