@@ -764,7 +764,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 </body>
 </html>'''
 
-    def _call_groq(self, prompt: str, max_tokens: int = 800, max_retries: int = 5) -> Optional[str]:
+    def _call_groq(self, prompt: str, max_tokens: int = 800, max_retries: int = 3) -> Optional[str]:
         """Call Groq API for content generation with proactive rate limiting and retry logic."""
         if not self.groq_key:
             # No Groq key, try OpenRouter directly
@@ -820,9 +820,9 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         # Free models to try in order of preference
         free_models = [
-            "google/gemini-2.0-flash-exp:free",
-            "nvidia/nemotron-3-nano-30b-a3b:free",
-            "mistralai/devstral-2512:free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "deepseek/deepseek-r1-0528:free",
+            "google/gemma-3-27b-it:free",
         ]
 
         for model in free_models:

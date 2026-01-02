@@ -1269,7 +1269,7 @@ Respond with ONLY a valid JSON object:
             return bool(self.openrouter_key)
         return False
 
-    def _call_groq(self, prompt: str, max_tokens: int = 1000, max_retries: int = 5) -> Optional[str]:
+    def _call_groq(self, prompt: str, max_tokens: int = 1000, max_retries: int = 3) -> Optional[str]:
         if not self.groq_key:
             return None
 
@@ -1315,9 +1315,9 @@ Respond with ONLY a valid JSON object:
 
         # Free models to try in order of preference
         free_models = [
-            "google/gemini-2.0-flash-exp:free",
-            "nvidia/nemotron-3-nano-30b-a3b:free",
-            "mistralai/devstral-2512:free",
+            "meta-llama/llama-3.3-70b-instruct:free",
+            "deepseek/deepseek-r1-0528:free",
+            "google/gemma-3-27b-it:free",
         ]
 
         for model in free_models:
