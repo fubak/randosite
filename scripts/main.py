@@ -99,11 +99,24 @@ class Pipeline:
             )
 
         # Check AI API keys for design generation
+        google_key = os.getenv('GOOGLE_AI_API_KEY')
         groq_key = os.getenv('GROQ_API_KEY')
         openrouter_key = os.getenv('OPENROUTER_API_KEY')
-        if not groq_key and not openrouter_key:
+
+        # Log available LLM providers
+        available_providers = []
+        if google_key:
+            available_providers.append("Google AI (primary)")
+        if openrouter_key:
+            available_providers.append("OpenRouter")
+        if groq_key:
+            available_providers.append("Groq")
+
+        if available_providers:
+            logger.info(f"LLM providers available: {', '.join(available_providers)}")
+        else:
             warnings.append(
-                "No AI API keys configured (GROQ_API_KEY or OPENROUTER_API_KEY). "
+                "No AI API keys configured (GOOGLE_AI_API_KEY, GROQ_API_KEY, or OPENROUTER_API_KEY). "
                 "Design will use preset themes."
             )
 

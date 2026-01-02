@@ -959,7 +959,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
     def _call_google_ai(self, prompt: str, max_tokens: int = 800, max_retries: int = 3) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
         if not self.google_key:
-            logger.debug("No Google AI API key available")
+            logger.info("No Google AI API key available, skipping to next provider")
             return None
 
         # Check rate limits before calling
