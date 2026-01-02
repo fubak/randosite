@@ -2643,6 +2643,87 @@ class WebsiteBuilder:
             color: var(--color-accent-secondary);
         }}
 
+        /* Editorial Article Card - Featured */
+        .editorial-article.featured {{
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--color-card-bg), rgba(var(--color-accent-rgb, 102, 126, 234), 0.1));
+            border: 2px solid var(--color-accent);
+            position: relative;
+            overflow: hidden;
+        }}
+
+        .editorial-article.featured::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, transparent 50%, rgba(var(--color-accent-rgb, 102, 126, 234), 0.15) 50%);
+            pointer-events: none;
+        }}
+
+        .editorial-article .editorial-mood {{
+            display: inline-block;
+            background: var(--color-accent);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }}
+
+        .editorial-article .editorial-title {{
+            font-family: var(--font-primary);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            color: var(--color-text);
+            line-height: 1.3;
+        }}
+
+        .editorial-article .editorial-summary {{
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--color-muted);
+            margin-bottom: 1.5rem;
+        }}
+
+        .editorial-article .editorial-footer {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+        }}
+
+        .editorial-article .editorial-wordcount {{
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }}
+
+        .editorial-article .editorial-link {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            background: var(--color-accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+        }}
+
+        .editorial-article .editorial-link:hover {{
+            background: var(--color-accent-secondary);
+            transform: translateX(4px);
+        }}
+
         @media (max-width: 768px) {{
             .enriched-grid {{
                 grid-template-columns: 1fr;
@@ -2654,6 +2735,10 @@ class WebsiteBuilder:
 
             .grokipedia-article .grok-title {{
                 font-size: 1.25rem;
+            }}
+
+            .editorial-article .editorial-title {{
+                font-size: 1.3rem;
             }}
         }}
 
@@ -3787,21 +3872,24 @@ class WebsiteBuilder:
     </section>"""
 
     def _build_enriched_content_section(self) -> str:
-        """Build the enriched content section with Word of Day and Grokipedia."""
-        if not self.ctx.enriched_content:
-            return ""
-
+        """Build the enriched content section with Editorial, Word of Day and Grokipedia."""
         sections = []
 
-        # Word of the Day
-        word_section = self._build_word_of_the_day()
-        if word_section:
-            sections.append(word_section)
+        # Today's Editorial Article (featured prominently)
+        editorial_section = self._build_editorial_article_card()
+        if editorial_section:
+            sections.append(editorial_section)
 
-        # Grokipedia Article
-        article_section = self._build_grokipedia_article()
-        if article_section:
-            sections.append(article_section)
+        # Word of the Day
+        if self.ctx.enriched_content:
+            word_section = self._build_word_of_the_day()
+            if word_section:
+                sections.append(word_section)
+
+            # Grokipedia Article
+            article_section = self._build_grokipedia_article()
+            if article_section:
+                sections.append(article_section)
 
         if not sections:
             return ""
@@ -3874,6 +3962,36 @@ class WebsiteBuilder:
                     {word_count_html}
                     <a href="{url}" class="grok-link" target="_blank" rel="noopener">
                         Read full article →
+                    </a>
+                </div>
+            </div>"""
+
+    def _build_editorial_article_card(self) -> str:
+        """Build the Today's Editorial Article card (featured prominently)."""
+        if not self.ctx.editorial_article:
+            return ""
+
+        article = self.ctx.editorial_article
+        title = html.escape(article.get('title', ''))
+        summary = html.escape(article.get('summary', ''))
+        url = html.escape(article.get('url', ''))
+        mood = html.escape(article.get('mood', 'informative'))
+        word_count = article.get('word_count', 0)
+
+        if not title or not url:
+            return ""
+
+        return f"""
+            <div class="enriched-card editorial-article featured">
+                <div class="enriched-card-icon">✍️</div>
+                <div class="enriched-card-label">Today's Editorial</div>
+                <span class="editorial-mood">{mood}</span>
+                <h3 class="editorial-title">{title}</h3>
+                <p class="editorial-summary">{summary}</p>
+                <div class="editorial-footer">
+                    <span class="editorial-wordcount">{word_count:,} words</span>
+                    <a href="{url}" class="editorial-link">
+                        Read analysis →
                     </a>
                 </div>
             </div>"""

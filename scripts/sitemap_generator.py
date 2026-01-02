@@ -9,6 +9,7 @@ Includes:
 - Priority and changefreq settings
 """
 
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -88,6 +89,25 @@ def generate_sitemap(
     ET.SubElement(articles_index, 'lastmod').text = today
     ET.SubElement(articles_index, 'changefreq').text = 'daily'
     ET.SubElement(articles_index, 'priority').text = '0.9'
+
+    # Auto-discover individual articles from /articles directory
+    if public_dir:
+        articles_dir = public_dir / 'articles'
+        if articles_dir.exists():
+            for metadata_file in articles_dir.rglob('metadata.json'):
+                try:
+                    with open(metadata_file) as f:
+                        article_meta = json.load(f)
+                    article_url = article_meta.get('url', '')
+                    article_date = article_meta.get('date', today)
+                    if article_url:
+                        article_page = ET.SubElement(urlset, 'url')
+                        ET.SubElement(article_page, 'loc').text = f"{base_url}{article_url}"
+                        ET.SubElement(article_page, 'lastmod').text = article_date
+                        ET.SubElement(article_page, 'changefreq').text = 'never'
+                        ET.SubElement(article_page, 'priority').text = '0.8'
+                except Exception:
+                    continue
 
     # Add extra URLs (articles, topic pages, etc.)
     if extra_urls:
