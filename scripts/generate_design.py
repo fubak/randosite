@@ -1387,11 +1387,11 @@ Respond with ONLY a valid JSON object:
                 def escape_string_contents(match):
                     s = match.group(0)
                     inner = s[1:-1]  # Remove quotes
-                    inner = inner.replace('\\', '\\\\')
+                    # Only escape raw control characters
                     inner = inner.replace('\n', '\\n')
                     inner = inner.replace('\r', '\\r')
                     inner = inner.replace('\t', '\\t')
-                    inner = re.sub(r'[\x00-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                    inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
                     return f'"{inner}"'
 
                 sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, payload)

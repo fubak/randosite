@@ -887,14 +887,13 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     # This preserves structural JSON formatting
                     def escape_string_contents(match):
                         s = match.group(0)
-                        # Escape control characters within the string
                         inner = s[1:-1]  # Remove quotes
-                        inner = inner.replace('\\', '\\\\')  # Escape existing backslashes first
+                        # Only escape raw control characters, not already-escaped sequences
                         inner = inner.replace('\n', '\\n')
                         inner = inner.replace('\r', '\\r')
                         inner = inner.replace('\t', '\\t')
-                        # Escape other control characters
-                        inner = re.sub(r'[\x00-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                        # Escape other control characters (except those already handled)
+                        inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
                         return f'"{inner}"'
 
                     # Match quoted strings (handles escaped quotes inside)
