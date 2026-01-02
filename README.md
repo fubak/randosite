@@ -32,6 +32,22 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 - **Keyword Extraction**: AI-powered keyword analysis with word cloud visualization
 - **Source Categorization**: Stories grouped by World News, Technology, Science, Entertainment, etc.
 - **Minimum Content Gate**: Requires 5+ trends before deployment to prevent broken sites
+- **Deduplication**: 80% similarity threshold prevents duplicate stories across sources
+
+### Editorial Content
+- **Daily Editorial Articles**: AI-generated 800-1200 word analysis synthesizing top stories
+- **8-Section Structure**: The Lead, What People Think, What's Actually Happening, Hidden Tradeoffs, Best Counterarguments, What This Means Next, Practical Framework, Conclusion
+- **Why This Matters**: Context explanations for top 3 stories
+- **Word of the Day**: Daily vocabulary with etymology and trend connection
+- **Grokipedia Integration**: Topic articles from Grok with excerpts
+- **AI Story Summaries**: Brief descriptions for trending stories
+- **Duplicate Prevention**: Only one editorial per day (prevents multiple articles on reruns)
+
+### Topic Pages
+- **/tech/**: Technology-focused trends (HackerNews, Lobsters, GitHub, tech RSS)
+- **/world/**: World news trends (News RSS, Wikipedia current events)
+- **/social/**: Viral and social content (Reddit, trending topics)
+- **Consistent Design**: Topic pages inherit daily design system
 
 ### Design System
 - **9 Design Personalities**: Brutalist, Editorial, Minimal, Corporate, Playful, Tech, News, Magazine, Dashboard
@@ -55,30 +71,56 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 - **Smooth Animations**: Configurable animation levels (none, subtle, moderate, playful, energetic)
 - **Scroll-Triggered Animations**: Cards animate in with staggered, varied effects (fade, slide, scale)
 - **Reduced Motion Support**: Respects `prefers-reduced-motion` system preference
-- **Keyboard Accessibility**: Skip-to-content link, visible focus indicators
+- **Keyboard Accessibility**: Skip-to-content link, visible focus indicators, arrow key navigation
 - **Touch-Friendly**: Minimum 44x44px touch targets for mobile
+- **Saved Stories**: Bookmark stories to localStorage for later reading
+- **Social Sharing**: Web Share API with clipboard fallback
+- **Reading Time**: Estimated reading time for story sections
+- **Velocity Indicators**: HOT (4+ sources), RISING (2-3 sources), STEADY badges
+- **Compare to Yesterday**: 🆕 New today, 🔥 Trending up, 📊 Continuing indicators
+- **High Contrast Mode**: Adapts to `prefers-contrast: high` preference
 
-### SEO & Analytics
+### SEO & LLM Optimization
 - **Dynamic Titles**: `DailyTrending.info - [Top Story]`
 - **Open Graph & Twitter Cards**: Rich social media previews
-- **Schema.org JSON-LD**: Structured data for search engines and AI
+- **Rich JSON-LD Schemas**: WebSite, WebPage, NewsArticle, ItemList, FAQPage, HowTo, BreadcrumbList
+- **SpeakableSpecification**: Voice assistant optimization for headlines
+- **Entity Linking**: Article mentions with structured entity data
+- **llms.txt**: LLM-friendly site documentation at `/llms.txt`
+- **RSS 2.0 Feed**: Full content with `content:encoded` and Dublin Core metadata
+- **XML Sitemap**: Auto-generated with articles, archives, and topic pages
 - **Google Analytics**: Built-in tracking support
 - **Semantic HTML**: Proper heading hierarchy and ARIA labels
 
 ### Automation
-- **Daily Regeneration**: GitHub Actions runs at 6 AM UTC and on every push to main
+- **Daily Regeneration**: GitHub Actions runs at 6 AM EST (11:00 UTC) and on every push to main
 - **Auto-merge PRs**: Claude branches automatically create and merge PRs
 - **Persistent Image Cache**: 7-day cache reduces API calls and provides fallback
-- **30-Day Archive**: Browse previous designs
+- **30-Day Archive**: Browse previous daily snapshots
+- **Permanent Article Archive**: Editorial articles retained indefinitely
 - **Zero Cost**: Runs entirely on free-tier services
+
+### PWA Support
+- **Service Worker**: Offline caching with network-first strategy
+- **Web App Manifest**: Installable as standalone app
+- **Offline Page**: Graceful offline experience
+- **App Shortcuts**: Quick access to Trends and Archive
+
+### AI Providers
+- **Google AI (Gemini)**: Primary provider with structured outputs for reliable JSON
+- **Groq**: Fast inference for design generation
+- **OpenRouter**: Backup provider with model flexibility
+- **Rate Limit Tracking**: Automatic API rate limit monitoring and backoff
+- **Multi-provider Fallback**: Automatic failover between providers
 
 ## Quick Start
 
 ### 1. Get API Keys
 
-**For AI Design (at least one):**
-- [Groq](https://console.groq.com) - Recommended, fastest
-- [OpenRouter](https://openrouter.ai) - Backup option
+**For AI Content Generation (at least one):**
+- [Google AI Studio](https://aistudio.google.com/apikey) - Recommended, structured outputs
+- [Groq](https://console.groq.com) - Fast inference
+- [OpenRouter](https://openrouter.ai) - Backup option with model flexibility
 
 **For Images (recommended):**
 - [Pexels](https://www.pexels.com/api/) - 200 requests/hour free
@@ -90,10 +132,11 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 2. Go to **Settings > Pages** and set Source to **GitHub Actions**
 3. Go to **Settings > Secrets and variables > Actions**
 4. Add your API keys as secrets:
-   - `GROQ_API_KEY`
-   - `OPENROUTER_API_KEY` (optional)
-   - `PEXELS_API_KEY`
-   - `UNSPLASH_ACCESS_KEY` (optional)
+   - `GOOGLE_AI_API_KEY` - Primary AI provider (recommended)
+   - `GROQ_API_KEY` - Design generation
+   - `OPENROUTER_API_KEY` (optional) - Backup AI provider
+   - `PEXELS_API_KEY` - Image source
+   - `UNSPLASH_ACCESS_KEY` (optional) - Backup image source
 
 ### 3. Configure Repository Settings
 
@@ -130,16 +173,33 @@ daily-trending-info/
 │   ├── auto-merge-claude.yml     # Auto-merge Claude branches via PR
 │   └── update-readme.yml         # Auto-update README changelog on push
 ├── scripts/
+│   ├── main.py                   # Pipeline orchestrator (14 steps)
 │   ├── collect_trends.py         # 12-source trend aggregator
 │   ├── fetch_images.py           # Pexels + Unsplash with persistent cache
 │   ├── generate_design.py        # Design system with 9 personalities
 │   ├── build_website.py          # HTML/CSS/JS builder with theming
+│   ├── enrich_content.py         # Word of Day, Grokipedia, summaries
+│   ├── editorial_generator.py    # Daily editorial articles
+│   ├── generate_rss.py           # RSS 2.0 with content:encoded
+│   ├── sitemap_generator.py      # XML sitemap with articles
+│   ├── pwa_generator.py          # Service worker, manifest, offline
 │   ├── archive_manager.py        # 30-day archive system
-│   └── main.py                   # Pipeline orchestrator with quality gates
-├── public/                       # Generated website (created by workflow)
+│   └── config.py                 # All magic numbers, timeouts, limits
+├── public/                       # Generated website
+│   ├── index.html                # Self-contained single-file site
+│   ├── articles/                 # Editorial articles (permanent)
+│   ├── tech/, world/, social/    # Topic pages
+│   ├── archive/                  # 30-day snapshots
+│   ├── feed.xml                  # RSS feed
+│   ├── sitemap.xml               # XML sitemap
+│   ├── llms.txt                  # LLM-friendly documentation
+│   ├── manifest.json             # PWA manifest
+│   └── sw.js                     # Service worker
 ├── data/
 │   ├── image_cache/              # Persistent image cache (7-day TTL)
 │   └── *.json                    # Pipeline data
+├── tests/                        # Test suite
+├── CLAUDE.md                     # Claude Code instructions
 ├── requirements.txt
 ├── CNAME                         # Custom domain
 └── README.md
@@ -251,6 +311,31 @@ Animation intensity adjusts based on detected news sentiment:
 - **Touch Targets**: Minimum 44×44px interactive areas
 - **Reduced Motion**: Respects system preference for reduced motion
 
+## Editorial Articles
+
+Each day, an AI-generated editorial article synthesizes the top stories into a cohesive analysis.
+
+### Article Structure (8 Required Sections)
+
+| Section | Purpose |
+|---------|---------|
+| **The Lead** | Hook with surprising insight + thesis statement |
+| **What People Think** | Steelman the conventional wisdom |
+| **What's Actually Happening** | Contrarian/deeper analysis with evidence |
+| **The Hidden Tradeoffs** | Unspoken costs and who wins/loses |
+| **The Best Counterarguments** | Steelman strongest objection |
+| **What This Means Next** | Concrete predictions with timeframes |
+| **Practical Framework** | Actionable mental model for readers |
+| **Conclusion** | Circle back to hook with memorable takeaway |
+
+### Article Features
+- **URL Structure**: `/articles/YYYY/MM/DD/slug/`
+- **Permanent Retention**: Articles never expire (unlike daily snapshots)
+- **JSON-LD Schema**: NewsArticle structured data for SEO
+- **Related Articles**: Links to previous editorials
+- **Word Count**: 800-1200 words per article
+- **Mood Indicator**: Transformative, Optimistic, Analytical, etc.
+
 ## Local Development
 
 ```bash
@@ -334,7 +419,9 @@ The site includes Google Analytics (G-XZNXRW8S7L). To use your own:
 
 | Service | Free Limit | Daily Usage | Safety Margin |
 |---------|-----------|-------------|---------------|
+| Google AI (Gemini) | 15 req/min | 5-10 requests | 90x |
 | Groq | ~6,000 req/day | 1-3 requests | 2000x |
+| OpenRouter | Varies by model | Backup only | N/A |
 | Pexels | 200 req/hour | ~10 requests | 20x |
 | Unsplash | 50 req/hour | Backup only | N/A |
 | GitHub Actions | 2,000 min/month | ~150 min/month | 13x |
@@ -348,5 +435,5 @@ MIT License - Feel free to use and modify.
 
 - Trend data from various public APIs and RSS feeds
 - Images from [Pexels](https://pexels.com) and [Unsplash](https://unsplash.com)
-- AI design generation via [Groq](https://groq.com) and [OpenRouter](https://openrouter.ai)
+- AI content generation via [Google AI](https://ai.google.dev), [Groq](https://groq.com), and [OpenRouter](https://openrouter.ai)
 - Built with [Claude Code](https://claude.ai)
