@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-02 23:50 UTC | [feat: Use article images from RSS feeds for hero sections](https://github.com/fubak/daily-trending-info/commit/fc56c55d6625a6009bf5083cd7d6c85c0e95792f) |
 | 2026-01-02 22:17 UTC | [feat: Add Pixabay + Lorem Picsum image sources, prevent image reuse](https://github.com/fubak/daily-trending-info/commit/de124dc0d2df37067dc8fecbf06388f38bb4e5e8) |
 | 2026-01-02 21:42 UTC | [fix: Include headline keywords when fetching images for topic pages](https://github.com/fubak/daily-trending-info/commit/0e943a29b9521e78050b397c6c7404875cf1590f) |
 | 2026-01-02 21:34 UTC | [fix: Match topic hero images to headline keywords, not just category](https://github.com/fubak/daily-trending-info/commit/73765607e526837419118a415f78db6d873fb9a4) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-02 19:48 UTC | [feat: Add unique hero images for each topic page](https://github.com/fubak/daily-trending-info/commit/3151fa55f65b964289f930bd09f52eb89c4edbff) |
 | 2026-01-02 19:21 UTC | [feat: Add shared header/footer to Articles and hero images to topics](https://github.com/fubak/daily-trending-info/commit/503cdbb85230a1c9d6d6f698dd383908c81dff34) |
 | 2026-01-02 18:45 UTC | [fix: Update header nav with Home, topic pages, and Articles](https://github.com/fubak/daily-trending-info/commit/543c35c609e1fafb07ec779d1b0f1af3727561a5) |
-| 2026-01-02 18:42 UTC | [feat: Add Mistral AI provider for improved fallback chain](https://github.com/fubak/daily-trending-info/commit/a3b9af95e35377ddcfc00de9110d3a151cb8bf83) |
 <!-- CHANGELOG_END -->
 
 ## Features
