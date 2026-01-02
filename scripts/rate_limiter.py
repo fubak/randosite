@@ -165,7 +165,7 @@ class RateLimiter:
 
                 # Check if we're running low on requests
                 if requests_remaining is not None and requests_remaining < 5:
-                    status.wait_seconds = self.MAX_RETRY_WAIT if low on requests
+                    status.wait_seconds = self.MAX_RETRY_WAIT
                     logger.warning(f"OpenRouter: Only {requests_remaining} requests remaining")
 
                 # Check if usage is approaching limit
