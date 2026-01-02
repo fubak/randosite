@@ -236,12 +236,18 @@ class ContentEnricher:
                 try:
                     return json.loads(json_str)
                 except json.JSONDecodeError:
-                    # Sanitize control characters that break JSON parsing
-                    sanitized = json_str
-                    sanitized = re.sub(r'(?<!\\)\n', '\\n', sanitized)
-                    sanitized = re.sub(r'(?<!\\)\r', '\\r', sanitized)
-                    sanitized = re.sub(r'(?<!\\)\t', '\\t', sanitized)
-                    sanitized = re.sub(r'[\x00-\x1f]', lambda m: f'\\u{ord(m.group()):04x}' if m.group() not in '\n\r\t' else m.group(), sanitized)
+                    # Escape control characters only INSIDE quoted strings
+                    def escape_string_contents(match):
+                        s = match.group(0)
+                        inner = s[1:-1]  # Remove quotes
+                        inner = inner.replace('\\', '\\\\')
+                        inner = inner.replace('\n', '\\n')
+                        inner = inner.replace('\r', '\\r')
+                        inner = inner.replace('\t', '\\t')
+                        inner = re.sub(r'[\x00-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                        return f'"{inner}"'
+
+                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
                     return json.loads(sanitized)
         except (json.JSONDecodeError, Exception) as e:
             logger.warning(f"JSON parse error: {e}")

@@ -879,22 +879,26 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             json_match = re.search(r'\{.*\}', response, re.DOTALL)
             if json_match:
                 json_str = json_match.group()
-                # Sanitize control characters that break JSON parsing
-                # Replace unescaped newlines/tabs inside strings with escaped versions
                 # First, try parsing as-is
                 try:
                     return json.loads(json_str)
                 except json.JSONDecodeError:
-                    # Escape control characters within string values
-                    # This handles cases where LLM outputs raw newlines in JSON strings
-                    sanitized = json_str
-                    # Replace actual newlines/tabs with escaped versions
-                    # But only within string values (between quotes)
-                    sanitized = re.sub(r'(?<!\\)\n', '\\n', sanitized)
-                    sanitized = re.sub(r'(?<!\\)\r', '\\r', sanitized)
-                    sanitized = re.sub(r'(?<!\\)\t', '\\t', sanitized)
-                    # Also handle other control characters
-                    sanitized = re.sub(r'[\x00-\x1f]', lambda m: f'\\u{ord(m.group()):04x}' if m.group() not in '\n\r\t' else m.group(), sanitized)
+                    # Escape control characters only INSIDE quoted strings
+                    # This preserves structural JSON formatting
+                    def escape_string_contents(match):
+                        s = match.group(0)
+                        # Escape control characters within the string
+                        inner = s[1:-1]  # Remove quotes
+                        inner = inner.replace('\\', '\\\\')  # Escape existing backslashes first
+                        inner = inner.replace('\n', '\\n')
+                        inner = inner.replace('\r', '\\r')
+                        inner = inner.replace('\t', '\\t')
+                        # Escape other control characters
+                        inner = re.sub(r'[\x00-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                        return f'"{inner}"'
+
+                    # Match quoted strings (handles escaped quotes inside)
+                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
                     return json.loads(sanitized)
         except (json.JSONDecodeError, Exception) as e:
             logger.warning(f"JSON parse error: {e}")
