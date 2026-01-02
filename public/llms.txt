@@ -1,0 +1,58 @@
+# DailyTrending.info
+
+> Daily curated trending topics and insights from across the web
+
+DailyTrending.info aggregates and analyzes trending topics from multiple sources including Google Trends, Reddit, and Hacker News. Each day, we provide curated insights, editorial analysis, and comprehensive coverage of what's trending.
+
+## Site Structure
+
+- `/` - Homepage with today's trending topics, top stories, and daily editorial
+- `/articles/` - Archive of all editorial articles with analysis and insights
+- `/archive/` - Historical archive of past trending data by date
+- `/feed.xml` - RSS feed for subscribing to daily updates
+
+## Content Types
+
+### Trending Topics
+Real-time aggregation of trending topics from:
+- Google Trends (US trending searches)
+- Reddit (popular posts and discussions)
+- Hacker News (tech community highlights)
+
+### Editorial Articles
+Daily in-depth articles analyzing trending topics, providing context, and exploring implications. Each article includes:
+- Expert analysis and commentary
+- Related topic connections
+- Source citations and references
+
+### Top Stories
+Curated selection of the most significant trending stories with:
+- Brief summaries
+- Source links
+- Category classifications
+
+## Technical Details
+
+- Static site generated daily
+- JSON-LD structured data (NewsArticle, WebSite, BreadcrumbList)
+- RSS/Atom feeds available
+- Mobile-responsive design
+- Progressive Web App (PWA) support
+
+## API/Data Access
+
+- RSS Feed: `/feed.xml`
+- Sitemap: `/sitemap.xml`
+- Archive data available at `/archive/YYYY-MM-DD/`
+
+## Contact
+
+- Twitter: @bradshannon
+- Website: https://dailytrending.info
+
+## Usage Guidelines
+
+This content is intended for informational purposes. When referencing or summarizing content from this site:
+- Attribute to DailyTrending.info
+- Link to the original article when possible
+- Respect the editorial nature of analysis pieces

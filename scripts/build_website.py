@@ -386,12 +386,18 @@ class WebsiteBuilder:
         return description
 
     def _build_og_image(self) -> str:
-        """Build Open Graph image meta tag."""
+        """Build Open Graph image meta tags with dimensions."""
         if self._hero_image:
             url = self._hero_image.get('url_large') or self._hero_image.get('url_medium', '')
             if url:
-                return f'<meta property="og:image" content="{html.escape(url)}">'
-        return '<meta property="og:image" content="https://dailytrending.info/og-image.png">'
+                return f'''<meta property="og:image" content="{html.escape(url)}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Today's trending topics on DailyTrending.info">'''
+        return '''<meta property="og:image" content="https://dailytrending.info/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="DailyTrending.info - What's trending today">'''
 
     def _build_twitter_image(self) -> str:
         """Build Twitter Card image meta tag."""
@@ -406,15 +412,17 @@ class WebsiteBuilder:
         date_str = datetime.now().strftime("%Y-%m-%d")
         iso_date = datetime.now().isoformat()
 
-        # Get top stories for article list
+        # Get top stories for article list (NewsArticle for news content)
         top_stories = []
         for i, trend in enumerate(self.ctx.trends[:10]):
             story = {
-                "@type": "Article",
+                "@type": "NewsArticle",
                 "position": i + 1,
+                "headline": trend.get('title', 'Untitled'),
                 "name": trend.get('title', 'Untitled'),
                 "url": trend.get('url', ''),
                 "description": trend.get('description', '')[:200] if trend.get('description') else '',
+                "datePublished": date_str,
             }
             top_stories.append(story)
 
@@ -677,6 +685,8 @@ class WebsiteBuilder:
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@bradshannon">
+    <meta name="twitter:creator" content="@bradshannon">
     <meta name="twitter:url" content="https://dailytrending.info/">
     <meta name="twitter:title" content="{html.escape(page_title)}">
     <meta name="twitter:description" content="{html.escape(meta_description)}">
@@ -762,14 +772,27 @@ class WebsiteBuilder:
 </html>"""
 
     def _build_fonts(self) -> str:
-        """Build Google Fonts link."""
+        """Build Google Fonts link with preload hints."""
         primary = self.design.get('font_primary', 'Space Grotesk').replace(' ', '+')
         secondary = self.design.get('font_secondary', 'Inter').replace(' ', '+')
 
+        # Preload hero image if available
+        hero_preload = ""
+        if self._hero_image:
+            img_url = self._hero_image.get('url_large', self._hero_image.get('url_medium', ''))
+            if img_url and img_url.startswith('https://'):
+                hero_preload = f'\n    <link rel="preload" as="image" href="{html.escape(img_url)}">'
+
         return f"""
+    <!-- DNS Prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+
+    <!-- Font preconnect and load -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family={primary}:wght@400;500;600;700;800;900&family={secondary}:wght@400;500;600&display=swap" rel="stylesheet">"""
+    <link href="https://fonts.googleapis.com/css2?family={primary}:wght@400;500;600;700;800;900&family={secondary}:wght@400;500;600&display=swap" rel="stylesheet">{hero_preload}"""
 
     def _build_styles(self) -> str:
         """Build all CSS styles with layout variants."""
@@ -3545,8 +3568,13 @@ class WebsiteBuilder:
         # Build extra elements based on hero style
         extra_elements = self._build_hero_extras()
 
+        # Build accessible alt text for hero background
+        hero_alt = f"Trending topics visualization for {self.ctx.generated_at}"
+        if self._hero_image:
+            hero_alt = html.escape(self._hero_image.get('alt', '') or self._hero_image.get('description', '') or hero_alt)
+
         return f"""
-    <header class="hero">
+    <header class="hero" role="img" aria-label="{hero_alt}">
         {extra_elements}
         <div class="hero-content">
             <div class="hero-eyebrow">

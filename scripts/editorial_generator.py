@@ -431,8 +431,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         bg_color = design.get('background_color', '#0f0f23') if design else '#0f0f23'
         text_color = design.get('text_color', '#ffffff') if design else '#ffffff'
 
+        # Get related articles for internal linking
+        related_articles = self._get_related_articles(article.date, article.slug, limit=3)
+
         # Generate HTML
-        html = self._generate_article_html(article, primary_color, accent_color, bg_color, text_color)
+        html = self._generate_article_html(article, primary_color, accent_color, bg_color, text_color, related_articles)
 
         # Save index.html
         (article_dir / "index.html").write_text(html, encoding='utf-8')
@@ -452,7 +455,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         primary_color: str,
         accent_color: str,
         bg_color: str,
-        text_color: str
+        text_color: str,
+        related_articles: Optional[List[Dict]] = None
     ) -> str:
         """Generate full HTML page for an editorial article."""
         date_formatted = datetime.strptime(article.date, "%Y-%m-%d").strftime("%B %d, %Y")
@@ -460,6 +464,30 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         # Escape for HTML attributes
         title_escaped = article.title.replace('"', '&quot;')
         summary_escaped = article.summary.replace('"', '&quot;')
+
+        # Build related articles HTML
+        related_html = ""
+        if related_articles:
+            related_cards = []
+            for rel in related_articles:
+                rel_date = datetime.strptime(rel['date'], "%Y-%m-%d").strftime("%B %d, %Y")
+                rel_title = rel.get('title', '').replace('<', '&lt;').replace('>', '&gt;')
+                rel_summary = (rel.get('summary', '') or '')[:100]
+                if len(rel.get('summary', '')) > 100:
+                    rel_summary += '...'
+                related_cards.append(f'''
+                <a href="{rel.get('url', '')}" class="related-card">
+                    <time datetime="{rel['date']}">{rel_date}</time>
+                    <h4>{rel_title}</h4>
+                    <p>{rel_summary}</p>
+                </a>''')
+            related_html = f'''
+            <div class="related-articles">
+                <h3>More Analysis</h3>
+                <div class="related-grid">
+                    {''.join(related_cards)}
+                </div>
+            </div>'''
 
         return f'''<!DOCTYPE html>
 <html lang="en">
@@ -476,37 +504,66 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
     <meta property="og:description" content="{summary_escaped}">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://dailytrending.info{article.url}">
+    <meta property="og:site_name" content="DailyTrending.info">
+    <meta property="og:image" content="https://dailytrending.info/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="article:published_time" content="{article.date}T06:00:00Z">
+    <meta property="article:author" content="https://dailytrending.info">
+    <meta property="article:section" content="Analysis">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@bradshannon">
+    <meta name="twitter:creator" content="@bradshannon">
     <meta name="twitter:title" content="{title_escaped}">
     <meta name="twitter:description" content="{summary_escaped}">
+    <meta name="twitter:image" content="https://dailytrending.info/og-image.png">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
     {{
         "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": "{title_escaped}",
-        "description": "{summary_escaped}",
-        "datePublished": "{article.date}T06:00:00Z",
-        "dateModified": "{article.date}T06:00:00Z",
-        "author": {{
-            "@type": "Organization",
-            "name": "DailyTrending.info"
-        }},
-        "publisher": {{
-            "@type": "Organization",
-            "name": "DailyTrending.info",
-            "url": "https://dailytrending.info"
-        }},
-        "mainEntityOfPage": {{
-            "@type": "WebPage",
-            "@id": "https://dailytrending.info{article.url}"
-        }},
-        "wordCount": {article.word_count},
-        "keywords": {json.dumps(article.keywords)}
+        "@graph": [
+            {{
+                "@type": "NewsArticle",
+                "@id": "https://dailytrending.info{article.url}#article",
+                "headline": "{title_escaped}",
+                "description": "{summary_escaped}",
+                "datePublished": "{article.date}T06:00:00Z",
+                "dateModified": "{article.date}T06:00:00Z",
+                "author": {{
+                    "@type": "Organization",
+                    "name": "DailyTrending.info",
+                    "url": "https://dailytrending.info"
+                }},
+                "publisher": {{
+                    "@type": "Organization",
+                    "name": "DailyTrending.info",
+                    "url": "https://dailytrending.info",
+                    "logo": {{
+                        "@type": "ImageObject",
+                        "url": "https://dailytrending.info/icons/icon-512.png"
+                    }}
+                }},
+                "mainEntityOfPage": {{
+                    "@type": "WebPage",
+                    "@id": "https://dailytrending.info{article.url}"
+                }},
+                "wordCount": {article.word_count},
+                "keywords": {json.dumps(article.keywords)},
+                "articleSection": "Analysis",
+                "inLanguage": "en-US"
+            }},
+            {{
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {{"@type": "ListItem", "position": 1, "name": "Home", "item": "https://dailytrending.info/"}},
+                    {{"@type": "ListItem", "position": 2, "name": "Articles", "item": "https://dailytrending.info/articles/"}},
+                    {{"@type": "ListItem", "position": 3, "name": "{title_escaped}"}}
+                ]
+            }}
+        ]
     }}
     </script>
 
@@ -692,6 +749,61 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             color: var(--text-muted);
         }}
 
+        /* Related Articles */
+        .related-articles {{
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }}
+
+        .related-articles h3 {{
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }}
+
+        .related-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }}
+
+        .related-card {{
+            display: block;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }}
+
+        .related-card:hover {{
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }}
+
+        .related-card time {{
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }}
+
+        .related-card h4 {{
+            font-size: 0.95rem;
+            margin: 0.5rem 0;
+            color: var(--text);
+            line-height: 1.4;
+        }}
+
+        .related-card p {{
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.5;
+        }}
+
         @media (max-width: 640px) {{
             .container {{
                 padding: 1rem;
@@ -750,6 +862,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             <div class="keywords">
                 {''.join(f'<span class="keyword">{kw}</span>' for kw in article.keywords)}
             </div>
+
+            {related_html}
 
             <p style="margin-top: 2rem;">
                 <a href="/" class="back-link">
@@ -936,6 +1050,21 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         # Sort by date descending
         articles.sort(key=lambda x: x.get('date', ''), reverse=True)
         return articles
+
+    def _get_related_articles(self, current_date: str, current_slug: str, limit: int = 3) -> List[Dict]:
+        """Get related articles for internal linking (excludes current article)."""
+        all_articles = self.get_all_articles()
+        related = []
+
+        for article in all_articles:
+            # Skip current article
+            if article.get('date') == current_date and article.get('slug') == current_slug:
+                continue
+            related.append(article)
+            if len(related) >= limit:
+                break
+
+        return related
 
     def generate_articles_index(self, design: Optional[Dict] = None) -> str:
         """Generate an index page listing all articles."""
