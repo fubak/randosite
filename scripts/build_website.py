@@ -2766,11 +2766,28 @@ class WebsiteBuilder:
 
         /* Editorial Article Card - Featured */
         .editorial-article.featured {{
-            grid-column: 1 / -1;
             background: linear-gradient(135deg, var(--color-card-bg), rgba(var(--color-accent-rgb, 102, 126, 234), 0.1));
             border: 2px solid var(--color-accent);
             position: relative;
             overflow: hidden;
+        }}
+
+        /* Placeholder Cards - Muted appearance */
+        .placeholder-card {{
+            opacity: 0.7;
+            border-style: dashed !important;
+        }}
+
+        .placeholder-card .wotd-word,
+        .placeholder-card .grok-title,
+        .placeholder-card .editorial-title {{
+            color: var(--color-muted);
+        }}
+
+        .placeholder-note {{
+            font-size: 0.75rem;
+            color: var(--color-muted);
+            font-style: italic;
         }}
 
         .editorial-article.featured::before {{
@@ -4094,24 +4111,32 @@ class WebsiteBuilder:
         """Build the enriched content section with Editorial, Word of Day and Grokipedia."""
         sections = []
 
-        # Today's Editorial Article (featured prominently)
-        editorial_section = self._build_editorial_article_card()
-        if editorial_section:
-            sections.append(editorial_section)
-
-        # Word of the Day
+        # Word of the Day (always show, with placeholder if missing)
         if self.ctx.enriched_content:
             word_section = self._build_word_of_the_day()
             if word_section:
                 sections.append(word_section)
+            else:
+                sections.append(self._build_word_of_the_day_placeholder())
+        else:
+            sections.append(self._build_word_of_the_day_placeholder())
 
-            # Grokipedia Article
+        # Grokipedia Article (always show, with placeholder if missing)
+        if self.ctx.enriched_content:
             article_section = self._build_grokipedia_article()
             if article_section:
                 sections.append(article_section)
+            else:
+                sections.append(self._build_grokipedia_placeholder())
+        else:
+            sections.append(self._build_grokipedia_placeholder())
 
-        if not sections:
-            return ""
+        # Today's Editorial Article (always show, with placeholder if missing)
+        editorial_section = self._build_editorial_article_card()
+        if editorial_section:
+            sections.append(editorial_section)
+        else:
+            sections.append(self._build_editorial_placeholder())
 
         return f"""
     <section class="section enriched-content" id="daily-features">
@@ -4212,6 +4237,45 @@ class WebsiteBuilder:
                     <a href="{url}" class="editorial-link">
                         Read analysis →
                     </a>
+                </div>
+            </div>"""
+
+    def _build_word_of_the_day_placeholder(self) -> str:
+        """Build placeholder card when Word of the Day is unavailable."""
+        return """
+            <div class="enriched-card word-of-the-day placeholder-card">
+                <div class="enriched-card-icon">📚</div>
+                <div class="enriched-card-label">Word of the Day</div>
+                <h3 class="wotd-word">Coming Soon</h3>
+                <span class="wotd-pos">placeholder</span>
+                <p class="wotd-definition">Today's word of the day is being prepared. Check back shortly for an interesting vocabulary addition related to today's trending topics.</p>
+                <p class="wotd-why placeholder-note">Generated daily from trending content</p>
+            </div>"""
+
+    def _build_grokipedia_placeholder(self) -> str:
+        """Build placeholder card when Grokipedia article is unavailable."""
+        return """
+            <div class="enriched-card grokipedia-article placeholder-card">
+                <div class="enriched-card-icon">📖</div>
+                <div class="enriched-card-label">From Grokipedia</div>
+                <h3 class="grok-title">Article Loading</h3>
+                <p class="grok-summary">Today's featured encyclopedia article is being curated. We select articles related to trending topics to provide deeper context and background information.</p>
+                <div class="grok-footer">
+                    <span class="grok-wordcount placeholder-note">Updated daily</span>
+                </div>
+            </div>"""
+
+    def _build_editorial_placeholder(self) -> str:
+        """Build placeholder card when Editorial is unavailable."""
+        return """
+            <div class="enriched-card editorial-article placeholder-card">
+                <div class="enriched-card-icon">✍️</div>
+                <div class="enriched-card-label">Today's Editorial</div>
+                <span class="editorial-mood">pending</span>
+                <h3 class="editorial-title">Editorial In Progress</h3>
+                <p class="editorial-summary">Our daily editorial analysis is being crafted. Each day we provide in-depth commentary on the most significant trending stories, offering context and insights.</p>
+                <div class="editorial-footer">
+                    <span class="editorial-wordcount placeholder-note">Coming soon</span>
                 </div>
             </div>"""
 
