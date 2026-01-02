@@ -578,6 +578,16 @@ class Pipeline:
     <meta property="og:title" content="{config['title']} | DailyTrending.info">
     <meta property="og:description" content="{config['description']}">
     <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dailytrending.info/{config['slug']}/">
+    <meta property="og:image" content="https://dailytrending.info/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@bradshannon">
+    <meta name="twitter:creator" content="@bradshannon">
+    <meta name="twitter:title" content="{config['title']} | DailyTrending.info">
+    <meta name="twitter:description" content="{config['description']}">
+    <meta name="twitter:image" content="https://dailytrending.info/og-image.png">
 
     <script type="application/ld+json">
     {{

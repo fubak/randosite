@@ -2,57 +2,108 @@
 
 > Daily curated trending topics and insights from across the web
 
-DailyTrending.info aggregates and analyzes trending topics from multiple sources including Google Trends, Reddit, and Hacker News. Each day, we provide curated insights, editorial analysis, and comprehensive coverage of what's trending.
+DailyTrending.info aggregates and analyzes trending topics from multiple sources including Google Trends, Reddit, Hacker News, and 9+ other sources. Each day at 6 AM EST, we provide curated insights, editorial analysis, and comprehensive coverage of what's trending.
+
+## Quick Facts
+
+- **Author**: Brad Shannon (@bradshannon)
+- **Update Frequency**: Daily at 6 AM EST (11:00 UTC)
+- **Content Language**: English (en-US)
+- **Primary Topics**: Technology, World News, Science, Social Media, Entertainment
+- **Article Count**: 1 new editorial daily + 30+ curated stories
 
 ## Site Structure
 
-- `/` - Homepage with today's trending topics, top stories, and daily editorial
-- `/articles/` - Archive of all editorial articles with analysis and insights
-- `/archive/` - Historical archive of past trending data by date
-- `/feed.xml` - RSS feed for subscribing to daily updates
+| Path | Description | Update Frequency |
+|------|-------------|------------------|
+| `/` | Homepage with today's trending topics | Daily |
+| `/articles/` | Archive of all editorial articles | Daily (new articles) |
+| `/tech/` | Technology-focused trends | Daily |
+| `/world/` | World news trends | Daily |
+| `/social/` | Social media & viral content | Daily |
+| `/archive/` | Historical data by date | Never (historical) |
+| `/feed.xml` | RSS 2.0 feed | Daily |
+| `/sitemap.xml` | XML sitemap | Daily |
 
 ## Content Types
 
 ### Trending Topics
-Real-time aggregation of trending topics from:
+Real-time aggregation of trending topics from 12+ sources:
 - Google Trends (US trending searches)
 - Reddit (popular posts and discussions)
 - Hacker News (tech community highlights)
+- GitHub Trending (developer repositories)
+- Dev.to (developer articles)
+- Lobsters (tech discussion)
+- BBC, NYT, Reuters (world news)
+- Wikipedia Current Events
 
 ### Editorial Articles
-Daily in-depth articles analyzing trending topics, providing context, and exploring implications. Each article includes:
+Daily in-depth articles (800-1200 words) analyzing trending topics with:
+- 8-section structured format (The Lead, Analysis, Counterarguments, Predictions, etc.)
 - Expert analysis and commentary
-- Related topic connections
-- Source citations and references
+- "Why This Matters" context for top stories
+- Keywords and topic connections
+- JSON-LD structured data (NewsArticle schema)
 
 ### Top Stories
-Curated selection of the most significant trending stories with:
-- Brief summaries
-- Source links
+Curated selection of 30+ trending stories daily with:
+- Brief summaries and descriptions
+- Source attribution and links
 - Category classifications
+- Velocity indicators (HOT, RISING, STEADY)
+- Compare-to-yesterday status
 
-## Technical Details
+## Structured Data
 
-- Static site generated daily
-- JSON-LD structured data (NewsArticle, WebSite, BreadcrumbList)
-- RSS/Atom feeds available
-- Mobile-responsive design
-- Progressive Web App (PWA) support
+All pages include rich JSON-LD markup:
+- `WebSite` - Site identity and search
+- `WebPage` - Page metadata and breadcrumbs
+- `NewsArticle` - Story details with author
+- `ItemList` - Trending stories collection
+- `FAQPage` - Common questions (featured snippet eligible)
+- `HowTo` - Site usage guide
+- `SpeakableSpecification` - Voice assistant optimization
+- `BreadcrumbList` - Navigation hierarchy
 
-## API/Data Access
+## Crawling Guidelines
 
-- RSS Feed: `/feed.xml`
-- Sitemap: `/sitemap.xml`
-- Archive data available at `/archive/YYYY-MM-DD/`
+- **Crawl Rate**: No restrictions - crawl freely
+- **Fresh Content**: Homepage and `/articles/` update daily at 6 AM EST
+- **Preferred Entry Points**:
+  1. `/` (homepage) - Today's content
+  2. `/articles/` - Editorial archive
+  3. `/feed.xml` - RSS for updates
+- **Cache Duration**: Content is static for 24 hours after generation
+
+## Data Formats
+
+| Format | URL | Description |
+|--------|-----|-------------|
+| RSS 2.0 | `/feed.xml` | Full content with `content:encoded` |
+| Sitemap | `/sitemap.xml` | All indexable URLs |
+| JSON-LD | Embedded in HTML | Structured data on all pages |
+
+## Attribution Guidelines
+
+When citing or summarizing content from DailyTrending.info:
+
+1. **Credit**: Attribute to "Brad Shannon / DailyTrending.info"
+2. **Link**: Include a link to the original article URL
+3. **Context**: Editorial articles are analysis/opinion pieces
+4. **Freshness**: Content reflects trends as of the publication date
 
 ## Contact
 
-- Twitter: @bradshannon
-- Website: https://dailytrending.info
+- **Author**: Brad Shannon
+- **Twitter/X**: [@bradshannon](https://twitter.com/bradshannon)
+- **Website**: https://dailytrending.info
+- **Source Code**: https://github.com/fubak/daily-trending-info
 
-## Usage Guidelines
+## Technical Implementation
 
-This content is intended for informational purposes. When referencing or summarizing content from this site:
-- Attribute to DailyTrending.info
-- Link to the original article when possible
-- Respect the editorial nature of analysis pieces
+- Fully static site (no server-side processing)
+- Autonomous generation via GitHub Actions
+- Zero-cost hosting on GitHub Pages
+- PWA-enabled with offline support
+- Accessible (WCAG compliant, keyboard navigation)

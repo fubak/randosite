@@ -515,7 +515,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="article:published_time" content="{article.date}T06:00:00Z">
-    <meta property="article:author" content="https://dailytrending.info">
+    <meta property="article:author" content="https://twitter.com/bradshannon">
     <meta property="article:section" content="Analysis">
 
     <!-- Twitter Card -->
@@ -539,9 +539,10 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 "datePublished": "{article.date}T06:00:00Z",
                 "dateModified": "{article.date}T06:00:00Z",
                 "author": {{
-                    "@type": "Organization",
-                    "name": "DailyTrending.info",
-                    "url": "https://dailytrending.info"
+                    "@type": "Person",
+                    "name": "Brad Shannon",
+                    "url": "https://twitter.com/bradshannon",
+                    "sameAs": ["https://twitter.com/bradshannon"]
                 }},
                 "publisher": {{
                     "@type": "Organization",

@@ -90,6 +90,9 @@ def generate_sitemap(
     ET.SubElement(articles_index, 'changefreq').text = 'daily'
     ET.SubElement(articles_index, 'priority').text = '0.9'
 
+    # Track added URLs to prevent duplicates
+    added_urls = set()
+
     # Auto-discover individual articles from /articles directory
     if public_dir:
         articles_dir = public_dir / 'articles'
@@ -101,29 +104,38 @@ def generate_sitemap(
                     article_url = article_meta.get('url', '')
                     article_date = article_meta.get('date', today)
                     if article_url:
-                        article_page = ET.SubElement(urlset, 'url')
-                        ET.SubElement(article_page, 'loc').text = f"{base_url}{article_url}"
-                        ET.SubElement(article_page, 'lastmod').text = article_date
-                        ET.SubElement(article_page, 'changefreq').text = 'never'
-                        ET.SubElement(article_page, 'priority').text = '0.8'
+                        full_url = f"{base_url}{article_url}"
+                        if full_url not in added_urls:
+                            added_urls.add(full_url)
+                            article_page = ET.SubElement(urlset, 'url')
+                            ET.SubElement(article_page, 'loc').text = full_url
+                            ET.SubElement(article_page, 'lastmod').text = article_date
+                            ET.SubElement(article_page, 'changefreq').text = 'never'
+                            ET.SubElement(article_page, 'priority').text = '0.8'
                 except Exception:
                     continue
 
-    # Add extra URLs (articles, topic pages, etc.)
+    # Add extra URLs (topic pages, etc.) - skip articles already added above
     if extra_urls:
         for url in extra_urls:
             if not url:
                 continue
-            page = ET.SubElement(urlset, 'url')
             # Ensure URL starts with base_url
             full_url = url if url.startswith('http') else f"{base_url}{url}"
+
+            # Skip if already added (prevents duplicate articles)
+            if full_url in added_urls:
+                continue
+            added_urls.add(full_url)
+
+            page = ET.SubElement(urlset, 'url')
             ET.SubElement(page, 'loc').text = full_url
             ET.SubElement(page, 'lastmod').text = today
 
             # Set priority based on URL type
             if '/articles/' in url:
                 ET.SubElement(page, 'changefreq').text = 'never'  # Articles are permanent
-                ET.SubElement(page, 'priority').text = '0.7'
+                ET.SubElement(page, 'priority').text = '0.8'
             else:
                 ET.SubElement(page, 'changefreq').text = 'daily'  # Topic pages update daily
                 ET.SubElement(page, 'priority').text = '0.8'
