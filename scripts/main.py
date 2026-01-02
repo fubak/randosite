@@ -639,20 +639,20 @@ class Pipeline:
             hero_image_url = hero_image.get('url_large', hero_image.get('url_medium', hero_image.get('url', '')))
             hero_image_alt = hero_image.get('alt', hero_image.get('description', f'{config["title"]} hero image'))
 
-        # Get featured story info
+        # Get featured story info (handle None values safely)
         featured_story = trends[0] if trends else {}
-        featured_title = html_module.escape(featured_story.get('title', '')[:100])
-        featured_url = html_module.escape(featured_story.get('url', '#'))
-        featured_source = html_module.escape(featured_story.get('source', '').replace('_', ' ').title())
-        featured_desc = html_module.escape((featured_story.get('description', '') or '')[:200])
+        featured_title = html_module.escape((featured_story.get('title') or '')[:100])
+        featured_url = html_module.escape(featured_story.get('url') or '#')
+        featured_source = html_module.escape((featured_story.get('source') or '').replace('_', ' ').title())
+        featured_desc = html_module.escape((featured_story.get('description') or '')[:200])
 
         # Build story cards with enhanced design (skip first since it's in hero)
         cards = []
         for i, t in enumerate(trends[1:20]):  # Start from index 1, skip featured
-            title = html_module.escape(t.get('title', '')[:100])
-            url = html_module.escape(t.get('url', '#'))
-            source = html_module.escape(t.get('source', '').replace('_', ' ').title())
-            desc = html_module.escape((t.get('description', '') or '')[:150])
+            title = html_module.escape((t.get('title') or '')[:100])
+            url = html_module.escape(t.get('url') or '#')
+            source = html_module.escape((t.get('source') or '').replace('_', ' ').title())
+            desc = html_module.escape((t.get('description') or '')[:150])
 
             cards.append(f'''
             <article class="story-card">

@@ -73,6 +73,10 @@ class RateLimiter:
         self._rate_limit_cache: Dict[str, Tuple[RateLimitStatus, float]] = {}
         self._cache_ttl = 30  # Cache for 30 seconds
 
+        # Track providers that have hit daily/quota limits this session
+        # These won't be retried until the next pipeline run
+        self._exhausted_providers: set = set()
+
     def check_google_limits(self, force_refresh: bool = False) -> RateLimitStatus:
         """
         Check Google AI rate limits before making a call.
@@ -381,6 +385,43 @@ class RateLimiter:
 
         return RateLimitStatus(is_available=True)
 
+    def mark_provider_exhausted(self, provider: str, reason: str = "daily limit") -> None:
+        """
+        Mark a provider as exhausted for this pipeline run.
+
+        Once marked exhausted, the provider won't be retried until the next run.
+        This prevents wasting time retrying providers that have hit daily limits.
+
+        Args:
+            provider: Provider name (google, openrouter, groq, opencode, huggingface, mistral)
+            reason: Reason for exhaustion (for logging)
+        """
+        if provider not in self._exhausted_providers:
+            self._exhausted_providers.add(provider)
+            logger.warning(f"Provider '{provider}' marked as EXHAUSTED ({reason}). "
+                          f"Will not retry until next pipeline run.")
+
+    def is_provider_exhausted(self, provider: str) -> bool:
+        """
+        Check if a provider has been marked as exhausted.
+
+        Args:
+            provider: Provider name
+
+        Returns:
+            True if provider is exhausted and should not be retried
+        """
+        return provider in self._exhausted_providers
+
+    def get_exhausted_providers(self) -> set:
+        """Get the set of all exhausted providers."""
+        return self._exhausted_providers.copy()
+
+    def reset_exhausted_providers(self) -> None:
+        """Reset the exhausted providers set (for testing or new pipeline runs)."""
+        self._exhausted_providers.clear()
+        logger.info("Reset exhausted providers list")
+
     def update_from_response_headers(
         self,
         provider: str,
@@ -485,6 +526,7 @@ class RateLimiter:
         For simple tasks: OpenCode (free) > Mistral (free) > Hugging Face (free) > Groq > OpenRouter > Google AI
         For complex tasks: Mistral > Google AI > OpenRouter > OpenCode > Hugging Face > Groq
 
+        Exhausted providers (those that hit daily limits) are automatically skipped.
         Note: Anthropic is disabled (no free tier) but tracking code is preserved.
 
         Args:
@@ -522,6 +564,14 @@ class RateLimiter:
                 ('huggingface', huggingface_status),
                 ('groq', groq_status),
             ]
+
+        # Filter out exhausted providers
+        priority = [(name, status) for name, status in priority
+                    if not self.is_provider_exhausted(name)]
+
+        if not priority:
+            logger.error("All providers are exhausted! No API available.")
+            return None
 
         # Find first available with no wait
         for name, status in priority:
@@ -616,6 +666,13 @@ def check_before_call(provider: str) -> RateLimitStatus:
     """
     limiter = get_rate_limiter()
 
+    # Check if provider is exhausted first
+    if limiter.is_provider_exhausted(provider):
+        return RateLimitStatus(
+            is_available=False,
+            error=f"Provider {provider} is exhausted (hit daily limit)"
+        )
+
     if provider == 'google':
         return limiter.check_google_limits()
     elif provider == 'openrouter':
@@ -632,3 +689,29 @@ def check_before_call(provider: str) -> RateLimitStatus:
         return limiter.check_anthropic_limits()
     else:
         return RateLimitStatus(is_available=True)
+
+
+def mark_provider_exhausted(provider: str, reason: str = "daily limit") -> None:
+    """
+    Mark a provider as exhausted for this pipeline run.
+
+    Args:
+        provider: Provider name
+        reason: Reason for exhaustion (for logging)
+    """
+    limiter = get_rate_limiter()
+    limiter.mark_provider_exhausted(provider, reason)
+
+
+def is_provider_exhausted(provider: str) -> bool:
+    """
+    Check if a provider has been marked as exhausted.
+
+    Args:
+        provider: Provider name
+
+    Returns:
+        True if provider is exhausted
+    """
+    limiter = get_rate_limiter()
+    return limiter.is_provider_exhausted(provider)

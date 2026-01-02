@@ -345,13 +345,13 @@ class TrendCollector:
             ('Science Daily', 'https://www.sciencedaily.com/rss/all.xml'),
             ('Nature News', 'https://www.nature.com/nature.rss'),
             ('New Scientist', 'https://www.newscientist.com/feed/home/'),
-            ('Scientific American', 'https://rss.sciam.com/ScientificAmerican-Global'),
             ('Phys.org', 'https://phys.org/rss-feed/'),
             ('Live Science', 'https://www.livescience.com/feeds/all'),
             ('Space.com', 'https://www.space.com/feeds/all'),
-            ('Medical News Today', 'https://www.medicalnewstoday.com/rss'),
             ('ScienceNews', 'https://www.sciencenews.org/feed'),
-            ('Popular Science', 'https://www.popsci.com/rss/all/'),
+            ('Ars Technica Science', 'https://feeds.arstechnica.com/arstechnica/science'),
+            ('Quanta Magazine', 'https://api.quantamagazine.org/feed/'),
+            ('MIT Tech Review', 'https://www.technologyreview.com/feed/'),
         ]
 
         for name, url in feeds:
@@ -391,12 +391,12 @@ class TrendCollector:
             ('Politico', 'https://www.politico.com/rss/politicopicks.xml'),
             ('The Hill', 'https://thehill.com/feed/'),
             ('Roll Call', 'https://rollcall.com/feed/'),
-            ('C-SPAN', 'https://www.c-span.org/rss/?channel=cs'),
-            ('FiveThirtyEight', 'https://fivethirtyeight.com/politics/feed/'),
             ('NYT Politics', 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml'),
             ('WaPo Politics', 'https://feeds.washingtonpost.com/rss/politics'),
             ('Guardian Politics', 'https://www.theguardian.com/us-news/us-politics/rss'),
             ('BBC Politics', 'https://feeds.bbci.co.uk/news/politics/rss.xml'),
+            ('Axios', 'https://api.axios.com/feed/'),
+            ('Vox', 'https://www.vox.com/rss/index.xml'),
         ]
 
         for name, url in feeds:
@@ -443,9 +443,9 @@ class TrendCollector:
             ('Financial Times', 'https://www.ft.com/rss/home'),
             ('Reuters Business', 'https://www.reutersagency.com/feed/?best-topics=business-finance'),
             ('Yahoo Finance', 'https://finance.yahoo.com/news/rssindex'),
-            ('Investopedia', 'https://www.investopedia.com/feedbuilder/feed/getfeed?feedName=rss_headline'),
             ('WSJ Markets', 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml'),
             ('Economist', 'https://www.economist.com/finance-and-economics/rss.xml'),
+            ('Fortune', 'https://fortune.com/feed/'),
         ]
 
         for name, url in feeds:
@@ -687,7 +687,20 @@ class TrendCollector:
             response = self.session.get(url, timeout=10)
             response.raise_for_status()
 
+            # Check if response is actually RSS/XML, not HTML
+            content_type = response.headers.get('content-type', '').lower()
+            content_start = response.content[:100].lower()
+
+            if b'<!doctype html' in content_start or b'<html' in content_start:
+                logger.warning(f"Lobsters returned HTML instead of RSS, skipping")
+                return trends
+
             feed = feedparser.parse(response.content)
+
+            # Check if feed parsed successfully
+            if not feed.entries and feed.bozo:
+                logger.warning(f"Lobsters feed parse error: {feed.bozo_exception}")
+                return trends
 
             for entry in feed.entries[:15]:
                 title = entry.get('title', '').strip()
@@ -834,6 +847,14 @@ class TrendCollector:
         """Remove HTML tags from text."""
         if not text:
             return ""
+
+        # Only parse as HTML if it contains HTML-like content
+        # This avoids BeautifulSoup's MarkupResemblesLocatorWarning
+        if '<' not in text:
+            # No HTML tags, just clean whitespace
+            return re.sub(r'\s+', ' ', text.strip())[:500]
+
+        # Use 'html.parser' with markup_type to suppress warning
         soup = BeautifulSoup(text, 'html.parser')
         clean = soup.get_text(separator=' ').strip()
         return re.sub(r'\s+', ' ', clean)[:500]

@@ -17,9 +17,9 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional
 
 try:
-    from rate_limiter import get_rate_limiter, check_before_call
+    from rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
 except ImportError:
-    from scripts.rate_limiter import get_rate_limiter, check_before_call
+    from scripts.rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
 
 logger = logging.getLogger("pipeline")
 
@@ -277,6 +277,18 @@ class ContentEnricher:
 
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
+                    # Check if this is a quota exhaustion (daily limit) vs temporary rate limit
+                    try:
+                        error_data = response.json()
+                        error_msg = str(error_data).lower()
+                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                            # This is a quota exhaustion - mark provider as exhausted
+                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            return None
+                    except Exception:
+                        pass
+
+                    # Temporary rate limit - wait and retry
                     retry_after = response.headers.get('Retry-After', '10')
                     try:
                         wait_time = float(retry_after)
@@ -366,6 +378,18 @@ class ContentEnricher:
 
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
+                    # Check if this is a quota exhaustion (daily limit) vs temporary rate limit
+                    try:
+                        error_data = response.json()
+                        error_msg = str(error_data).lower()
+                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                            # This is a quota exhaustion - mark provider as exhausted
+                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            return None
+                    except Exception:
+                        pass
+
+                    # Temporary rate limit - wait and retry
                     retry_after = response.headers.get('Retry-After', '10')
                     try:
                         wait_time = float(retry_after)
