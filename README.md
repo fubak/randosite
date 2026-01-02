@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-02 18:30 UTC | [feat: Add Hugging Face AI provider for fallback](https://github.com/fubak/daily-trending-info/commit/d6038096518d5abe36582d0d56bf856503aac5cc) |
 | 2026-01-02 18:15 UTC | [feat: Add OpenCode AI provider and expand topic pages](https://github.com/fubak/daily-trending-info/commit/909df02f898ab440e8a71db723de7f64232535cf) |
 | 2026-01-02 16:22 UTC | [fix: Reduce AI retry attempts and wait times](https://github.com/fubak/daily-trending-info/commit/6a767031cd30098f6e4ef04abbe62fdbb19b2d0b) |
 | 2026-01-02 15:45 UTC | [chore: Add generated articles index with enhanced UI](https://github.com/fubak/daily-trending-info/commit/dbe17e14d4cf6c457b1436bdde267585544cde43) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-02 13:16 UTC | [feat: Add Gemini structured outputs for guaranteed JSON parsing](https://github.com/fubak/daily-trending-info/commit/70d0615577560f577dfa84705132df8fbe71d160) |
 | 2026-01-02 13:05 UTC | [fix: Add robust JSON repair for LLM responses](https://github.com/fubak/daily-trending-info/commit/1c18ff2ecdc4a5b8e513ea67ab8cf9b3b0bedfb3) |
 | 2026-01-02 04:23 UTC | [feat: Comprehensive SEO and LLM optimization improvements](https://github.com/fubak/daily-trending-info/commit/182c515dd2c35d1594a6356a4498015422174e9b) |
-| 2026-01-02 03:54 UTC | [fix: Improve Daily Features 3-column layout with placeholders](https://github.com/fubak/daily-trending-info/commit/3c6449b0fb88d941d8e8c7db9e000c94f6ec9130) |
 <!-- CHANGELOG_END -->
 
 ## Features
