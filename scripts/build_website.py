@@ -280,6 +280,105 @@ class WebsiteBuilder:
             'sources': cross_mentions + 1
         }
 
+    def _find_related_stories(self, trend: Dict, max_related: int = 3) -> List[Dict]:
+        """
+        Find related stories based on keyword overlap.
+
+        Returns list of related stories with source and title info.
+        """
+        title = (trend.get('title', '') or '').lower()
+        trend_url = trend.get('url', '')
+        trend_keywords = set(trend.get('keywords', []))
+        title_words = set(w for w in title.split() if len(w) > 3)
+
+        related = []
+        for other in self.ctx.trends:
+            if other.get('url') == trend_url:
+                continue
+
+            other_title = (other.get('title', '') or '').lower()
+            other_keywords = set(other.get('keywords', []))
+            other_title_words = set(w for w in other_title.split() if len(w) > 3)
+
+            # Calculate overlap scores
+            keyword_overlap = len(trend_keywords & other_keywords)
+            title_overlap = len(title_words & other_title_words)
+
+            # Need significant overlap to be considered related
+            if keyword_overlap >= 2 or title_overlap >= 3:
+                score = keyword_overlap * 2 + title_overlap
+                related.append({
+                    'source': (other.get('source') or '').replace('_', ' ').title(),
+                    'title': other.get('title', 'Untitled'),
+                    'url': other.get('url', '#'),
+                    'score': score
+                })
+
+        # Sort by relevance score and return top results
+        related.sort(key=lambda x: x['score'], reverse=True)
+        return related[:max_related]
+
+    def _find_discussion_links(self, trend: Dict) -> List[Dict]:
+        """
+        Find HN/Reddit discussion links for a story.
+
+        Returns list of discussion links from community sources.
+        """
+        DISCUSSION_SOURCES = {'hacker news', 'hackernews', 'reddit', 'lobsters'}
+
+        trend_source = (trend.get('source') or '').lower()
+        # If this story is already from a discussion source, skip
+        if trend_source in DISCUSSION_SOURCES:
+            return []
+
+        title = (trend.get('title', '') or '').lower()
+        trend_url = trend.get('url', '')
+        trend_keywords = set(trend.get('keywords', []))
+        title_words = set(w for w in title.split() if len(w) > 3)
+
+        discussions = []
+        for other in self.ctx.trends:
+            if other.get('url') == trend_url:
+                continue
+
+            other_source = (other.get('source') or '').lower()
+            if other_source not in DISCUSSION_SOURCES:
+                continue
+
+            other_title = (other.get('title', '') or '').lower()
+            other_keywords = set(other.get('keywords', []))
+            other_title_words = set(w for w in other_title.split() if len(w) > 3)
+
+            # Calculate overlap scores
+            keyword_overlap = len(trend_keywords & other_keywords)
+            title_overlap = len(title_words & other_title_words)
+
+            # Need significant overlap
+            if keyword_overlap >= 2 or title_overlap >= 3:
+                source_display = other_source.replace('_', ' ').title()
+                if 'hacker' in other_source:
+                    source_display = 'HN'
+                    icon = '🔶'
+                elif 'reddit' in other_source:
+                    source_display = 'Reddit'
+                    icon = '🤖'
+                elif 'lobster' in other_source:
+                    source_display = 'Lobsters'
+                    icon = '🦞'
+                else:
+                    icon = '💬'
+
+                discussions.append({
+                    'source': source_display,
+                    'url': other.get('url', '#'),
+                    'icon': icon,
+                    'score': keyword_overlap * 2 + title_overlap
+                })
+
+        # Sort by relevance and return
+        discussions.sort(key=lambda x: x['score'], reverse=True)
+        return discussions[:2]  # Max 2 discussion links
+
     def _get_comparison_indicator(self, trend: Dict) -> Dict:
         """
         Compare trend to yesterday's data.
@@ -2400,18 +2499,74 @@ class WebsiteBuilder:
             z-index: 1;
         }}
 
+        .story-meta {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }}
+
         .story-source {{
             font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--color-accent);
-            margin-bottom: 0.75rem;
+        }}
+
+        .story-time {{
+            font-size: 0.65rem;
+            color: var(--color-muted);
+            font-weight: 400;
+        }}
+
+        .story-time::before {{
+            content: '•';
+            margin-right: 0.5rem;
         }}
 
         .story-card.featured .story-source,
         .story-card.has-image .story-source {{
             color: rgba(255,255,255,0.8);
+        }}
+
+        .story-card.featured .story-time,
+        .story-card.has-image .story-time {{
+            color: rgba(255,255,255,0.7);
+        }}
+
+        /* Discussion Links */
+        .discussion-links {{
+            display: flex;
+            gap: 0.5rem;
+            margin-left: auto;
+            position: relative;
+            z-index: 4;
+        }}
+
+        .discussion-link {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.15rem 0.4rem;
+            background: var(--color-accent);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 3px;
+            transition: all var(--transition);
+        }}
+
+        .discussion-link:hover {{
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }}
+
+        .story-card.featured .discussion-link,
+        .story-card.has-image .discussion-link {{
+            background: rgba(255,255,255,0.2);
         }}
 
         .story-title {{
@@ -2440,6 +2595,84 @@ class WebsiteBuilder:
         .story-card.featured .story-description,
         .story-card.has-image .story-description {{
             color: rgba(255,255,255,0.9);
+        }}
+
+        /* Related Coverage - Story Clustering */
+        .related-coverage {{
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-border);
+            position: relative;
+            z-index: 3;
+        }}
+
+        .related-label {{
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-muted);
+            display: block;
+            margin-bottom: 0.5rem;
+        }}
+
+        .related-links {{
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }}
+
+        .related-link {{
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--color-text);
+            text-decoration: none;
+            padding: 0.25rem 0;
+            transition: color var(--transition);
+            position: relative;
+            z-index: 4;
+        }}
+
+        .related-link:hover {{
+            color: var(--color-accent);
+        }}
+
+        .related-source {{
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            flex-shrink: 0;
+            min-width: 4rem;
+        }}
+
+        .related-title {{
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }}
+
+        .story-card.featured .related-coverage,
+        .story-card.has-image .related-coverage {{
+            border-top-color: rgba(255,255,255,0.2);
+        }}
+
+        .story-card.featured .related-label,
+        .story-card.has-image .related-label {{
+            color: rgba(255,255,255,0.7);
+        }}
+
+        .story-card.featured .related-link,
+        .story-card.has-image .related-link {{
+            color: rgba(255,255,255,0.9);
+        }}
+
+        .story-card.featured .related-source,
+        .story-card.has-image .related-source {{
+            color: rgba(255,255,255,0.8);
         }}
 
         .story-link {{
@@ -2586,12 +2819,28 @@ class WebsiteBuilder:
             flex: 1;
         }}
 
+        .compact-card-meta {{
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.25rem;
+        }}
+
         .compact-card-source {{
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--color-accent);
-            margin-bottom: 0.25rem;
+        }}
+
+        .compact-time {{
+            font-size: 0.6rem;
+            color: var(--color-muted);
+        }}
+
+        .compact-time::before {{
+            content: '•';
+            margin-right: 0.4rem;
         }}
 
         .compact-card-title {{
@@ -2604,13 +2853,19 @@ class WebsiteBuilder:
         /* ===== STATS BAR ===== */
         .stats-bar {{
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
             padding: 2rem;
             background: var(--color-card-bg);
             border-radius: var(--radius-lg);
             border: 1px solid var(--color-border);
             margin: 4rem 0;
+        }}
+
+        .stats-summary {{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
         }}
 
         .stat {{
@@ -2619,16 +2874,63 @@ class WebsiteBuilder:
 
         .stat-value {{
             font-family: var(--font-primary);
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 800;
             color: var(--color-accent);
         }}
 
         .stat-label {{
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--color-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+        }}
+
+        /* Source Leaderboard */
+        .source-leaderboard {{
+            border-left: 1px solid var(--color-border);
+            padding-left: 2rem;
+        }}
+
+        .leaderboard-title {{
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-muted);
+            margin-bottom: 1rem;
+        }}
+
+        .leaderboard-item {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }}
+
+        .leaderboard-item:last-child {{
+            border-bottom: none;
+        }}
+
+        .leaderboard-rank {{
+            font-size: 0.85rem;
+            min-width: 1.5rem;
+        }}
+
+        .leaderboard-source {{
+            flex: 1;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }}
+
+        .leaderboard-count {{
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-accent);
+            background: rgba(var(--color-accent-rgb, 102, 126, 234), 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
         }}
 
         /* ===== ENRICHED CONTENT (Word of Day, Grokipedia) ===== */
@@ -3516,7 +3818,14 @@ class WebsiteBuilder:
             }}
 
             .stats-bar {{
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
+            }}
+
+            .source-leaderboard {{
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                padding-left: 0;
+                padding-top: 1.5rem;
             }}
 
             .word-cloud {{
@@ -3586,6 +3895,10 @@ class WebsiteBuilder:
 
             .stats-bar {{
                 grid-template-columns: 1fr;
+            }}
+
+            .stats-summary {{
+                grid-template-columns: repeat(2, 1fr);
             }}
 
             main {{
@@ -4004,6 +4317,7 @@ class WebsiteBuilder:
             # Calculate velocity and comparison indicators
             velocity = self._calculate_velocity(trend)
             comparison = self._get_comparison_indicator(trend)
+            discussions = self._find_discussion_links(trend)
 
             # Velocity badge HTML
             velocity_class = f"velocity-{velocity['label']}"
@@ -4011,6 +4325,28 @@ class WebsiteBuilder:
 
             # Comparison indicator HTML
             comparison_html = f'<span class="comparison-badge" title="{comparison["tooltip"]}">{comparison["icon"]}</span>'
+
+            # Discussion links HTML
+            discussion_html = ''
+            if discussions:
+                disc_items = ''.join([
+                    f'<a href="{html.escape(d["url"])}" class="discussion-link" target="_blank" rel="noopener" title="Discuss on {d["source"]}">'
+                    f'{d["icon"]} {d["source"]}'
+                    f'</a>'
+                    for d in discussions
+                ])
+                discussion_html = f'<div class="discussion-links">{disc_items}</div>'
+
+            # Get timestamp for relative time display
+            timestamp = trend.get('timestamp')
+            timestamp_iso = ''
+            timestamp_html = ''
+            if timestamp:
+                if isinstance(timestamp, str):
+                    timestamp_iso = timestamp
+                else:
+                    timestamp_iso = timestamp.isoformat() if hasattr(timestamp, 'isoformat') else str(timestamp)
+                timestamp_html = f'<time class="story-time" datetime="{timestamp_iso}"></time>'
 
             # Save button HTML
             safe_title = html.escape(title).replace("'", "\\'")
@@ -4023,6 +4359,23 @@ class WebsiteBuilder:
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
             </button>'''
 
+            # Find related stories for clustering
+            related = self._find_related_stories(trend)
+            related_html = ''
+            if related:
+                related_items = ''.join([
+                    f'<a href="{html.escape(r["url"])}" class="related-link" target="_blank" rel="noopener">'
+                    f'<span class="related-source">{html.escape(r["source"])}</span>'
+                    f'<span class="related-title">{html.escape(r["title"][:60])}{"..." if len(r["title"]) > 60 else ""}</span>'
+                    f'</a>'
+                    for r in related
+                ])
+                related_html = f'''
+                <div class="related-coverage">
+                    <span class="related-label">Related coverage ({len(related)})</span>
+                    <div class="related-links">{related_items}</div>
+                </div>'''
+
             cards_html.append(f'''
             <article class="story-card {extra_class}" {image_style} {img_attrs}>
                 <div class="story-badges">
@@ -4030,9 +4383,14 @@ class WebsiteBuilder:
                     {velocity_html}
                 </div>
                 <div class="story-content">
-                    <span class="story-source">{source}</span>
+                    <div class="story-meta">
+                        <span class="story-source">{source}</span>
+                        {timestamp_html}
+                        {discussion_html}
+                    </div>
                     <h3 class="story-title">{title}</h3>
                     {f'<p class="story-description">{desc}</p>' if desc else ''}
+                    {related_html}
                 </div>
                 <div class="story-actions">
                     {save_btn}
@@ -4078,11 +4436,24 @@ class WebsiteBuilder:
                 source = html.escape((trend.get('source') or '').replace('_', ' ').title())
                 url = trend.get('url') or '#'
 
+                # Get timestamp for relative time display
+                timestamp = trend.get('timestamp')
+                timestamp_html = ''
+                if timestamp:
+                    if isinstance(timestamp, str):
+                        timestamp_iso = timestamp
+                    else:
+                        timestamp_iso = timestamp.isoformat() if hasattr(timestamp, 'isoformat') else str(timestamp)
+                    timestamp_html = f'<time class="story-time compact-time" datetime="{timestamp_iso}"></time>'
+
                 cards_html.append(f'''
                 <a href="{html.escape(url)}" class="compact-card" target="_blank" rel="noopener">
                     <span class="compact-card-number">{i + 1:02d}</span>
                     <div class="compact-card-content">
-                        <span class="compact-card-source">{source}</span>
+                        <div class="compact-card-meta">
+                            <span class="compact-card-source">{source}</span>
+                            {timestamp_html}
+                        </div>
                         <h4 class="compact-card-title">{title}</h4>
                     </div>
                 </a>''')
@@ -4273,38 +4644,72 @@ class WebsiteBuilder:
             <div class="enriched-card editorial-article placeholder-card">
                 <div class="enriched-card-icon">✍️</div>
                 <div class="enriched-card-label">Today's Editorial</div>
-                <span class="editorial-mood">pending</span>
-                <h3 class="editorial-title">Editorial In Progress</h3>
-                <p class="editorial-summary">Our daily editorial analysis is being crafted. Each day we provide in-depth commentary on the most significant trending stories, offering context and insights.</p>
+                <span class="editorial-mood">archive</span>
+                <h3 class="editorial-title">Browse Our Editorial Archive</h3>
+                <p class="editorial-summary">Today's editorial is being crafted. In the meantime, explore our archive of in-depth analyses on trending stories, offering context and insights from previous days.</p>
                 <div class="editorial-footer">
-                    <span class="editorial-wordcount placeholder-note">Coming soon</span>
+                    <span class="editorial-wordcount placeholder-note">Updated daily</span>
+                    <a href="/articles/" class="editorial-link">
+                        View all articles →
+                    </a>
                 </div>
             </div>"""
 
     def _build_stats_bar(self) -> str:
-        """Build statistics bar."""
+        """Build statistics bar with source leaderboard."""
         total_trends = len(self.ctx.trends)
         total_sources = len(set(t.get('source', '') for t in self.ctx.trends))
         total_categories = len(self.grouped_trends)
         total_keywords = len(self.keyword_freq)
 
+        # Calculate source leaderboard
+        source_counts = defaultdict(int)
+        for t in self.ctx.trends:
+            source = (t.get('source') or '').replace('_', ' ').title()
+            if source:
+                source_counts[source] += 1
+
+        # Sort by count and take top 5
+        top_sources = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+
+        # Build leaderboard HTML
+        leaderboard_items = []
+        for i, (source, count) in enumerate(top_sources):
+            rank = i + 1
+            medal = '🥇' if rank == 1 else ('🥈' if rank == 2 else ('🥉' if rank == 3 else f'{rank}.'))
+            leaderboard_items.append(
+                f'<div class="leaderboard-item">'
+                f'<span class="leaderboard-rank">{medal}</span>'
+                f'<span class="leaderboard-source">{html.escape(source)}</span>'
+                f'<span class="leaderboard-count">{count}</span>'
+                f'</div>'
+            )
+
+        leaderboard_html = '\n            '.join(leaderboard_items)
+
         return f"""
     <div class="stats-bar">
-        <div class="stat">
-            <div class="stat-value">{total_trends}</div>
-            <div class="stat-label">Stories</div>
+        <div class="stats-summary">
+            <div class="stat">
+                <div class="stat-value">{total_trends}</div>
+                <div class="stat-label">Stories</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{total_sources}</div>
+                <div class="stat-label">Sources</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{total_categories}</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{total_keywords}</div>
+                <div class="stat-label">Keywords</div>
+            </div>
         </div>
-        <div class="stat">
-            <div class="stat-value">{total_sources}</div>
-            <div class="stat-label">Sources</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">{total_categories}</div>
-            <div class="stat-label">Categories</div>
-        </div>
-        <div class="stat">
-            <div class="stat-value">{total_keywords}</div>
-            <div class="stat-label">Keywords</div>
+        <div class="source-leaderboard">
+            <div class="leaderboard-title">Top Sources</div>
+            {leaderboard_html}
         </div>
     </div>"""
 
@@ -4793,6 +5198,43 @@ class WebsiteBuilder:
             }
         };
         KeyboardNav.init();
+
+        // =====================================================
+        // RELATIVE TIME - Convert timestamps to "2 hours ago" format
+        // =====================================================
+        const RelativeTime = {
+            intervals: [
+                { label: 'year', seconds: 31536000 },
+                { label: 'month', seconds: 2592000 },
+                { label: 'week', seconds: 604800 },
+                { label: 'day', seconds: 86400 },
+                { label: 'hour', seconds: 3600 },
+                { label: 'minute', seconds: 60 }
+            ],
+            format(date) {
+                const seconds = Math.floor((new Date() - date) / 1000);
+                if (seconds < 60) return 'just now';
+                for (const interval of this.intervals) {
+                    const count = Math.floor(seconds / interval.seconds);
+                    if (count >= 1) {
+                        return count === 1 ? `1 ${interval.label} ago` : `${count} ${interval.label}s ago`;
+                    }
+                }
+                return 'just now';
+            },
+            init() {
+                document.querySelectorAll('time.story-time[datetime]').forEach(el => {
+                    try {
+                        const date = new Date(el.getAttribute('datetime'));
+                        if (!isNaN(date)) {
+                            el.textContent = this.format(date);
+                            el.title = date.toLocaleString();
+                        }
+                    } catch (e) { /* ignore invalid dates */ }
+                });
+            }
+        };
+        RelativeTime.init();
 
         // =====================================================
         // LIVE REGION - Announce dynamic updates to screen readers
