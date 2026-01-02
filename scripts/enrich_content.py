@@ -72,8 +72,9 @@ class ContentEnricher:
     # Rate limiting: minimum seconds between API calls to stay under 30 req/min
     MIN_CALL_INTERVAL = 3.0
 
-    def __init__(self, groq_key: Optional[str] = None):
+    def __init__(self, groq_key: Optional[str] = None, openrouter_key: Optional[str] = None):
         self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
+        self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'DailyTrending.info/1.0 (Content Enrichment)'
@@ -115,8 +116,8 @@ class ContentEnricher:
     def _call_groq(self, prompt: str, max_tokens: int = 500, max_retries: int = 5) -> Optional[str]:
         """Call Groq API with proactive rate limiting and retry logic."""
         if not self.groq_key:
-            logger.warning("No Groq API key available")
-            return None
+            # No Groq key, try OpenRouter directly
+            return self._call_openrouter(prompt, max_tokens)
 
         # Proactive rate limiting: wait if we're calling too fast
         elapsed = time.time() - self._last_call_time
@@ -151,12 +152,56 @@ class ContentEnricher:
                     time.sleep(wait_time)
                     continue
                 logger.warning(f"Groq API error: {e}")
-                return None
+                return self._call_openrouter(prompt, max_tokens)
             except Exception as e:
                 logger.warning(f"Groq API error: {e}")
-                return None
+                return self._call_openrouter(prompt, max_tokens)
 
-        logger.warning("Groq API: Max retries exceeded")
+        logger.warning("Groq API: Max retries exceeded, falling back to OpenRouter")
+        return self._call_openrouter(prompt, max_tokens)
+
+    def _call_openrouter(self, prompt: str, max_tokens: int = 500) -> Optional[str]:
+        """Call OpenRouter API with free models as fallback."""
+        if not self.openrouter_key:
+            logger.warning("No OpenRouter API key available for fallback")
+            return None
+
+        # Free models to try in order of preference
+        free_models = [
+            "deepseek/deepseek-r1-distill-llama-70b:free",
+            "google/gemini-2.0-flash-exp:free",
+            "meta-llama/llama-4-maverick:free",
+        ]
+
+        for model in free_models:
+            try:
+                logger.info(f"Trying OpenRouter model: {model}")
+                response = self.session.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openrouter_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://dailytrending.info",
+                        "X-Title": "DailyTrending.info"
+                    },
+                    json={
+                        "model": model,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": max_tokens,
+                        "temperature": 0.7
+                    },
+                    timeout=60
+                )
+                response.raise_for_status()
+                result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                if result:
+                    logger.info(f"OpenRouter success with {model}")
+                    return result
+            except Exception as e:
+                logger.warning(f"OpenRouter {model} failed: {e}")
+                continue
+
+        logger.error("All OpenRouter models failed")
         return None
 
     def _parse_json_response(self, response: str) -> Optional[Dict]:

@@ -1309,25 +1309,45 @@ Respond with ONLY a valid JSON object:
         return None
 
     def _call_openrouter(self, prompt: str, max_tokens: int = 1000) -> Optional[str]:
+        """Call OpenRouter API with free models as fallback."""
         if not self.openrouter_key:
             return None
 
-        response = self.session.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {self.openrouter_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "meta-llama/llama-3.3-70b-instruct",
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": max_tokens,
-                "temperature": 0.7
-            },
-            timeout=45
-        )
-        response.raise_for_status()
-        return response.json().get('choices', [{}])[0].get('message', {}).get('content')
+        # Free models to try in order of preference
+        free_models = [
+            "deepseek/deepseek-r1-distill-llama-70b:free",
+            "google/gemini-2.0-flash-exp:free",
+            "meta-llama/llama-4-maverick:free",
+        ]
+
+        for model in free_models:
+            try:
+                response = self.session.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openrouter_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://dailytrending.info",
+                        "X-Title": "DailyTrending.info"
+                    },
+                    json={
+                        "model": model,
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": max_tokens,
+                        "temperature": 0.7
+                    },
+                    timeout=60
+                )
+                response.raise_for_status()
+                result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                if result:
+                    print(f"    OpenRouter success with {model}")
+                    return result
+            except Exception as e:
+                print(f"    OpenRouter {model} failed: {e}")
+                continue
+
+        return None
 
     def _parse_ai_response(self, response: str) -> Optional[Dict]:
         try:
