@@ -1,0 +1,358 @@
+#!/usr/bin/env python3
+"""
+Rate Limiter Module - Manages API rate limits for OpenRouter and Groq.
+
+Checks rate limits before making API calls and implements backoff strategies.
+"""
+
+import os
+import time
+import logging
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, Dict, Tuple
+import requests
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class RateLimitStatus:
+    """Rate limit status for an API."""
+    requests_remaining: Optional[int] = None
+    requests_limit: Optional[int] = None
+    tokens_remaining: Optional[int] = None
+    tokens_limit: Optional[int] = None
+    reset_time: Optional[datetime] = None
+    is_available: bool = True
+    wait_seconds: float = 0.0
+    error: Optional[str] = None
+
+
+class RateLimiter:
+    """Manages rate limits for OpenRouter and Groq APIs."""
+
+    # Minimum wait between API calls (seconds)
+    MIN_CALL_INTERVAL = 3.0
+
+    # Thresholds for rate limit warnings
+    REQUEST_THRESHOLD_PERCENT = 10  # Warn when less than 10% requests remaining
+    TOKEN_THRESHOLD_PERCENT = 10    # Warn when less than 10% tokens remaining
+
+    def __init__(
+        self,
+        openrouter_key: Optional[str] = None,
+        groq_key: Optional[str] = None
+    ):
+        self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
+        self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
+        self.session = requests.Session()
+
+        # Track last call times per provider
+        self._last_call_time: Dict[str, float] = {
+            'openrouter': 0.0,
+            'groq': 0.0
+        }
+
+        # Cache rate limit status
+        self._rate_limit_cache: Dict[str, Tuple[RateLimitStatus, float]] = {}
+        self._cache_ttl = 30  # Cache for 30 seconds
+
+    def check_openrouter_limits(self, force_refresh: bool = False) -> RateLimitStatus:
+        """
+        Check OpenRouter rate limits before making a call.
+
+        Returns:
+            RateLimitStatus with availability and wait time info
+        """
+        if not self.openrouter_key:
+            return RateLimitStatus(
+                is_available=False,
+                error="No OpenRouter API key configured"
+            )
+
+        # Check cache
+        cache_key = 'openrouter'
+        if not force_refresh and cache_key in self._rate_limit_cache:
+            cached_status, cached_time = self._rate_limit_cache[cache_key]
+            if time.time() - cached_time < self._cache_ttl:
+                return cached_status
+
+        try:
+            # Check OpenRouter API key limits endpoint
+            response = self.session.get(
+                "https://openrouter.ai/api/v1/auth/key",
+                headers={
+                    "Authorization": f"Bearer {self.openrouter_key}",
+                    "Content-Type": "application/json"
+                },
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                data = response.json().get('data', {})
+
+                # Extract rate limit info
+                rate_limit = data.get('rate_limit', {})
+                requests_remaining = rate_limit.get('requests')
+                interval = rate_limit.get('interval', 'minute')
+
+                # Check usage
+                usage = data.get('usage', 0)
+                limit = data.get('limit', None)
+
+                status = RateLimitStatus(
+                    requests_remaining=requests_remaining,
+                    is_available=True
+                )
+
+                # Check if we're running low on requests
+                if requests_remaining is not None and requests_remaining < 5:
+                    status.wait_seconds = 60  # Wait a minute if low on requests
+                    logger.warning(f"OpenRouter: Only {requests_remaining} requests remaining")
+
+                # Check if usage is approaching limit
+                if limit is not None and usage is not None:
+                    usage_percent = (usage / limit) * 100 if limit > 0 else 0
+                    if usage_percent > 90:
+                        logger.warning(f"OpenRouter: {usage_percent:.1f}% of credit limit used")
+                        status.is_available = False
+                        status.error = f"Usage at {usage_percent:.1f}% of limit"
+
+                # Cache the result
+                self._rate_limit_cache[cache_key] = (status, time.time())
+                return status
+
+            elif response.status_code == 429:
+                # Already rate limited
+                retry_after = response.headers.get('Retry-After', '60')
+                try:
+                    wait_seconds = float(retry_after)
+                except ValueError:
+                    wait_seconds = 60.0
+
+                status = RateLimitStatus(
+                    is_available=False,
+                    wait_seconds=wait_seconds,
+                    error="Rate limited"
+                )
+                self._rate_limit_cache[cache_key] = (status, time.time())
+                return status
+
+            else:
+                logger.warning(f"OpenRouter rate limit check failed: {response.status_code}")
+                # Assume available but unknown status
+                return RateLimitStatus(is_available=True)
+
+        except Exception as e:
+            logger.warning(f"Failed to check OpenRouter rate limits: {e}")
+            # Assume available on error
+            return RateLimitStatus(is_available=True)
+
+    def check_groq_limits(self, force_refresh: bool = False) -> RateLimitStatus:
+        """
+        Check Groq rate limits.
+
+        Groq doesn't have a dedicated rate limit endpoint, so we track from response headers.
+
+        Returns:
+            RateLimitStatus with availability info
+        """
+        if not self.groq_key:
+            return RateLimitStatus(
+                is_available=False,
+                error="No Groq API key configured"
+            )
+
+        # Check cache
+        cache_key = 'groq'
+        if not force_refresh and cache_key in self._rate_limit_cache:
+            cached_status, cached_time = self._rate_limit_cache[cache_key]
+            if time.time() - cached_time < self._cache_ttl:
+                return cached_status
+
+        # Groq rate limits are typically:
+        # - Free tier: 30 requests/minute, 6000 tokens/minute
+        # We track this from response headers after each call
+
+        # For now, check if we should wait based on last call time
+        elapsed = time.time() - self._last_call_time.get('groq', 0)
+
+        if elapsed < self.MIN_CALL_INTERVAL:
+            wait_seconds = self.MIN_CALL_INTERVAL - elapsed
+            return RateLimitStatus(
+                is_available=True,
+                wait_seconds=wait_seconds
+            )
+
+        return RateLimitStatus(is_available=True)
+
+    def update_from_response_headers(
+        self,
+        provider: str,
+        headers: Dict[str, str]
+    ) -> None:
+        """
+        Update rate limit status from API response headers.
+
+        Args:
+            provider: 'openrouter' or 'groq'
+            headers: Response headers from API call
+        """
+        status = RateLimitStatus(is_available=True)
+
+        # Common rate limit headers
+        remaining_requests = headers.get('x-ratelimit-remaining-requests')
+        limit_requests = headers.get('x-ratelimit-limit-requests')
+        remaining_tokens = headers.get('x-ratelimit-remaining-tokens')
+        limit_tokens = headers.get('x-ratelimit-limit-tokens')
+        reset_time = headers.get('x-ratelimit-reset-requests')
+
+        if remaining_requests is not None:
+            try:
+                status.requests_remaining = int(remaining_requests)
+            except ValueError:
+                pass
+
+        if limit_requests is not None:
+            try:
+                status.requests_limit = int(limit_requests)
+            except ValueError:
+                pass
+
+        if remaining_tokens is not None:
+            try:
+                status.tokens_remaining = int(remaining_tokens)
+            except ValueError:
+                pass
+
+        if limit_tokens is not None:
+            try:
+                status.tokens_limit = int(limit_tokens)
+            except ValueError:
+                pass
+
+        # Check if we're running low
+        if status.requests_remaining is not None and status.requests_limit is not None:
+            if status.requests_limit > 0:
+                remaining_percent = (status.requests_remaining / status.requests_limit) * 100
+                if remaining_percent < self.REQUEST_THRESHOLD_PERCENT:
+                    logger.warning(
+                        f"{provider}: Only {status.requests_remaining}/{status.requests_limit} "
+                        f"requests remaining ({remaining_percent:.1f}%)"
+                    )
+                    status.wait_seconds = 60  # Wait a minute
+
+        if status.tokens_remaining is not None and status.tokens_limit is not None:
+            if status.tokens_limit > 0:
+                remaining_percent = (status.tokens_remaining / status.tokens_limit) * 100
+                if remaining_percent < self.TOKEN_THRESHOLD_PERCENT:
+                    logger.warning(
+                        f"{provider}: Only {status.tokens_remaining}/{status.tokens_limit} "
+                        f"tokens remaining ({remaining_percent:.1f}%)"
+                    )
+
+        # Update last call time
+        self._last_call_time[provider] = time.time()
+
+        # Cache the status
+        self._rate_limit_cache[provider] = (status, time.time())
+
+    def wait_if_needed(self, provider: str) -> None:
+        """
+        Wait if necessary based on rate limits.
+
+        Args:
+            provider: 'openrouter' or 'groq'
+        """
+        if provider == 'openrouter':
+            status = self.check_openrouter_limits()
+        else:
+            status = self.check_groq_limits()
+
+        if status.wait_seconds > 0:
+            logger.info(f"Waiting {status.wait_seconds:.1f}s for {provider} rate limit...")
+            time.sleep(status.wait_seconds)
+
+    def get_best_provider(self) -> Optional[str]:
+        """
+        Get the best available provider based on rate limits.
+
+        Returns:
+            'openrouter', 'groq', or None if neither available
+        """
+        openrouter_status = self.check_openrouter_limits()
+        groq_status = self.check_groq_limits()
+
+        # Prefer OpenRouter if available (free models)
+        if openrouter_status.is_available and openrouter_status.wait_seconds == 0:
+            return 'openrouter'
+
+        # Fall back to Groq if available
+        if groq_status.is_available and groq_status.wait_seconds == 0:
+            return 'groq'
+
+        # If both need waiting, choose the one with shorter wait
+        if openrouter_status.is_available and groq_status.is_available:
+            if openrouter_status.wait_seconds <= groq_status.wait_seconds:
+                return 'openrouter'
+            return 'groq'
+
+        if openrouter_status.is_available:
+            return 'openrouter'
+        if groq_status.is_available:
+            return 'groq'
+
+        return None
+
+    def log_status(self) -> None:
+        """Log current rate limit status for all providers."""
+        openrouter_status = self.check_openrouter_limits()
+        groq_status = self.check_groq_limits()
+
+        logger.info("=== Rate Limit Status ===")
+
+        if self.openrouter_key:
+            logger.info(f"OpenRouter: available={openrouter_status.is_available}, "
+                       f"wait={openrouter_status.wait_seconds:.1f}s, "
+                       f"requests_remaining={openrouter_status.requests_remaining}")
+        else:
+            logger.info("OpenRouter: not configured")
+
+        if self.groq_key:
+            logger.info(f"Groq: available={groq_status.is_available}, "
+                       f"wait={groq_status.wait_seconds:.1f}s")
+        else:
+            logger.info("Groq: not configured")
+
+
+# Global rate limiter instance
+_rate_limiter: Optional[RateLimiter] = None
+
+
+def get_rate_limiter() -> RateLimiter:
+    """Get or create the global rate limiter instance."""
+    global _rate_limiter
+    if _rate_limiter is None:
+        _rate_limiter = RateLimiter()
+    return _rate_limiter
+
+
+def check_before_call(provider: str) -> RateLimitStatus:
+    """
+    Check rate limits before making an API call.
+
+    Args:
+        provider: 'openrouter' or 'groq'
+
+    Returns:
+        RateLimitStatus indicating if call is safe to make
+    """
+    limiter = get_rate_limiter()
+
+    if provider == 'openrouter':
+        return limiter.check_openrouter_limits()
+    elif provider == 'groq':
+        return limiter.check_groq_limits()
+    else:
+        return RateLimitStatus(is_available=True)

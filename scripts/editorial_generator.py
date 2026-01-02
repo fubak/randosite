@@ -19,6 +19,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+try:
+    from rate_limiter import get_rate_limiter, check_before_call
+except ImportError:
+    from scripts.rate_limiter import get_rate_limiter, check_before_call
+
 logger = logging.getLogger("pipeline")
 
 
@@ -951,6 +956,18 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             logger.warning("No OpenRouter API key available")
             return None
 
+        # Check rate limits before calling
+        rate_limiter = get_rate_limiter()
+        status = check_before_call('openrouter')
+
+        if not status.is_available:
+            logger.warning(f"OpenRouter not available: {status.error}")
+            return None
+
+        if status.wait_seconds > 0:
+            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit...")
+            time.sleep(status.wait_seconds)
+
         # Free models to try in order of preference
         free_models = [
             "meta-llama/llama-3.3-70b-instruct:free",
@@ -979,14 +996,24 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                         timeout=60
                     )
                     response.raise_for_status()
+
+                    # Update rate limiter from response headers
+                    rate_limiter.update_from_response_headers('openrouter', dict(response.headers))
+
                     result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
                     if result:
                         logger.info(f"OpenRouter success with {model}")
                         return result
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        logger.warning(f"OpenRouter {model} rate limited, waiting 10s (attempt {attempt + 1}/{max_retries})")
-                        time.sleep(10)
+                        # Parse retry-after header if available
+                        retry_after = response.headers.get('Retry-After', '60')
+                        try:
+                            wait_time = float(retry_after)
+                        except ValueError:
+                            wait_time = 60.0
+                        logger.warning(f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(wait_time)
                         continue
                     logger.warning(f"OpenRouter {model} failed: {e}")
                     break  # Try next model
@@ -1001,6 +1028,18 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         """Call Groq API directly (fallback)."""
         if not self.groq_key:
             return None
+
+        # Check rate limits before calling
+        rate_limiter = get_rate_limiter()
+        status = check_before_call('groq')
+
+        if not status.is_available:
+            logger.warning(f"Groq not available: {status.error}")
+            return None
+
+        if status.wait_seconds > 0:
+            logger.info(f"Waiting {status.wait_seconds:.1f}s for Groq rate limit...")
+            time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
         elapsed = time.time() - self._last_call_time
@@ -1025,11 +1064,21 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     timeout=60
                 )
                 response.raise_for_status()
+
+                # Update rate limiter from response headers
+                rate_limiter.update_from_response_headers('groq', dict(response.headers))
+
                 return response.json().get('choices', [{}])[0].get('message', {}).get('content')
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
-                    logger.warning(f"Groq rate limited, waiting 10s (attempt {attempt + 1}/{max_retries})")
-                    time.sleep(10)
+                    # Parse retry-after header if available
+                    retry_after = response.headers.get('Retry-After', '60')
+                    try:
+                        wait_time = float(retry_after)
+                    except ValueError:
+                        wait_time = 60.0
+                    logger.warning(f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    time.sleep(wait_time)
                     continue
                 logger.error(f"Groq API error: {e}")
                 return None
