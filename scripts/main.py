@@ -326,6 +326,15 @@ class Pipeline:
             search_keywords.extend(self.global_keywords[:global_slots])
             logger.info(f"Using {len(search_keywords)} global keywords for images")
 
+        # Extract keywords from top headlines of each topic category
+        # This ensures we have images matching topic page hero sections
+        headline_keywords = self._extract_headline_keywords_for_images()
+        for kw in headline_keywords:
+            if kw not in search_keywords and len(search_keywords) < MAX_IMAGE_KEYWORDS:
+                search_keywords.append(kw)
+        if headline_keywords:
+            logger.info(f"Added {len(headline_keywords)} headline keywords for topic heroes")
+
         # Fill remaining slots with top regular keywords
         remaining_slots = MAX_IMAGE_KEYWORDS - len(search_keywords)
         if remaining_slots > 0:
@@ -343,6 +352,66 @@ class Pipeline:
             logger.info(f"Fetched {len(self.images)} images")
         else:
             logger.warning("No keywords for image search, using fallback gradients")
+
+    def _extract_headline_keywords_for_images(self) -> List[str]:
+        """Extract significant keywords from top headlines of each topic category.
+
+        This ensures we fetch images that can match topic page hero sections.
+        """
+        # Topic source prefixes (same as in _step_generate_topic_pages)
+        topic_sources = {
+            'tech': ['hackernews', 'lobsters', 'tech_', 'github_trending', 'product_hunt', 'devto', 'slashdot', 'ars_'],
+            'world': ['news_', 'wikipedia', 'google_trends'],
+            'science': ['science_'],
+            'politics': ['politics_'],
+            'finance': ['finance_'],
+        }
+
+        # Stop words to filter out
+        stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+                      'should', 'may', 'might', 'must', 'shall', 'can', 'of', 'in', 'to',
+                      'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
+                      'and', 'or', 'but', 'if', 'then', 'than', 'so', 'that', 'this',
+                      'what', 'which', 'who', 'whom', 'how', 'when', 'where', 'why',
+                      'says', 'said', 'new', 'first', 'after', 'year', 'years', 'now',
+                      "today's", 'trends', 'trending', 'world', 'its', 'it', 'just',
+                      'about', 'over', 'out', 'top', 'all', 'more', 'not', 'your', 'you'}
+
+        def matches_prefix(source: str, prefixes: list) -> bool:
+            for prefix in prefixes:
+                if prefix.endswith('_'):
+                    if source.startswith(prefix):
+                        return True
+                else:
+                    if source == prefix:
+                        return True
+            return False
+
+        headline_keywords = []
+
+        # Convert trends to dict if needed
+        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+
+        # For each topic, find the top story and extract keywords
+        for topic_name, prefixes in topic_sources.items():
+            # Find stories for this topic
+            topic_stories = [t for t in trends_data if matches_prefix(t.get('source', ''), prefixes)]
+
+            if topic_stories:
+                # Get the top story's title
+                top_title = topic_stories[0].get('title', '')
+
+                # Extract keywords from title
+                words = [w.strip('.,!?()[]{}":;\'').lower() for w in top_title.split()]
+                keywords = [w for w in words if len(w) > 3 and w not in stop_words]
+
+                # Add top 2 keywords from this headline (most significant)
+                for kw in keywords[:2]:
+                    if kw not in headline_keywords:
+                        headline_keywords.append(kw)
+
+        return headline_keywords
 
     def _step_enrich_content(self):
         """Enrich content with Word of Day, Grokipedia article, and story summaries."""
