@@ -488,38 +488,73 @@ class Pipeline:
 
         # Define topic categories and their filters
         # Sources use prefix matching: 'tech_' matches 'tech_verge', 'tech_wired', etc.
+        # hero_keywords used to find relevant hero images for each topic
         topic_configs = [
             {
                 'slug': 'tech',
                 'title': 'Technology',
                 'description': 'Latest technology news, startups, and developer trends',
-                'source_prefixes': ['hackernews', 'lobsters', 'tech_', 'github_trending', 'product_hunt', 'devto', 'slashdot', 'ars_']
+                'source_prefixes': ['hackernews', 'lobsters', 'tech_', 'github_trending', 'product_hunt', 'devto', 'slashdot', 'ars_'],
+                'hero_keywords': ['technology', 'computer', 'code', 'programming', 'software', 'digital', 'tech', 'innovation', 'startup'],
+                'image_index': 0  # Fallback index if no keyword match
             },
             {
                 'slug': 'world',
                 'title': 'World News',
                 'description': 'Breaking news and current events from around the world',
-                'source_prefixes': ['news_', 'wikipedia', 'google_trends']
+                'source_prefixes': ['news_', 'wikipedia', 'google_trends'],
+                'hero_keywords': ['world', 'globe', 'city', 'cityscape', 'urban', 'international', 'news', 'global', 'earth'],
+                'image_index': 1
             },
             {
                 'slug': 'science',
                 'title': 'Science & Health',
                 'description': 'Latest discoveries in science, technology, medicine, and space',
-                'source_prefixes': ['science_']
+                'source_prefixes': ['science_'],
+                'hero_keywords': ['science', 'laboratory', 'research', 'space', 'medical', 'health', 'biology', 'chemistry', 'physics'],
+                'image_index': 2
             },
             {
                 'slug': 'politics',
                 'title': 'Politics & Policy',
                 'description': 'Political news, policy analysis, and government updates',
-                'source_prefixes': ['politics_']
+                'source_prefixes': ['politics_'],
+                'hero_keywords': ['politics', 'government', 'capitol', 'democracy', 'vote', 'election', 'law', 'justice', 'congress'],
+                'image_index': 3
             },
             {
                 'slug': 'finance',
                 'title': 'Business & Finance',
                 'description': 'Market news, business trends, and economic analysis',
-                'source_prefixes': ['finance_']
+                'source_prefixes': ['finance_'],
+                'hero_keywords': ['finance', 'business', 'money', 'stock', 'market', 'office', 'corporate', 'economy', 'trading'],
+                'image_index': 4
             }
         ]
+
+        def find_topic_image(images: list, keywords: list, fallback_index: int) -> dict:
+            """Find an image matching topic keywords, or use fallback index."""
+            if not images:
+                return {}
+
+            # Score images by keyword matches
+            best_image = None
+            best_score = 0
+
+            for img in images:
+                img_text = f"{img.get('query', '')} {img.get('description', '')} {img.get('alt', '')}".lower()
+                score = sum(1 for kw in keywords if kw in img_text)
+                if score > best_score:
+                    best_score = score
+                    best_image = img
+
+            # If found a match, use it
+            if best_image and best_score > 0:
+                return best_image
+
+            # Otherwise use fallback index (cycling through available images)
+            idx = fallback_index % len(images)
+            return images[idx]
 
         def matches_topic(source: str, prefixes: list) -> bool:
             """Check if a source matches any of the topic's prefixes."""
@@ -544,13 +579,20 @@ class Pipeline:
                 logger.info(f"  Skipping /{config['slug']}/ - only {len(topic_trends)} stories")
                 continue
 
+            # Find topic-specific hero image
+            hero_image = find_topic_image(
+                images_data,
+                config.get('hero_keywords', []),
+                config.get('image_index', 0)
+            )
+
             # Create topic directory
             topic_dir = self.public_dir / config['slug']
             topic_dir.mkdir(parents=True, exist_ok=True)
 
             # Build topic page HTML
             html = self._build_topic_page(
-                config, topic_trends, design_data, images_data
+                config, topic_trends, design_data, hero_image
             )
 
             # Save
@@ -565,7 +607,7 @@ class Pipeline:
         config: dict,
         trends: list,
         design: dict,
-        images: list
+        hero_image: dict
     ) -> str:
         """Build HTML for a topic sub-page with shared header/footer."""
         from datetime import datetime
@@ -590,13 +632,12 @@ class Pipeline:
         date_str = now.strftime('%B %d, %Y')
         date_iso = now.isoformat()
 
-        # Get hero image for featured story (first available image)
+        # Get hero image URL and alt text (topic-specific image passed in)
         hero_image_url = ''
         hero_image_alt = ''
-        if images:
-            hero_img = images[0] if isinstance(images[0], dict) else {}
-            hero_image_url = hero_img.get('url_large', hero_img.get('url_medium', hero_img.get('url', '')))
-            hero_image_alt = hero_img.get('alt', hero_img.get('description', 'Featured story image'))
+        if hero_image:
+            hero_image_url = hero_image.get('url_large', hero_image.get('url_medium', hero_image.get('url', '')))
+            hero_image_alt = hero_image.get('alt', hero_image.get('description', f'{config["title"]} hero image'))
 
         # Get featured story info
         featured_story = trends[0] if trends else {}
