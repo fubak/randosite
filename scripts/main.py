@@ -532,20 +532,52 @@ class Pipeline:
             }
         ]
 
-        def find_topic_image(images: list, keywords: list, fallback_index: int) -> dict:
-            """Find an image matching topic keywords, or use fallback index."""
+        def find_topic_image(images: list, headline: str, category_keywords: list, fallback_index: int) -> dict:
+            """Find an image matching headline content, falling back to category keywords.
+
+            Priority:
+            1. Match keywords from the actual headline (top story title)
+            2. Fall back to generic category keywords
+            3. Use fallback index if no matches
+            """
             if not images:
                 return {}
 
-            # Score images by keyword matches
+            # Extract keywords from headline (similar to _find_relevant_hero_image)
+            stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                          'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+                          'should', 'may', 'might', 'must', 'shall', 'can', 'of', 'in', 'to',
+                          'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
+                          'and', 'or', 'but', 'if', 'then', 'than', 'so', 'that', 'this',
+                          'what', 'which', 'who', 'whom', 'how', 'when', 'where', 'why',
+                          'says', 'said', 'new', 'first', 'after', 'year', 'years', 'now',
+                          "today's", 'trends', 'trending', 'world', 'its', 'it', 'just'}
+
+            headline_lower = headline.lower()
+            words = [w.strip('.,!?()[]{}":;\'') for w in headline_lower.split()]
+            headline_keywords = [w for w in words if len(w) > 2 and w not in stop_words]
+
+            # Score images - prioritize headline keywords over category keywords
             best_image = None
             best_score = 0
 
             for img in images:
                 img_text = f"{img.get('query', '')} {img.get('description', '')} {img.get('alt', '')}".lower()
-                score = sum(1 for kw in keywords if kw in img_text)
-                if score > best_score:
-                    best_score = score
+
+                # Score based on headline keywords (weighted higher)
+                headline_score = sum(2 for kw in headline_keywords if kw in img_text)
+
+                # Add score for category keywords (weighted lower)
+                category_score = sum(1 for kw in category_keywords if kw in img_text)
+
+                total_score = headline_score + category_score
+
+                # Prefer larger images
+                if img.get('width', 0) >= 1200:
+                    total_score += 0.5
+
+                if total_score > best_score:
+                    best_score = total_score
                     best_image = img
 
             # If found a match, use it
@@ -579,9 +611,13 @@ class Pipeline:
                 logger.info(f"  Skipping /{config['slug']}/ - only {len(topic_trends)} stories")
                 continue
 
-            # Find topic-specific hero image
+            # Get the top story's title to use for hero image matching
+            top_story_title = topic_trends[0].get('title', '') if topic_trends else ''
+
+            # Find topic-specific hero image (prioritizes headline keywords)
             hero_image = find_topic_image(
                 images_data,
+                top_story_title,
                 config.get('hero_keywords', []),
                 config.get('image_index', 0)
             )
