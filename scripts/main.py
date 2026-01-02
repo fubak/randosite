@@ -567,28 +567,56 @@ class Pipeline:
         design: dict,
         images: list
     ) -> str:
-        """Build HTML for a topic sub-page."""
+        """Build HTML for a topic sub-page with shared header/footer."""
         from datetime import datetime
+        import html as html_module
 
-        primary = design.get('primary_color', '#667eea')
-        accent = design.get('accent_color', '#4facfe')
-        bg = design.get('background_color', '#0f0f23')
+        # Topic-specific color schemes for unique designs
+        topic_colors = {
+            'tech': {'accent': '#00d4ff', 'accent_secondary': '#7c3aed', 'gradient': 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)'},
+            'world': {'accent': '#ef4444', 'accent_secondary': '#f97316', 'gradient': 'linear-gradient(135deg, #1a0a0a 0%, #2d1f1f 100%)'},
+            'science': {'accent': '#10b981', 'accent_secondary': '#06b6d4', 'gradient': 'linear-gradient(135deg, #0a1a14 0%, #1a2f25 100%)'},
+            'politics': {'accent': '#8b5cf6', 'accent_secondary': '#ec4899', 'gradient': 'linear-gradient(135deg, #1a0f2e 0%, #2d1f3f 100%)'},
+            'finance': {'accent': '#f59e0b', 'accent_secondary': '#84cc16', 'gradient': 'linear-gradient(135deg, #1a1408 0%, #2d2410 100%)'},
+        }
 
-        # Build story cards
+        colors = topic_colors.get(config['slug'], {'accent': '#6366f1', 'accent_secondary': '#8b5cf6', 'gradient': 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)'})
+        accent = colors['accent']
+        accent_secondary = colors['accent_secondary']
+        gradient = colors['gradient']
+
+        # Get date info
+        now = datetime.now()
+        date_str = now.strftime('%B %d, %Y')
+        date_iso = now.isoformat()
+
+        # Build story cards with enhanced design
         cards = []
-        for t in trends[:20]:
-            title = t.get('title', '')[:100]
-            url = t.get('url', '#')
-            source = t.get('source', '').replace('_', ' ').title()
-            desc = (t.get('description', '') or '')[:150]
+        for i, t in enumerate(trends[:20]):
+            title = html_module.escape(t.get('title', '')[:100])
+            url = html_module.escape(t.get('url', '#'))
+            source = html_module.escape(t.get('source', '').replace('_', ' ').title())
+            desc = html_module.escape((t.get('description', '') or '')[:150])
+
+            # First card is featured
+            featured_class = ' featured' if i == 0 else ''
 
             cards.append(f'''
-            <article class="story-card">
+            <article class="story-card{featured_class}">
                 <span class="source-badge">{source}</span>
                 <h3><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
-                {'<p>' + desc + '</p>' if desc else ''}
-            </article>
-            ''')
+                {'<p class="story-desc">' + desc + '</p>' if desc else ''}
+            </article>''')
+
+        # Build nav links
+        nav_links = '''
+            <li><a href="/">Home</a></li>
+            <li><a href="/tech/"''' + (' class="active"' if config['slug'] == 'tech' else '') + '''>Tech</a></li>
+            <li><a href="/world/"''' + (' class="active"' if config['slug'] == 'world' else '') + '''>World</a></li>
+            <li><a href="/science/"''' + (' class="active"' if config['slug'] == 'science' else '') + '''>Science</a></li>
+            <li><a href="/politics/"''' + (' class="active"' if config['slug'] == 'politics' else '') + '''>Politics</a></li>
+            <li><a href="/finance/"''' + (' class="active"' if config['slug'] == 'finance' else '') + '''>Finance</a></li>
+            <li><a href="/articles/">Articles</a></li>'''
 
         return f'''<!DOCTYPE html>
 <html lang="en">
@@ -598,6 +626,7 @@ class Pipeline:
     <title>{config['title']} | DailyTrending.info</title>
     <meta name="description" content="{config['description']}">
     <link rel="canonical" href="https://dailytrending.info/{config['slug']}/">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
     <meta property="og:title" content="{config['title']} | DailyTrending.info">
     <meta property="og:description" content="{config['description']}">
@@ -605,13 +634,9 @@ class Pipeline:
     <meta property="og:url" content="https://dailytrending.info/{config['slug']}/">
     <meta property="og:image" content="https://dailytrending.info/og-image.png">
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:site" content="@bradshannon">
-    <meta name="twitter:creator" content="@bradshannon">
     <meta name="twitter:title" content="{config['title']} | DailyTrending.info">
     <meta name="twitter:description" content="{config['description']}">
-    <meta name="twitter:image" content="https://dailytrending.info/og-image.png">
 
     <script type="application/ld+json">
     {{
@@ -621,49 +646,389 @@ class Pipeline:
         "description": "{config['description']}",
         "url": "https://dailytrending.info/{config['slug']}/",
         "isPartOf": {{"@id": "https://dailytrending.info"}},
-        "dateModified": "{datetime.now().isoformat()}",
+        "dateModified": "{date_iso}",
         "numberOfItems": {len(trends)}
     }}
     </script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {{ --primary: {primary}; --accent: {accent}; --bg: {bg}; }}
+        :root {{
+            --color-bg: #0a0a0a;
+            --color-card-bg: #18181b;
+            --color-text: #ffffff;
+            --color-muted: #a1a1aa;
+            --color-border: #27272a;
+            --color-accent: {accent};
+            --color-accent-secondary: {accent_secondary};
+            --radius: 1rem;
+            --transition: 200ms ease;
+        }}
+
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-        body {{ font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; line-height: 1.6; min-height: 100vh; }}
-        .container {{ max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }}
-        .back-link {{ display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent); text-decoration: none; margin-bottom: 2rem; }}
-        .page-header {{ margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }}
-        .page-header h1 {{ font-size: 2.5rem; margin-bottom: 0.5rem; }}
-        .page-header p {{ color: rgba(255,255,255,0.7); }}
-        .stats {{ font-size: 0.875rem; color: var(--accent); margin-top: 0.5rem; }}
-        .stories-grid {{ display: grid; gap: 1.5rem; }}
-        .story-card {{ background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, border-color 0.2s; }}
-        .story-card:hover {{ transform: translateY(-2px); border-color: var(--primary); }}
-        .source-badge {{ display: inline-block; background: var(--primary); color: white; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.7rem; font-weight: 500; text-transform: uppercase; margin-bottom: 0.5rem; }}
-        .story-card h3 {{ font-size: 1.1rem; margin-bottom: 0.5rem; }}
-        .story-card h3 a {{ color: #fff; text-decoration: none; }}
-        .story-card h3 a:hover {{ color: var(--accent); }}
-        .story-card p {{ color: rgba(255,255,255,0.6); font-size: 0.9rem; }}
+
+        body {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: {gradient};
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }}
+
+        /* Navigation */
+        .nav {{
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--color-border);
+        }}
+
+        .nav-logo {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--color-text);
+            text-decoration: none;
+        }}
+
+        .nav-links {{
+            display: flex;
+            gap: 0.25rem;
+            list-style: none;
+        }}
+
+        .nav-links a {{
+            padding: 0.5rem 1rem;
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: color var(--transition), background var(--transition);
+        }}
+
+        .nav-links a:hover {{
+            color: var(--color-text);
+            background: rgba(255,255,255,0.05);
+        }}
+
+        .nav-links a.active {{
+            color: var(--color-accent);
+            background: rgba(255,255,255,0.08);
+        }}
+
+        .nav-actions {{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }}
+
+        .nav-date {{
+            font-size: 0.85rem;
+            color: var(--color-muted);
+        }}
+
+        .mobile-menu-toggle {{
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }}
+
+        .hamburger-line {{
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--color-text);
+            margin: 5px 0;
+            transition: transform 0.3s;
+        }}
+
+        /* Hero Header */
+        .topic-hero {{
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
+            border-bottom: 1px solid var(--color-border);
+        }}
+
+        .topic-hero h1 {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+
+        .topic-hero p {{
+            font-size: 1.1rem;
+            color: var(--color-muted);
+            max-width: 600px;
+            margin: 0 auto 1rem;
+        }}
+
+        .topic-stats {{
+            display: inline-flex;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--color-accent);
+        }}
+
+        .topic-stats span {{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }}
+
+        /* Main Content */
+        .main-content {{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }}
+
+        .stories-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }}
+
+        .story-card {{
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+        }}
+
+        .story-card:hover {{
+            transform: translateY(-4px);
+            border-color: var(--color-accent);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }}
+
+        .story-card.featured {{
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, var(--color-card-bg) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border-color: var(--color-accent);
+        }}
+
+        .source-badge {{
+            display: inline-block;
+            background: var(--color-accent);
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }}
+
+        .story-card h3 {{
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }}
+
+        .story-card.featured h3 {{
+            font-size: 1.5rem;
+        }}
+
+        .story-card h3 a {{
+            color: var(--color-text);
+            text-decoration: none;
+            transition: color var(--transition);
+        }}
+
+        .story-card h3 a:hover {{
+            color: var(--color-accent);
+        }}
+
+        .story-desc {{
+            color: var(--color-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }}
+
+        /* Footer */
+        .footer {{
+            margin-top: 4rem;
+            padding: 3rem 2rem;
+            background: var(--color-card-bg);
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+        }}
+
+        .footer-content {{
+            max-width: 800px;
+            margin: 0 auto;
+        }}
+
+        .footer-logo {{
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+        }}
+
+        .footer-tagline {{
+            color: var(--color-muted);
+            margin-bottom: 1.5rem;
+        }}
+
+        .footer-links {{
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }}
+
+        .footer-links a {{
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color var(--transition);
+        }}
+
+        .footer-links a:hover {{
+            color: var(--color-accent);
+        }}
+
+        .footer-bottom {{
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }}
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {{
+            .mobile-menu-toggle {{
+                display: block;
+            }}
+
+            .nav-links {{
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: var(--color-bg);
+                border-bottom: 1px solid var(--color-border);
+                padding: 1rem;
+            }}
+
+            .nav-links.active {{
+                display: flex;
+            }}
+
+            .nav-date {{
+                display: none;
+            }}
+
+            .topic-hero {{
+                padding: 2rem 1rem;
+            }}
+
+            .main-content {{
+                padding: 2rem 1rem;
+            }}
+
+            .stories-grid {{
+                grid-template-columns: 1fr;
+            }}
+
+            .story-card.featured {{
+                grid-column: 1;
+            }}
+
+            .footer-links {{
+                flex-direction: column;
+                gap: 1rem;
+            }}
+        }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <a href="/" class="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Back to All Trends
-        </a>
+    <nav class="nav">
+        <a href="/" class="nav-logo">DailyTrending.info</a>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        <ul class="nav-links" id="nav-links">
+            {nav_links}
+        </ul>
+        <div class="nav-actions">
+            <span class="nav-date">{date_str}</span>
+        </div>
+    </nav>
 
-        <header class="page-header">
-            <h1>{config['title']}</h1>
-            <p>{config['description']}</p>
-            <div class="stats">{len(trends)} stories &bull; Updated {datetime.now().strftime('%B %d, %Y')}</div>
-        </header>
+    <header class="topic-hero">
+        <h1>{config['title']}</h1>
+        <p>{config['description']}</p>
+        <div class="topic-stats">
+            <span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                {len(trends)} stories
+            </span>
+            <span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Updated {date_str}
+            </span>
+        </div>
+    </header>
 
+    <main class="main-content">
         <div class="stories-grid">
             {''.join(cards)}
         </div>
-    </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">DailyTrending.info</div>
+            <p class="footer-tagline">Curated trends from across the web, updated daily.</p>
+            <div class="footer-links">
+                <a href="/">Home</a>
+                <a href="/tech/">Tech</a>
+                <a href="/world/">World</a>
+                <a href="/science/">Science</a>
+                <a href="/politics/">Politics</a>
+                <a href="/finance/">Finance</a>
+                <a href="/articles/">Articles</a>
+                <a href="/feed.xml">RSS Feed</a>
+            </div>
+            <div class="footer-bottom">
+                &copy; {now.year} DailyTrending.info &bull; Regenerated daily at 6 AM EST
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const toggle = document.getElementById('mobile-menu-toggle');
+        const navLinks = document.getElementById('nav-links');
+        if (toggle && navLinks) {{
+            toggle.addEventListener('click', () => {{
+                navLinks.classList.toggle('active');
+            }});
+        }}
+    </script>
 </body>
 </html>'''
 

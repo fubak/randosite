@@ -1573,26 +1573,29 @@ class WebsiteBuilder:
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.9rem 1.4rem;
-            background: var(--color-accent);
-            color: #0b0b0f;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: #ffffff;
             font-weight: 700;
+            font-size: 1.1rem;
             border-radius: var(--radius);
-            border: 1px solid transparent;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-            transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border-color var(--transition);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }}
 
         .hero-cta:hover {{
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.45);
-            background: var(--color-accent-secondary, var(--color-accent));
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #ffffff;
         }}
 
-        .hero-secondary {{
-            color: rgba(255, 255, 255, 0.85);
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-            font-size: 0.95rem;
+        .hero-cta:focus-visible {{
+            outline: 3px solid var(--color-accent);
+            outline-offset: 3px;
         }}
 
         .hero-capsule {{
@@ -3095,6 +3098,37 @@ class WebsiteBuilder:
             font-style: italic;
         }}
 
+        /* Empty State */
+        .empty-state {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--color-muted);
+            background: var(--color-card-bg);
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            grid-column: 1 / -1;
+        }}
+
+        .empty-state svg {{
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }}
+
+        .empty-state h3 {{
+            margin: 0 0 0.5rem;
+            color: var(--color-text);
+            font-size: 1.25rem;
+        }}
+
+        .empty-state p {{
+            margin: 0;
+            font-size: 0.95rem;
+        }}
+
         .editorial-article.featured::before {{
             content: '';
             position: absolute;
@@ -4113,7 +4147,6 @@ class WebsiteBuilder:
                 <a href="#top-stories" class="hero-cta">
                     {cta_label}
                 </a>
-                {f'<div class="hero-secondary">{cta_secondary}</div>' if cta_secondary else ''}
             </div>
             {f'<div class="hero-capsule">⚡ {capsule}</div>' if capsule else ''}
             <div class="hero-meta">
@@ -4404,6 +4437,21 @@ class WebsiteBuilder:
             </article>''')
 
         reading_time = self._get_total_reading_time()
+
+        # Empty state if no stories
+        if not cards_html:
+            empty_state = '''
+            <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M19 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v1m2 13a2 2 0 0 1-2-2V7m2 13a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"></path>
+                </svg>
+                <h3>No stories available</h3>
+                <p>Check back soon for the latest trending stories.</p>
+            </div>'''
+            stories_content = empty_state
+        else:
+            stories_content = ''.join(cards_html)
+
         return f"""
     <section class="section" id="top-stories">
         <div class="section-header">
@@ -4417,7 +4465,7 @@ class WebsiteBuilder:
             </div>
         </div>
         <div class="top-stories">
-            {''.join(cards_html)}
+            {stories_content}
         </div>
     </section>"""
 
