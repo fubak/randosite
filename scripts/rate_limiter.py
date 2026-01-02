@@ -30,7 +30,7 @@ class RateLimitStatus:
 
 
 class RateLimiter:
-    """Manages rate limits for Google AI, OpenRouter, Groq, and OpenCode APIs."""
+    """Manages rate limits for Google AI, OpenRouter, Groq, OpenCode, Hugging Face, and Anthropic APIs."""
 
     # Minimum wait between API calls (seconds)
     MIN_CALL_INTERVAL = 2.0  # Reduced for Google AI's generous limits
@@ -44,12 +44,16 @@ class RateLimiter:
         google_key: Optional[str] = None,
         openrouter_key: Optional[str] = None,
         groq_key: Optional[str] = None,
-        opencode_key: Optional[str] = None
+        opencode_key: Optional[str] = None,
+        huggingface_key: Optional[str] = None,
+        anthropic_key: Optional[str] = None
     ):
         self.google_key = google_key or os.getenv('GOOGLE_AI_API_KEY')
         self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
         self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
         self.opencode_key = opencode_key or os.getenv('OPENCODE_API_KEY')
+        self.huggingface_key = huggingface_key or os.getenv('HUGGINGFACE_API_KEY')
+        self.anthropic_key = anthropic_key or os.getenv('ANTHROPIC_API_KEY')
         self.session = requests.Session()
 
         # Track last call times per provider
@@ -57,7 +61,9 @@ class RateLimiter:
             'google': 0.0,
             'openrouter': 0.0,
             'groq': 0.0,
-            'opencode': 0.0
+            'opencode': 0.0,
+            'huggingface': 0.0,
+            'anthropic': 0.0
         }
 
         # Cache rate limit status
@@ -265,6 +271,78 @@ class RateLimiter:
 
         return RateLimitStatus(is_available=True)
 
+    def check_huggingface_limits(self, force_refresh: bool = False) -> RateLimitStatus:
+        """
+        Check Hugging Face rate limits.
+
+        Hugging Face Inference API has generous free tier (~few hundred requests/hour).
+        We track timing to avoid bursts.
+
+        Returns:
+            RateLimitStatus with availability info
+        """
+        if not self.huggingface_key:
+            return RateLimitStatus(
+                is_available=False,
+                error="No Hugging Face API key configured"
+            )
+
+        # Check cache
+        cache_key = 'huggingface'
+        if not force_refresh and cache_key in self._rate_limit_cache:
+            cached_status, cached_time = self._rate_limit_cache[cache_key]
+            if time.time() - cached_time < self._cache_ttl:
+                return cached_status
+
+        # For now, check if we should wait based on last call time
+        elapsed = time.time() - self._last_call_time.get('huggingface', 0)
+
+        if elapsed < self.MIN_CALL_INTERVAL:
+            wait_seconds = self.MIN_CALL_INTERVAL - elapsed
+            return RateLimitStatus(
+                is_available=True,
+                wait_seconds=wait_seconds
+            )
+
+        return RateLimitStatus(is_available=True)
+
+    def check_anthropic_limits(self, force_refresh: bool = False) -> RateLimitStatus:
+        """
+        Check Anthropic rate limits.
+
+        Anthropic has rate limits based on tier (free tier: 5 RPM, 10K TPM).
+        We track timing to avoid bursts.
+
+        Returns:
+            RateLimitStatus with availability info
+        """
+        if not self.anthropic_key:
+            return RateLimitStatus(
+                is_available=False,
+                error="No Anthropic API key configured"
+            )
+
+        # Check cache
+        cache_key = 'anthropic'
+        if not force_refresh and cache_key in self._rate_limit_cache:
+            cached_status, cached_time = self._rate_limit_cache[cache_key]
+            if time.time() - cached_time < self._cache_ttl:
+                return cached_status
+
+        # For now, check if we should wait based on last call time
+        # Anthropic free tier is 5 RPM, so we need 12 seconds between calls
+        elapsed = time.time() - self._last_call_time.get('anthropic', 0)
+        min_interval = 12.0  # 5 RPM = 12 seconds between calls
+
+        if elapsed < min_interval:
+            wait_seconds = min_interval - elapsed
+            return RateLimitStatus(
+                is_available=True,
+                wait_seconds=wait_seconds
+            )
+
+        return RateLimitStatus(is_available=True)
+
     def update_from_response_headers(
         self,
         provider: str,
@@ -341,7 +419,7 @@ class RateLimiter:
         Wait if necessary based on rate limits.
 
         Args:
-            provider: 'google', 'openrouter', 'groq', or 'opencode'
+            provider: 'google', 'openrouter', 'groq', 'opencode', 'huggingface', or 'anthropic'
         """
         if provider == 'google':
             status = self.check_google_limits()
@@ -349,6 +427,10 @@ class RateLimiter:
             status = self.check_openrouter_limits()
         elif provider == 'opencode':
             status = self.check_opencode_limits()
+        elif provider == 'huggingface':
+            status = self.check_huggingface_limits()
+        elif provider == 'anthropic':
+            status = self.check_anthropic_limits()
         else:
             status = self.check_groq_limits()
 
@@ -360,8 +442,10 @@ class RateLimiter:
         """
         Get the best available provider based on rate limits and task complexity.
 
-        For simple tasks: OpenCode (free) > Groq > OpenRouter > Google AI
-        For complex tasks: Google AI > OpenRouter > OpenCode > Groq
+        For simple tasks: OpenCode (free) > Hugging Face (free) > Groq > OpenRouter > Google AI
+        For complex tasks: Google AI > OpenRouter > OpenCode > Hugging Face > Groq
+
+        Note: Anthropic is disabled (no free tier) but tracking code is preserved.
 
         Args:
             task_complexity: 'simple' or 'complex'
@@ -373,12 +457,15 @@ class RateLimiter:
         openrouter_status = self.check_openrouter_limits()
         groq_status = self.check_groq_limits()
         opencode_status = self.check_opencode_limits()
+        huggingface_status = self.check_huggingface_limits()
 
         # Define priority order based on task complexity
+        # Note: Anthropic excluded from routing (no free tier)
         if task_complexity == 'simple':
             # For simple tasks, prefer free models to save quota
             priority = [
                 ('opencode', opencode_status),
+                ('huggingface', huggingface_status),
                 ('groq', groq_status),
                 ('openrouter', openrouter_status),
                 ('google', google_status),
@@ -389,6 +476,7 @@ class RateLimiter:
                 ('google', google_status),
                 ('openrouter', openrouter_status),
                 ('opencode', opencode_status),
+                ('huggingface', huggingface_status),
                 ('groq', groq_status),
             ]
 
@@ -411,6 +499,8 @@ class RateLimiter:
         openrouter_status = self.check_openrouter_limits()
         groq_status = self.check_groq_limits()
         opencode_status = self.check_opencode_limits()
+        huggingface_status = self.check_huggingface_limits()
+        anthropic_status = self.check_anthropic_limits()
 
         logger.info("=== Rate Limit Status ===")
 
@@ -439,6 +529,18 @@ class RateLimiter:
         else:
             logger.info("OpenCode: not configured")
 
+        if self.huggingface_key:
+            logger.info(f"Hugging Face: available={huggingface_status.is_available}, "
+                       f"wait={huggingface_status.wait_seconds:.1f}s")
+        else:
+            logger.info("Hugging Face: not configured")
+
+        if self.anthropic_key:
+            logger.info(f"Anthropic: available={anthropic_status.is_available}, "
+                       f"wait={anthropic_status.wait_seconds:.1f}s")
+        else:
+            logger.info("Anthropic: not configured")
+
 
 # Global rate limiter instance
 _rate_limiter: Optional[RateLimiter] = None
@@ -457,7 +559,7 @@ def check_before_call(provider: str) -> RateLimitStatus:
     Check rate limits before making an API call.
 
     Args:
-        provider: 'google', 'openrouter', 'groq', or 'opencode'
+        provider: 'google', 'openrouter', 'groq', 'opencode', 'huggingface', or 'anthropic'
 
     Returns:
         RateLimitStatus indicating if call is safe to make
@@ -472,5 +574,9 @@ def check_before_call(provider: str) -> RateLimitStatus:
         return limiter.check_groq_limits()
     elif provider == 'opencode':
         return limiter.check_opencode_limits()
+    elif provider == 'huggingface':
+        return limiter.check_huggingface_limits()
+    elif provider == 'anthropic':
+        return limiter.check_anthropic_limits()
     else:
         return RateLimitStatus(is_available=True)

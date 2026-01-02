@@ -1001,14 +1001,18 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         """
         Call LLM API with smart provider routing based on task complexity.
 
-        For simple tasks: OpenCode (free) > Groq > OpenRouter > Google AI
-        For complex tasks: Google AI > OpenRouter > OpenCode > Groq
+        For simple tasks: OpenCode (free) > Hugging Face (free) > Groq > OpenRouter > Google AI
+        For complex tasks: Google AI > OpenRouter > OpenCode > Hugging Face > Groq
 
         Note: Editorial defaults to 'complex' as it requires high-quality writing.
         """
         if task_complexity == 'simple':
             # For simple tasks, prioritize free models to save quota
             result = self._call_opencode(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            result = self._call_huggingface(prompt, max_tokens, max_retries)
             if result:
                 return result
 
@@ -1032,6 +1036,10 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 return result
 
             result = self._call_opencode(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            result = self._call_huggingface(prompt, max_tokens, max_retries)
             if result:
                 return result
 
@@ -1421,6 +1429,94 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     break  # Try next model
 
         logger.warning("All OpenCode models failed")
+        return None
+
+    def _call_huggingface(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+        """Call Hugging Face Inference API with free models."""
+        huggingface_key = os.getenv('HUGGINGFACE_API_KEY')
+        if not huggingface_key:
+            return None
+
+        # Check rate limits before calling
+        rate_limiter = get_rate_limiter()
+        status = check_before_call('huggingface')
+
+        if not status.is_available:
+            logger.warning(f"Hugging Face not available: {status.error}")
+            return None
+
+        if status.wait_seconds > 0:
+            logger.info(f"Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit...")
+            time.sleep(status.wait_seconds)
+
+        # Proactive rate limiting
+        elapsed = time.time() - self._last_call_time
+        if elapsed < self.MIN_CALL_INTERVAL:
+            time.sleep(self.MIN_CALL_INTERVAL - elapsed)
+
+        # Free models to try in order (7B models work well on free tier)
+        free_models = [
+            "mistralai/Mistral-7B-Instruct-v0.3",
+            "Qwen/Qwen2.5-7B-Instruct",
+            "microsoft/Phi-3-mini-4k-instruct",
+        ]
+
+        for model in free_models:
+            for attempt in range(max_retries):
+                try:
+                    self._last_call_time = time.time()
+                    logger.info(f"Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})")
+                    response = self.session.post(
+                        f"https://api-inference.huggingface.co/models/{model}",
+                        headers={
+                            "Authorization": f"Bearer {huggingface_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "inputs": prompt,
+                            "parameters": {
+                                "max_new_tokens": max_tokens,
+                                "temperature": 0.7,
+                                "return_full_text": False
+                            }
+                        },
+                        timeout=60
+                    )
+                    response.raise_for_status()
+
+                    # Update rate limiter from response headers
+                    rate_limiter.update_from_response_headers('huggingface', dict(response.headers))
+                    rate_limiter._last_call_time['huggingface'] = time.time()
+
+                    result = response.json()
+                    if isinstance(result, list) and len(result) > 0:
+                        text = result[0].get('generated_text', '')
+                        if text:
+                            logger.info(f"Hugging Face success with {model}")
+                            return text
+
+                except requests.exceptions.HTTPError as e:
+                    if response.status_code == 429:
+                        retry_after = response.headers.get('Retry-After', '10')
+                        try:
+                            wait_time = float(retry_after)
+                        except ValueError:
+                            wait_time = 10.0
+                        logger.warning(f"Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(wait_time)
+                        continue
+                    elif response.status_code == 503:
+                        # Model is loading, wait and retry
+                        logger.warning(f"Hugging Face model {model} is loading, waiting...")
+                        time.sleep(20)
+                        continue
+                    logger.warning(f"Hugging Face API error with {model}: {e}")
+                    break  # Try next model
+                except Exception as e:
+                    logger.warning(f"Hugging Face API error with {model}: {e}")
+                    break  # Try next model
+
+        logger.warning("All Hugging Face models failed")
         return None
 
     def _repair_json(self, json_str: str) -> str:
