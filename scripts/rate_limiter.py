@@ -80,8 +80,9 @@ class RateLimiter:
 
         try:
             # Check OpenRouter API key limits endpoint
+            # Docs: https://openrouter.ai/docs/api/reference/limits
             response = self.session.get(
-                "https://openrouter.ai/api/v1/auth/key",
+                "https://openrouter.ai/api/v1/key",
                 headers={
                     "Authorization": f"Bearer {self.openrouter_key}",
                     "Content-Type": "application/json"
