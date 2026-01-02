@@ -164,20 +164,43 @@ class ContentEnricher:
 
         return enriched
 
-    def _call_groq(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
-        """Call LLM API - prioritizes Google AI, then OpenRouter, then Groq."""
-        # Try Google AI first (most generous free tier)
-        result = self._call_google_ai(prompt, max_tokens, max_retries)
-        if result:
-            return result
+    def _call_groq(self, prompt: str, max_tokens: int = 500, max_retries: int = 1, task_complexity: str = 'simple') -> Optional[str]:
+        """
+        Call LLM API with smart provider routing based on task complexity.
 
-        # Fall back to OpenRouter (free models)
-        result = self._call_openrouter(prompt, max_tokens, max_retries)
-        if result:
-            return result
+        For simple tasks: OpenCode (free) > Groq > OpenRouter > Google AI
+        For complex tasks: Google AI > OpenRouter > OpenCode > Groq
+        """
+        if task_complexity == 'simple':
+            # For simple tasks, prioritize free models to save quota
+            result = self._call_opencode(prompt, max_tokens, max_retries)
+            if result:
+                return result
 
-        # Fall back to Groq if all else fails
-        return self._call_groq_direct(prompt, max_tokens, max_retries)
+            result = self._call_groq_direct(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            result = self._call_openrouter(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            return self._call_google_ai(prompt, max_tokens, max_retries)
+        else:
+            # For complex tasks, prioritize higher quality models
+            result = self._call_google_ai(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            result = self._call_openrouter(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            result = self._call_opencode(prompt, max_tokens, max_retries)
+            if result:
+                return result
+
+            return self._call_groq_direct(prompt, max_tokens, max_retries)
 
     def _call_google_ai(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
@@ -484,6 +507,81 @@ class ContentEnricher:
                 return None
 
         logger.warning("Groq API: Max retries exceeded")
+        return None
+
+    def _call_opencode(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+        """Call OpenCode API with free models (glm-4.7-free, minimax-m2.1-free)."""
+        opencode_key = os.getenv('OPENCODE_API_KEY')
+        if not opencode_key:
+            return None
+
+        # Check rate limits before calling
+        rate_limiter = get_rate_limiter()
+        status = check_before_call('opencode')
+
+        if not status.is_available:
+            logger.warning(f"OpenCode not available: {status.error}")
+            return None
+
+        if status.wait_seconds > 0:
+            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenCode rate limit...")
+            time.sleep(status.wait_seconds)
+
+        # Proactive rate limiting
+        elapsed = time.time() - self._last_call_time
+        if elapsed < self.MIN_CALL_INTERVAL:
+            time.sleep(self.MIN_CALL_INTERVAL - elapsed)
+
+        # Free models to try in order
+        free_models = ["glm-4.7-free", "minimax-m2.1-free"]
+
+        for model in free_models:
+            for attempt in range(max_retries):
+                try:
+                    self._last_call_time = time.time()
+                    logger.info(f"Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})")
+                    response = self.session.post(
+                        "https://opencode.ai/zen/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {opencode_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": model,
+                            "messages": [{"role": "user", "content": prompt}],
+                            "max_tokens": max_tokens,
+                            "temperature": 0.7
+                        },
+                        timeout=60
+                    )
+                    response.raise_for_status()
+
+                    # Update rate limiter from response headers
+                    rate_limiter.update_from_response_headers('opencode', dict(response.headers))
+                    rate_limiter._last_call_time['opencode'] = time.time()
+
+                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    if result:
+                        logger.info(f"OpenCode success with {model}")
+                        return result
+
+                except requests.exceptions.HTTPError as e:
+                    if response.status_code == 429:
+                        retry_after = response.headers.get('Retry-After', '10')
+                        try:
+                            wait_time = float(retry_after)
+                        except ValueError:
+                            wait_time = 10.0
+                        logger.warning(f"OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(wait_time)
+                        continue
+                    logger.warning(f"OpenCode API error with {model}: {e}")
+                    break  # Try next model
+                except Exception as e:
+                    logger.warning(f"OpenCode API error with {model}: {e}")
+                    break  # Try next model
+
+        logger.warning("All OpenCode models failed")
         return None
 
     def _repair_json(self, json_str: str) -> str:

@@ -487,33 +487,57 @@ class Pipeline:
         images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
 
         # Define topic categories and their filters
+        # Sources use prefix matching: 'tech_' matches 'tech_verge', 'tech_wired', etc.
         topic_configs = [
             {
                 'slug': 'tech',
                 'title': 'Technology',
                 'description': 'Latest technology news, startups, and developer trends',
-                'sources': ['hackernews', 'lobsters', 'tech_rss', 'github_trending', 'product_hunt', 'devto']
+                'source_prefixes': ['hackernews', 'lobsters', 'tech_', 'github_trending', 'product_hunt', 'devto', 'slashdot', 'ars_']
             },
             {
                 'slug': 'world',
                 'title': 'World News',
                 'description': 'Breaking news and current events from around the world',
-                'sources': ['news_rss', 'wikipedia', 'google_trends']
+                'source_prefixes': ['news_', 'wikipedia', 'google_trends']
             },
             {
-                'slug': 'social',
-                'title': 'Social & Viral',
-                'description': 'Trending discussions and viral content from social media',
-                'sources': ['reddit']
+                'slug': 'science',
+                'title': 'Science & Health',
+                'description': 'Latest discoveries in science, technology, medicine, and space',
+                'source_prefixes': ['science_']
+            },
+            {
+                'slug': 'politics',
+                'title': 'Politics & Policy',
+                'description': 'Political news, policy analysis, and government updates',
+                'source_prefixes': ['politics_']
+            },
+            {
+                'slug': 'finance',
+                'title': 'Business & Finance',
+                'description': 'Market news, business trends, and economic analysis',
+                'source_prefixes': ['finance_']
             }
         ]
 
+        def matches_topic(source: str, prefixes: list) -> bool:
+            """Check if a source matches any of the topic's prefixes."""
+            for prefix in prefixes:
+                if prefix.endswith('_'):
+                    if source.startswith(prefix):
+                        return True
+                else:
+                    if source == prefix:
+                        return True
+            return False
+
         pages_created = 0
         for config in topic_configs:
-            # Filter trends for this topic
+            # Filter trends for this topic using prefix matching
             topic_trends = [
                 t for t in trends_data
-                if t.get('source', '') in config['sources']
+                if matches_topic(t.get('source', ''), config['source_prefixes'])
             ]
 
             if len(topic_trends) < 3:

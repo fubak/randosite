@@ -156,6 +156,9 @@ class TrendCollector:
             ("Google Trends", self._collect_google_trends),
             ("News RSS Feeds", self._collect_news_rss),
             ("Tech RSS Feeds", self._collect_tech_rss),
+            ("Science RSS Feeds", self._collect_science_rss),
+            ("Politics RSS Feeds", self._collect_politics_rss),
+            ("Finance RSS Feeds", self._collect_finance_rss),
             ("Hacker News", self._collect_hackernews),
             ("Lobsters", self._collect_lobsters),
             ("Reddit", self._collect_reddit),
@@ -320,6 +323,150 @@ class TrendCollector:
                         trend = Trend(
                             title=title,
                             source=f'tech_{name.lower().replace(" ", "_")}',
+                            url=entry.get('link'),
+                            description=self._clean_html(entry.get('summary', '')),
+                            score=1.5
+                        )
+                        trends.append(trend)
+
+            except Exception as e:
+                logger.warning(f"{name} RSS error: {e}")
+                continue
+
+            time.sleep(0.15)
+
+        return trends
+
+    def _collect_science_rss(self) -> List[Trend]:
+        """Collect trends from science and health RSS feeds."""
+        trends = []
+
+        feeds = [
+            ('Science Daily', 'https://www.sciencedaily.com/rss/all.xml'),
+            ('Nature News', 'https://www.nature.com/nature.rss'),
+            ('New Scientist', 'https://www.newscientist.com/feed/home/'),
+            ('Scientific American', 'https://rss.sciam.com/ScientificAmerican-Global'),
+            ('Phys.org', 'https://phys.org/rss-feed/'),
+            ('Live Science', 'https://www.livescience.com/feeds/all'),
+            ('Space.com', 'https://www.space.com/feeds/all'),
+            ('Medical News Today', 'https://www.medicalnewstoday.com/rss'),
+            ('ScienceNews', 'https://www.sciencenews.org/feed'),
+            ('Popular Science', 'https://www.popsci.com/rss/all/'),
+        ]
+
+        for name, url in feeds:
+            try:
+                response = self.session.get(url, timeout=10)
+                response.raise_for_status()
+
+                feed = feedparser.parse(response.content)
+
+                for entry in feed.entries[:6]:
+                    title = entry.get('title', '').strip()
+                    title = re.sub(r'\s+', ' ', title)
+
+                    if title and len(title) > 10 and is_english_text(title):
+                        trend = Trend(
+                            title=title,
+                            source=f'science_{name.lower().replace(" ", "_").replace(".", "")}',
+                            url=entry.get('link'),
+                            description=self._clean_html(entry.get('summary', '')),
+                            score=1.5
+                        )
+                        trends.append(trend)
+
+            except Exception as e:
+                logger.warning(f"{name} RSS error: {e}")
+                continue
+
+            time.sleep(0.15)
+
+        return trends
+
+    def _collect_politics_rss(self) -> List[Trend]:
+        """Collect trends from politics-focused RSS feeds."""
+        trends = []
+
+        feeds = [
+            ('Politico', 'https://www.politico.com/rss/politicopicks.xml'),
+            ('The Hill', 'https://thehill.com/feed/'),
+            ('Roll Call', 'https://rollcall.com/feed/'),
+            ('C-SPAN', 'https://www.c-span.org/rss/?channel=cs'),
+            ('FiveThirtyEight', 'https://fivethirtyeight.com/politics/feed/'),
+            ('NYT Politics', 'https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml'),
+            ('WaPo Politics', 'https://feeds.washingtonpost.com/rss/politics'),
+            ('Guardian Politics', 'https://www.theguardian.com/us-news/us-politics/rss'),
+            ('BBC Politics', 'https://feeds.bbci.co.uk/news/politics/rss.xml'),
+        ]
+
+        for name, url in feeds:
+            try:
+                response = self.session.get(url, timeout=10)
+                response.raise_for_status()
+
+                feed = feedparser.parse(response.content)
+
+                for entry in feed.entries[:6]:
+                    title = entry.get('title', '').strip()
+                    title = re.sub(r'\s+', ' ', title)
+
+                    # Clean common suffixes
+                    for suffix in [' - POLITICO', ' - The Hill', ' - The New York Times']:
+                        title = title.replace(suffix, '')
+
+                    if title and len(title) > 10 and is_english_text(title):
+                        trend = Trend(
+                            title=title,
+                            source=f'politics_{name.lower().replace(" ", "_").replace("-", "")}',
+                            url=entry.get('link'),
+                            description=self._clean_html(entry.get('summary', '')),
+                            score=1.6
+                        )
+                        trends.append(trend)
+
+            except Exception as e:
+                logger.warning(f"{name} RSS error: {e}")
+                continue
+
+            time.sleep(0.15)
+
+        return trends
+
+    def _collect_finance_rss(self) -> List[Trend]:
+        """Collect trends from business and finance RSS feeds."""
+        trends = []
+
+        feeds = [
+            ('Bloomberg', 'https://feeds.bloomberg.com/markets/news.rss'),
+            ('CNBC', 'https://www.cnbc.com/id/100003114/device/rss/rss.html'),
+            ('MarketWatch', 'https://feeds.marketwatch.com/marketwatch/topstories/'),
+            ('Financial Times', 'https://www.ft.com/rss/home'),
+            ('Reuters Business', 'https://www.reutersagency.com/feed/?best-topics=business-finance'),
+            ('Yahoo Finance', 'https://finance.yahoo.com/news/rssindex'),
+            ('Investopedia', 'https://www.investopedia.com/feedbuilder/feed/getfeed?feedName=rss_headline'),
+            ('WSJ Markets', 'https://feeds.a.dj.com/rss/RSSMarketsMain.xml'),
+            ('Economist', 'https://www.economist.com/finance-and-economics/rss.xml'),
+        ]
+
+        for name, url in feeds:
+            try:
+                response = self.session.get(url, timeout=10)
+                response.raise_for_status()
+
+                feed = feedparser.parse(response.content)
+
+                for entry in feed.entries[:6]:
+                    title = entry.get('title', '').strip()
+                    title = re.sub(r'\s+', ' ', title)
+
+                    # Clean common suffixes
+                    for suffix in [' - Bloomberg', ' - MarketWatch', ' - CNBC']:
+                        title = title.replace(suffix, '')
+
+                    if title and len(title) > 10 and is_english_text(title):
+                        trend = Trend(
+                            title=title,
+                            source=f'finance_{name.lower().replace(" ", "_")}',
                             url=entry.get('link'),
                             description=self._clean_html(entry.get('summary', '')),
                             score=1.5
