@@ -131,6 +131,16 @@ class EditorialGenerator:
             logger.warning("Insufficient trends for editorial")
             return None
 
+        # Check if an article for today already exists (prevent duplicates)
+        today = datetime.now().strftime("%Y-%m-%d")
+        today_parts = today.split('-')
+        today_dir = self.articles_dir / today_parts[0] / today_parts[1] / today_parts[2]
+        if today_dir.exists() and any(today_dir.iterdir()):
+            existing_articles = list(today_dir.glob("*/metadata.json"))
+            if existing_articles:
+                logger.info(f"Editorial for {today} already exists ({len(existing_articles)} article(s)) - skipping generation")
+                return None
+
         # Build rich context from top stories
         top_stories = trends[:8]
         context = self._build_editorial_context(top_stories, keywords)
