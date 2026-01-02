@@ -974,8 +974,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
             time.sleep(status.wait_seconds)
 
-        # Use Gemini 2.0 Flash - best free model for speed and quality
-        model = "gemini-2.0-flash"
+        # Use Gemini 2.5 Flash Lite - highest RPM (10) among free models
+        model = "gemini-2.5-flash-lite"
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
         for attempt in range(max_retries):
