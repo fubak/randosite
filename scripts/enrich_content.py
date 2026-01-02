@@ -349,6 +349,26 @@ class ContentEnricher:
         logger.warning("Groq API: Max retries exceeded")
         return None
 
+    def _repair_json(self, json_str: str) -> str:
+        """Attempt to repair common JSON formatting issues from LLM output."""
+        # Fix missing commas between elements (common LLM error)
+        json_str = re.sub(r'"\s*\n\s*"', '",\n"', json_str)
+        json_str = re.sub(r'}\s*\n\s*{', '},\n{', json_str)
+        json_str = re.sub(r']\s*\n\s*\[', '],\n[', json_str)
+        json_str = re.sub(r'"\s*\n\s*{', '",\n{', json_str)
+        json_str = re.sub(r'}\s*\n\s*"', '},\n"', json_str)
+        json_str = re.sub(r'"\s*\n\s*\[', '",\n[', json_str)
+        json_str = re.sub(r']\s*\n\s*"', '],\n"', json_str)
+
+        # Fix missing comma after value before next key
+        json_str = re.sub(r'"\s+("[\w]+"\s*:)', r'", \1', json_str)
+
+        # Fix trailing commas before closing brackets
+        json_str = re.sub(r',\s*}', '}', json_str)
+        json_str = re.sub(r',\s*]', ']', json_str)
+
+        return json_str
+
     def _parse_json_response(self, response: str) -> Optional[Dict]:
         """Parse JSON from LLM response, handling markdown code blocks."""
         if not response:
@@ -367,24 +387,48 @@ class ContentEnricher:
                 try:
                     return json.loads(json_str)
                 except json.JSONDecodeError:
-                    # Escape control characters only INSIDE quoted strings
-                    def escape_string_contents(match):
-                        s = match.group(0)
-                        inner = s[1:-1]  # Remove quotes
-                        # Only escape raw control characters
-                        inner = inner.replace('\n', '\\n')
-                        inner = inner.replace('\r', '\\r')
-                        inner = inner.replace('\t', '\\t')
-                        inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
-                        return f'"{inner}"'
+                    pass
 
-                    try:
-                        sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
-                        return json.loads(sanitized)
-                    except (json.JSONDecodeError, Exception):
-                        # Last resort: strip all control chars except structural whitespace
-                        stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', json_str)
-                        return json.loads(stripped)
+                # Try repairing common JSON issues (missing commas, etc.)
+                try:
+                    repaired = self._repair_json(json_str)
+                    return json.loads(repaired)
+                except json.JSONDecodeError:
+                    pass
+
+                # Escape control characters only INSIDE quoted strings
+                def escape_string_contents(match):
+                    s = match.group(0)
+                    inner = s[1:-1]  # Remove quotes
+                    # Only escape raw control characters
+                    inner = inner.replace('\n', '\\n')
+                    inner = inner.replace('\r', '\\r')
+                    inner = inner.replace('\t', '\\t')
+                    inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                    return f'"{inner}"'
+
+                try:
+                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
+                    return json.loads(sanitized)
+                except (json.JSONDecodeError, Exception):
+                    pass
+
+                # Try repair + escape combination
+                try:
+                    repaired = self._repair_json(json_str)
+                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired)
+                    return json.loads(sanitized)
+                except (json.JSONDecodeError, Exception):
+                    pass
+
+                # Last resort: strip all control chars except structural whitespace
+                try:
+                    stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', json_str)
+                    repaired = self._repair_json(stripped)
+                    return json.loads(repaired)
+                except (json.JSONDecodeError, Exception):
+                    pass
+
         except (json.JSONDecodeError, Exception) as e:
             logger.warning(f"JSON parse error: {e}")
 
