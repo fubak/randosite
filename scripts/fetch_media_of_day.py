@@ -212,7 +212,15 @@ class MediaOfDayFetcher:
             # Extract author info
             author = entry.get('author', '')
             if hasattr(entry, 'media_credit'):
-                author = entry.media_credit
+                credit = entry.media_credit
+                # media_credit can be a list or string
+                if isinstance(credit, list):
+                    author = credit[0] if credit else author
+                else:
+                    author = credit
+            # Ensure author is a string
+            if not isinstance(author, str):
+                author = str(author) if author else ''
             author_url = ''
 
             # Parse duration if available

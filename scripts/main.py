@@ -1452,16 +1452,24 @@ class Pipeline:
         image_copyright = html_module.escape(image.get('copyright', ''))
         image_date = image.get('date', '')
 
+        # Helper to ensure value is a string before escaping
+        def safe_str(val, default=''):
+            if val is None:
+                return default
+            if isinstance(val, list):
+                return val[0] if val else default
+            return str(val)
+
         # Get video data
         video = media_data.get('video_of_day') or {}
-        video_title = html_module.escape(video.get('title', 'Video of the Day'))
-        video_description = html_module.escape(video.get('description', ''))
-        video_embed_url = html_module.escape(video.get('embed_url', ''))
-        video_url = html_module.escape(video.get('video_url', ''))
-        video_thumbnail = html_module.escape(video.get('thumbnail_url', ''))
-        video_author = html_module.escape(video.get('author', ''))
-        video_author_url = html_module.escape(video.get('author_url', ''))
-        video_duration = video.get('duration', '')
+        video_title = html_module.escape(safe_str(video.get('title'), 'Video of the Day'))
+        video_description = html_module.escape(safe_str(video.get('description')))
+        video_embed_url = html_module.escape(safe_str(video.get('embed_url')))
+        video_url = html_module.escape(safe_str(video.get('video_url')))
+        video_thumbnail = html_module.escape(safe_str(video.get('thumbnail_url')))
+        video_author = html_module.escape(safe_str(video.get('author')))
+        video_author_url = html_module.escape(safe_str(video.get('author_url')))
+        video_duration = safe_str(video.get('duration'))
 
         # Source display names
         source_names = {
