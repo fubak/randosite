@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-05 15:39 UTC | [fix: Resolve theme toggle issue](https://github.com/fubak/daily-trending-info/commit/2ee179a84824d39775a0261ff90835208ea97af9) |
 | 2026-01-05 13:33 UTC | [fix: Correct 'NONE' badge issue and compact category layout](https://github.com/fubak/daily-trending-info/commit/f6e58f3874c8158ec933c8ad98d8b1f7a6785348) |
 | 2026-01-05 13:22 UTC | [design: Modernize UI/UX with CSS Grid, semantic HTML, and accessibility improvements](https://github.com/fubak/daily-trending-info/commit/fed69d95e2bc126e868c3d7cbecb3375f1b93b02) |
 | 2026-01-05 12:53 UTC | [fix: Resolve 'Trend' object attribute error in image fetch step](https://github.com/fubak/daily-trending-info/commit/189c0221e7724253ad0af204c96ed5090d5079ee) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-03 13:18 UTC | [feat: Update homepage to use shared header/footer components](https://github.com/fubak/daily-trending-info/commit/cf6bc6ef85dcced5a0ae843a099ef05ce5c3bbb2) |
 | 2026-01-03 12:53 UTC | [feat: Unify header/footer across all pages with shared components](https://github.com/fubak/daily-trending-info/commit/f2b96d048c3eae4aba0f9774061ba174aeb92b55) |
 | 2026-01-03 12:23 UTC | [feat: Move story summaries below cards instead of inside](https://github.com/fubak/daily-trending-info/commit/4bca85bf782c2acfb0f8e31811af2fa32d51b084) |
-| 2026-01-03 12:13 UTC | [feat: Add Summary: prefix to AI-generated story summaries](https://github.com/fubak/daily-trending-info/commit/b377b12b929940761a427b06242acbbd9400531c) |
 <!-- CHANGELOG_END -->
 
 ## Features
