@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" itemscope itemtype="https://schema.org/WebPage">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary Meta Tags -->
+    <title>{{ page_title }}</title>
+    <meta name="title" content="{{ page_title }}">
+    <meta name="description" content="{{ meta_description }}">
+    <meta name="keywords" content="{{ keywords_str }}">
+    <meta name="author" content="DailyTrending.info">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="color-scheme" content="dark light">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ canonical_url }}">
+    <meta property="og:title" content="{{ page_title }}">
+    <meta property="og:description" content="{{ meta_description }}">
+    <meta property="og:site_name" content="DailyTrending.info">
+    <meta property="og:locale" content="en_US">
+    {{ og_image_tags | safe }}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@bradshannon">
+    <meta name="twitter:creator" content="@bradshannon">
+    <meta name="twitter:url" content="{{ canonical_url }}">
+    <meta name="twitter:title" content="{{ page_title }}">
+    <meta name="twitter:description" content="{{ meta_description }}">
+    {{ twitter_image_tags | safe }}
+
+    <!-- Additional SEO -->
+    <meta name="generator" content="DailyTrending.info Autonomous Generator">
+    <meta name="date" content="{{ date_iso }}">
+    <meta name="last-modified" content="{{ last_modified }}">
+
+    <!-- Structured Data -->
+    {{ structured_data | safe }}
+
+    <!-- Feeds -->
+    <link rel="alternate" type="application/rss+xml" title="DailyTrending.info RSS" href="https://dailytrending.info/feed.xml">
+
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DailyTrending">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={{ font_primary }}:wght@400;500;600;700;800;900&family={{ font_secondary }}:wght@400;500;600&display=swap" rel="stylesheet">
+    {% if hero_image_url %}
+    <link rel="preload" as="image" href="{{ hero_image_url }}">
+    {% endif %}
+
+    <!-- Styles -->
+    <style>
+        /* CSS Variables */
+        :root {
+            --color-bg: {{ colors.bg }};
+            --color-text: {{ colors.text }};
+            --color-accent: {{ colors.accent }};
+            --color-accent-secondary: {{ colors.accent_secondary }};
+            --color-muted: {{ colors.muted }};
+            --color-card-bg: {{ colors.card_bg }};
+            --color-border: {{ colors.border }};
+
+            --font-primary: '{{ font_primary_family }}', system-ui, sans-serif;
+            --font-secondary: '{{ font_secondary_family }}', system-ui, sans-serif;
+
+            --radius: {{ design.card_radius }};
+            --radius-sm: calc({{ design.card_radius }} * 0.5);
+            --radius-lg: calc({{ design.card_radius }} * 1.5);
+
+            --card-padding: {{ design.card_padding }};
+            --section-gap: {{ section_gap }};
+            --max-width: {{ design.max_width }};
+
+            --hero-bg: {{ hero_bg_css | safe }};
+        }
+
+        /* Base Styles */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; }
+        body {
+            font-family: var(--font-secondary);
+            line-height: 1.6;
+            color: var(--color-text);
+            background: var(--color-bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; height: auto; }
+
+        /* Typography */
+        .headline-xl { font-family: var(--font-primary); font-size: clamp(2.5rem, 8vw, 5rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.02em; }
+        .headline-lg { font-family: var(--font-primary); font-size: clamp(1.75rem, 4vw, 3rem); font-weight: 700; line-height: 1.1; }
+        .headline-md { font-family: var(--font-primary); font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: 600; line-height: 1.2; }
+        
+        /* Layout Utilities */
+        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 2rem; }
+        .section { margin-bottom: var(--section-gap); }
+        .skip-link { position: absolute; top: -40px; left: 0; background: var(--color-accent); color: white; padding: 8px; z-index: 100; transition: top 0.2s; }
+        .skip-link:focus { top: 0; }
+
+        /* Component Styles */
+        {% include "components/nav.css" %}
+        {% include "components/footer.css" %}
+        
+        /* Custom Design Styles */
+        {{ custom_styles | safe }}
+    </style>
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZNXRW8S7L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XZNXRW8S7L');
+    </script>
+</head>
+<body class="{{ body_classes }}">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    {% include "components/nav.html" %}
+
+    <article itemscope itemtype="https://schema.org/Article">
+        {% block hero %}{% endblock %}
+        
+        {% block content %}{% endblock %}
+    </article>
+
+    {% include "components/footer.html" %}
+
+    <script>
+        // Theme Toggle
+        (function() {
+            const toggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const saved = localStorage.getItem('theme');
+            
+            if (saved === 'light') {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+            } else {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+            }
+
+            if(toggle) {
+                toggle.addEventListener('click', () => {
+                    if (body.classList.contains('light-mode')) {
+                        body.classList.replace('light-mode', 'dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        body.classList.replace('dark-mode', 'light-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+            
+            // Mobile Menu
+            const menuBtn = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            if(menuBtn && navLinks) {
+                menuBtn.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                    menuBtn.setAttribute('aria-expanded', navLinks.classList.contains('active'));
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

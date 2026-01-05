@@ -81,6 +81,7 @@ class Trend:
     source: str
     url: Optional[str] = None
     description: Optional[str] = None
+    category: Optional[str] = None # Added for explicit categorization
     score: float = 1.0
     keywords: List[str] = None
     timestamp: datetime = field(default_factory=datetime.now)
@@ -149,6 +150,97 @@ class TrendCollector:
         })
         self.trends: List[Trend] = []
 
+    def _scrape_og_image(self, url: str) -> Optional[str]:
+        """Scrape the Open Graph image from a URL."""
+        if not url:
+            return None
+            
+        try:
+            # Short timeout, we only want the head/meta tags
+            response = self.session.get(url, timeout=5, stream=True)
+            
+            # Read first 10KB which usually contains meta tags
+            chunk = next(response.iter_content(chunk_size=10240), b'')
+            html_content = chunk.decode('utf-8', errors='ignore')
+            
+            # Fast regex search for og:image
+            match = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']', html_content, re.I)
+            if match:
+                img_url = match.group(1)
+                # Ensure absolute URL
+                if img_url.startswith('//'):
+                    return 'https:' + img_url
+                elif img_url.startswith('/'):
+                    from urllib.parse import urlparse
+                    parsed = urlparse(url)
+                    return f"{parsed.scheme}://{parsed.netloc}{img_url}"
+                elif not img_url.startswith('http'):
+                    return None 
+                return img_url
+                
+        except Exception as e:
+            logger.debug(f"Failed to scrape OG image for {url}: {e}")
+            
+        return None
+
+    def _collect_sports_rss(self) -> List[Trend]:
+        """Collect trends from Sports RSS feeds."""
+        trends = []
+        feeds = [
+            ('ESPN', 'https://www.espn.com/espn/rss/news'),
+            ('BBC Sport', 'https://feeds.bbci.co.uk/sport/rss.xml'),
+            ('CBS Sports', 'https://www.cbssports.com/rss/headlines/'),
+            ('Yahoo Sports', 'https://sports.yahoo.com/rss/'),
+        ]
+        
+        for name, url in feeds:
+            try:
+                response = self.session.get(url, timeout=10)
+                feed = feedparser.parse(response.content)
+                for entry in feed.entries[:6]:
+                    if is_english_text(entry.title):
+                        trend = Trend(
+                            title=entry.title,
+                            source=f'sports_{name.lower().replace(" ", "")}',
+                            url=entry.link,
+                            description=self._clean_html(entry.get('summary', '')),
+                            score=1.4,
+                            image_url=self._extract_image_from_entry(entry)
+                        )
+                        trends.append(trend)
+            except Exception:
+                continue
+        return trends
+
+    def _collect_entertainment_rss(self) -> List[Trend]:
+        """Collect trends from Entertainment RSS feeds."""
+        trends = []
+        feeds = [
+            ('Variety', 'https://variety.com/feed/'),
+            ('Hollywood Reporter', 'https://www.hollywoodreporter.com/feed/'),
+            ('Billboard', 'https://www.billboard.com/feed/'),
+            ('E! Online', 'https://www.eonline.com/syndication/rss/top_stories/en_us'),
+        ]
+        
+        for name, url in feeds:
+            try:
+                response = self.session.get(url, timeout=10)
+                feed = feedparser.parse(response.content)
+                for entry in feed.entries[:6]:
+                    if is_english_text(entry.title):
+                        trend = Trend(
+                            title=entry.title,
+                            source=f'entertainment_{name.lower().replace(" ", "")}',
+                            url=entry.link,
+                            description=self._clean_html(entry.get('summary', '')),
+                            score=1.4,
+                            image_url=self._extract_image_from_entry(entry)
+                        )
+                        trends.append(trend)
+            except Exception:
+                continue
+        return trends
+
     def collect_all(self) -> List[Trend]:
         """Collect trends from all available sources."""
         logger.info("Collecting trends from all sources...")
@@ -160,6 +252,8 @@ class TrendCollector:
             ("Science RSS Feeds", self._collect_science_rss),
             ("Politics RSS Feeds", self._collect_politics_rss),
             ("Finance RSS Feeds", self._collect_finance_rss),
+            ("Sports RSS Feeds", self._collect_sports_rss),
+            ("Entertainment RSS Feeds", self._collect_entertainment_rss),
             ("Hacker News", self._collect_hackernews),
             ("Lobsters", self._collect_lobsters),
             ("Reddit", self._collect_reddit),
@@ -190,6 +284,15 @@ class TrendCollector:
 
         # Sort by score
         self.trends.sort(key=lambda t: t.score, reverse=True)
+        
+        # Post-processing: Scrape OG images for top 5 stories if missing
+        logger.info("Scraping OG images for top stories...")
+        for trend in self.trends[:5]:
+            if not trend.image_url:
+                trend.image_url = self._scrape_og_image(trend.url)
+                if trend.image_url:
+                    logger.info(f"  Found OG image for: {trend.title[:30]}...")
+                time.sleep(0.5) # Be polite
 
         logger.info(f"Total unique trends: {len(self.trends)}")
         return self.trends

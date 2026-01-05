@@ -1224,16 +1224,15 @@ Create multiple design variants that capture the essence of today's news cycle. 
 Respond with ONLY a valid JSON object:
 {{
   "mood_analysis": "1-2 sentence analysis of today's news mood",
-  "variants": [
-    {{
-      "theme_name": "Evocative 2-3 word theme name",
-      "headline": "Attention-grabbing 3-6 word headline",
-      "subheadline": "Contextual subheadline, max 12 words",
-      "color_accent": "#RRGGBB (mood-appropriate primary color)",
-      "color_accent_secondary": "#RRGGBB (complementary secondary)",
-      "cta": "Action-oriented CTA label"
-    }},
-    {{
+      "variants": [
+      {{
+        "theme_name": "Evocative 2-3 word theme name",
+        "theme_label": "Creative 3-5 word thematic label (e.g. 'The AI Revolution')",
+        "subheadline": "Contextual subheadline, max 12 words",
+        "color_accent": "#RRGGBB (mood-appropriate primary color)",
+        "color_accent_secondary": "#RRGGBB (complementary secondary)",
+        "cta": "Action-oriented CTA label"
+      }},    {{
       "theme_name": "Alternative theme",
       "headline": "Different angle headline",
       "subheadline": "Alternative subheadline",
@@ -1852,10 +1851,9 @@ Respond with ONLY a valid JSON object:
         if not trends:
             return "What's Trending"
 
-        # Get top trend title - display full text, CSS handles wrapping
-        top = trends[0].get('title', 'Trending Now')
-
-        return top
+        # STRICT: Always use the top trend title for the Hero Headline
+        # This ensures the headline matches the hero image and top story link
+        return trends[0].get('title', 'Trending Now')
 
     def _create_subheadline(self, keywords: List[str], rng: random.Random) -> str:
         """Create a subheadline."""

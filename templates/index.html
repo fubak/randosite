@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block hero %}
+<header class="hero">
+    <div class="hero-content">
+        {% if design.theme_name %}
+        <div class="hero-eyebrow">
+            <span>•</span> {{ design.theme_name }} Mode
+        </div>
+        {% endif %}
+        
+        <!-- Hero Headline is now explicitly the Top Story Title -->
+        <h1>{{ hero_story.title }}</h1>
+        
+        <p class="hero-subtitle">{{ design.subheadline }}</p>
+        
+        <div class="hero-actions">
+            {% if hero_story.url %}
+            <a href="{{ hero_story.url }}" target="_blank" rel="noopener" class="hero-cta">Read Story</a>
+            {% endif %}
+            {% if design.story_capsules %}
+            <div class="hero-capsule">
+                <span style="color: var(--color-accent)">Trending:</span> 
+                {{ design.story_capsules[0] }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="hero-meta">
+            <span>{{ date_str }}</span>
+            <span>{{ total_trends_count }} stories analyzed</span>
+        </div>
+    </div>
+</header>
+
+<div class="ticker-wrap">
+    <div class="ticker-label">Breaking</div>
+    <div class="ticker">
+        {% for trend in trends[:15] %}
+        <div class="ticker-item">
+            <span class="ticker-source">{{ trend.source | replace('_', ' ') | title }}</span>
+            <strong><a href="{{ trend.url }}" target="_blank" rel="noopener">{{ trend.title }}</a></strong>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<main id="main-content" role="main" class="container">
+    
+    <!-- Word Cloud -->
+    <div class="word-cloud-section">
+        <div class="word-cloud">
+            {% for word, freq, size in word_cloud %}
+            <span class="word-cloud-item size-{{ size }}">{{ word }}</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Stories Grid (Diversity Slotting) -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">Top Stories</h2>
+            <span class="section-count">{{ top_stories|length }} Stories</span>
+        </div>
+        <div class="top-stories">
+            {% for story in top_stories %}
+            <article class="story-card {% if loop.first %}featured{% endif %}">
+                <div class="story-wrapper">
+                    {% if story.image_url and loop.first %}
+                        <!-- Featured story gets image if available -->
+                        <div class="story-image" style="background-image: url('{{ story.image_url }}'); height: 200px; background-size: cover; background-position: center;"></div>
+                    {% endif %}
+                    <div style="padding: 1.5rem;">
+                        <span class="source-badge {{ story.category | lower }}">{{ story.category }}</span>
+                        <h3 class="story-title">
+                            <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                        </h3>
+                        {% if story.description %}
+                        <p class="story-summary">{{ story.description[:120] }}...</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Category Sections -->
+    {% for category, stories in categories %}
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">{{ category }}</h2>
+            <span class="section-count">{{ stories|length }}</span>
+        </div>
+        <div class="stories-grid">
+            {% for story in stories[:4] %}
+            <article class="story-card">
+                <div style="padding: 1.25rem;">
+                    <h3 class="story-title" style="font-size: 1.1rem;">
+                        <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                    </h3>
+                    <div class="story-meta" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-muted);">
+                        {{ story.source | replace('_', ' ') | title }} • {{ story.time_ago }}
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+
+</main>
+{% endblock %}

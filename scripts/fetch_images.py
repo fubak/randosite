@@ -11,6 +11,7 @@ import time
 import random
 import hashlib
 import tempfile
+import re
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
@@ -18,6 +19,11 @@ from dataclasses import dataclass, asdict, field
 from urllib.parse import quote_plus
 
 import requests
+
+try:
+    from rate_limiter import get_rate_limiter, check_before_call
+except ImportError:
+    from scripts.rate_limiter import get_rate_limiter, check_before_call
 
 from config import (
     setup_logging, IMAGE_CACHE_DIR, IMAGE_CACHE_MAX_AGE_DAYS,
@@ -210,10 +216,11 @@ class ImageFetcher:
     """Fetches and manages images from multiple sources."""
 
     def __init__(self, pexels_key: Optional[str] = None, unsplash_key: Optional[str] = None,
-                 pixabay_key: Optional[str] = None, use_cache: bool = True):
+                 pixabay_key: Optional[str] = None, groq_key: Optional[str] = None, use_cache: bool = True):
         self.pexels_key = pexels_key or os.getenv('PEXELS_API_KEY')
         self.unsplash_key = unsplash_key or os.getenv('UNSPLASH_ACCESS_KEY')
         self.pixabay_key = pixabay_key or os.getenv('PIXABAY_API_KEY')
+        self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
 
         self.session = requests.Session()
         self.images: List[Image] = []
@@ -233,6 +240,52 @@ class ImageFetcher:
         if elapsed < self._min_request_interval:
             time.sleep(self._min_request_interval - elapsed)
         self._last_request_time = time.time()
+
+    def optimize_query(self, headline: str) -> List[str]:
+        """
+        Use Groq to convert a headline into visual search terms.
+        Example: "Senate passes bill" -> ["capitol building", "gavel", "american flag"]
+        """
+        if not self.groq_key or not headline:
+            return []
+
+        # Check rate limits
+        status = check_before_call('groq')
+        if not status.is_available:
+            return []
+
+        try:
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            headers = {"Authorization": f"Bearer {self.groq_key}", "Content-Type": "application/json"}
+            
+            prompt = f"""Convert this news headline into 3 simple, physical visual search queries for a stock photo site.
+            Headline: "{headline}"
+            Rules:
+            - Focus on physical objects, places, or symbols (e.g. "bitcoin", "white house", "microscope")
+            - No abstract concepts (avoid "democracy", "inflation")
+            - No people's names (avoid "Elon Musk", use "CEO" or "man in suit")
+            - Output ONLY a JSON list of strings, e.g. ["query1", "query2", "query3"]
+            """
+            
+            payload = {
+                "model": "llama-3.3-70b-versatile",
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.1,
+                "max_tokens": 100
+            }
+            
+            response = self.session.post(url, headers=headers, json=payload, timeout=5)
+            if response.status_code == 200:
+                content = response.json()['choices'][0]['message']['content']
+                # Parse JSON list
+                match = re.search(r'\[.*\]', content, re.DOTALL)
+                if match:
+                    import json
+                    return json.loads(match.group(0))
+        except Exception as e:
+            logger.warning(f"Visual query optimization failed: {e}")
+            
+        return []
 
     def _request_with_retry(self, url: str, headers: Dict, params: Dict,
                             service_name: str) -> Optional[requests.Response]:

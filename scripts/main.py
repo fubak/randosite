@@ -327,15 +327,29 @@ class Pipeline:
         """Fetch images based on trending keywords."""
         logger.info("[4/16] Fetching images...")
 
-        # Prioritize global keywords (meta-trends) for image search
-        # These are words appearing in 3+ stories, more likely to be relevant
         search_keywords = []
 
+        # Priority 0: Visual queries for the Top Story (Hero Image Fix)
+        if self.trends:
+            top_story = self.trends[0]
+            top_title = top_story.get('title')
+            if top_title:
+                logger.info(f"Optimizing visual queries for top story: {top_title[:50]}...")
+                visual_queries = self.image_fetcher.optimize_query(top_title)
+                if visual_queries:
+                    logger.info(f"  Generated visual queries: {visual_queries}")
+                    search_keywords.extend(visual_queries)
+
+        # Prioritize global keywords (meta-trends) for image search
+        # These are words appearing in 3+ stories, more likely to be relevant
+        
         # Add global keywords first (up to half the slots)
         global_slots = MAX_IMAGE_KEYWORDS // 2
         if self.global_keywords:
-            search_keywords.extend(self.global_keywords[:global_slots])
-            logger.info(f"Using {len(search_keywords)} global keywords for images")
+            # Filter out duplicates
+            new_globals = [kw for kw in self.global_keywords if kw not in search_keywords]
+            search_keywords.extend(new_globals[:global_slots])
+            logger.info(f"Using {len(new_globals[:global_slots])} global keywords for images")
 
         # Extract keywords from top headlines of each topic category
         # This ensures we have images matching topic page hero sections
