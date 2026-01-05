@@ -138,8 +138,8 @@
     .layout-mosaic .top-stories {
         grid-template-columns: repeat(3, 1fr);
     }
-    .layout-newspaper .top-stories article:first-child,
-    .layout-magazine .top-stories article:first-child {
+    .layout-newspaper .top-stories article.story-card:first-child,
+    .layout-magazine .top-stories article.story-card:first-child {
         grid-column: span 1;
         grid-row: span 1;
     }
@@ -149,8 +149,8 @@
     .top-stories {
         grid-template-columns: repeat(2, 1fr);
     }
-    .layout-newspaper .top-stories article:first-child,
-    .layout-magazine .top-stories article:first-child {
+    .layout-newspaper .top-stories article.story-card:first-child,
+    .layout-magazine .top-stories article.story-card:first-child {
         grid-column: span 2;
         grid-row: auto;
     }
