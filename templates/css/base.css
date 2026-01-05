@@ -172,3 +172,24 @@ h1, h2, h3, h4, h5, h6 {
 @media print {
     .ad-container { display: none !important; }
 }
+
+/* ===== MODE OVERRIDES ===== */
+body.light-mode {
+    --color-bg: #ffffff;
+    --color-text: #1a1a2e;
+    --color-muted: #64748b;
+    --color-card-bg: #f8fafc;
+    --color-border: #e2e8f0;
+    background-color: #ffffff !important;
+    color: #1a1a2e !important;
+}
+
+body.dark-mode {
+    --color-bg: #0a0a0a;
+    --color-text: #ffffff;
+    --color-muted: #a1a1aa;
+    --color-card-bg: #18181b;
+    --color-border: #27272a;
+    background-color: #0a0a0a !important;
+    color: #ffffff !important;
+}

@@ -334,6 +334,49 @@ class WebsiteBuilder:
             }}
         """
 
+        # Build body classes - dynamically set mode from design
+        # JavaScript will override based on user preference from localStorage
+        base_mode = "dark-mode" if d.get('is_dark_mode', True) else "light-mode"
+        body_classes = [
+            f"layout-{self.layout}",
+            f"hero-{self.hero_style}",
+            f"card-style-{card_style}",
+            f"hover-{hover_effect}",
+            f"animation-{animation_level}",
+            base_mode,
+        ]
+
+        if d.get('text_transform_headings') != 'none':
+            body_classes.append(f"text-transform-{d.get('text_transform_headings')}")
+
+        # Add creative flourish classes from design spec
+        bg_pattern = d.get('background_pattern', 'none')
+        if bg_pattern and bg_pattern != 'none':
+            body_classes.append(f"bg-pattern-{bg_pattern}")
+
+        accent_style = d.get('accent_style', 'none')
+        if accent_style and accent_style != 'none':
+            body_classes.append(f"accent-{accent_style}")
+
+        special_mode = d.get('special_mode', 'standard')
+        if special_mode and special_mode != 'standard':
+            body_classes.append(f"mode-{special_mode}")
+
+        # Add animation modifiers
+        if d.get('use_float_animation', False):
+            body_classes.append("use-float")
+        if d.get('use_pulse_animation', False):
+            body_classes.append("use-pulse")
+
+        # Add new design dimension classes
+        image_treatment = d.get('image_treatment', 'none')
+        if image_treatment and image_treatment != 'none':
+            body_classes.append(f"image-treatment-{image_treatment}")
+
+        card_aspect = d.get('card_aspect_ratio', 'auto')
+        if card_aspect and card_aspect != 'auto':
+            body_classes.append(f"aspect-{card_aspect}")
+
         # Build context variables for the template
         render_context = {
             'page_title': f"DailyTrending.info - {self._get_top_topic()}",
@@ -366,7 +409,7 @@ class WebsiteBuilder:
                 'story_capsules': d.get('story_capsules', [])
             },
             'hero_bg_css': hero_bg_css,
-            'body_classes': f"layout-{d.get('layout_style', 'newspaper')} hero-{d.get('hero_style', 'full')} dark-mode",
+            'body_classes': ' '.join(body_classes),
             'custom_styles': custom_styles,
             
             # Content
