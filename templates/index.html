@@ -9,14 +9,13 @@
         </div>
         {% endif %}
         
-        <!-- Hero Headline is now explicitly the Top Story Title -->
         <h1>{{ hero_story.title }}</h1>
         
         <p class="hero-subtitle">{{ design.subheadline }}</p>
         
         <div class="hero-actions">
             {% if hero_story.url %}
-            <a href="{{ hero_story.url }}" target="_blank" rel="noopener" class="hero-cta">Read Story</a>
+            <a href="{{ hero_story.url }}" target="_blank" rel="noopener" class="hero-cta" aria-label="Read full story: {{ hero_story.title }}">Read Story</a>
             {% endif %}
             {% if design.story_capsules %}
             <div class="hero-capsule">
@@ -28,12 +27,13 @@
 
         <div class="hero-meta">
             <span>{{ date_str }}</span>
+            <span aria-hidden="true">•</span>
             <span>{{ total_trends_count }} stories analyzed</span>
         </div>
     </div>
 </header>
 
-<div class="ticker-wrap">
+<div class="ticker-wrap" aria-label="Breaking news ticker">
     <div class="ticker-label">Breaking</div>
     <div class="ticker">
         {% for trend in trends[:15] %}
@@ -50,15 +50,15 @@
 <main id="main-content" role="main" class="container">
     
     <!-- Word Cloud -->
-    <div class="word-cloud-section">
+    <section class="word-cloud-section" aria-label="Trending keywords">
         <div class="word-cloud">
             {% for word, freq, size in word_cloud %}
-            <span class="word-cloud-item size-{{ size }}">{{ word }}</span>
+            <span class="word-cloud-item size-{{ size }}" role="img" aria-label="{{ word }}">{{ word }}</span>
             {% endfor %}
         </div>
-    </div>
+    </section>
 
-    <!-- Top Stories Grid (Diversity Slotting) -->
+    <!-- Top Stories Grid -->
     <section class="section">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
@@ -69,17 +69,33 @@
             <article class="story-card {% if loop.first %}featured{% endif %}">
                 <div class="story-wrapper">
                     {% if story.image_url and loop.first %}
-                        <!-- Featured story gets image if available -->
-                        <div class="story-image" style="background-image: url('{{ story.image_url }}'); height: 200px; background-size: cover; background-position: center;"></div>
+                    <figure class="story-media">
+                        <img src="{{ story.image_url }}" 
+                             alt="" 
+                             class="story-image" 
+                             loading="eager" 
+                             width="800" 
+                             height="450">
+                    </figure>
                     {% endif %}
-                    <div style="padding: 1.5rem;">
-                        <span class="source-badge {{ story.category | lower }}">{{ story.category }}</span>
-                        <h3 class="story-title">
-                            <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
-                        </h3>
+                    
+                    <div class="story-content">
+                        <header>
+                            <span class="source-badge {{ story.category | lower }}">{{ story.category }}</span>
+                            <h3 class="story-title">
+                                <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                            </h3>
+                        </header>
+                        
                         {% if story.description %}
                         <p class="story-summary">{{ story.description[:120] }}...</p>
                         {% endif %}
+                        
+                        <footer class="story-meta">
+                            <span>{{ story.source | replace('_', ' ') | title }}</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="{{ story.timestamp }}">{{ story.time_ago }}</time>
+                        </footer>
                     </div>
                 </div>
             </article>
@@ -89,20 +105,24 @@
 
     <!-- Category Sections -->
     {% for category, stories in categories %}
-    <section class="section">
+    <section class="section" aria-labelledby="cat-{{ category|lower|replace(' ', '-') }}">
         <div class="section-header">
-            <h2 class="section-title">{{ category }}</h2>
+            <h2 id="cat-{{ category|lower|replace(' ', '-') }}" class="section-title">{{ category }}</h2>
             <span class="section-count">{{ stories|length }}</span>
         </div>
         <div class="stories-grid">
             {% for story in stories[:4] %}
             <article class="story-card">
-                <div style="padding: 1.25rem;">
-                    <h3 class="story-title" style="font-size: 1.1rem;">
-                        <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
-                    </h3>
-                    <div class="story-meta" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-muted);">
-                        {{ story.source | replace('_', ' ') | title }} • {{ story.time_ago }}
+                <div class="story-wrapper">
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="{{ story.url }}" target="_blank" rel="noopener">{{ story.title }}</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>{{ story.source | replace('_', ' ') | title }}</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="{{ story.timestamp }}">{{ story.time_ago }}</time>
+                        </footer>
                     </div>
                 </div>
             </article>
