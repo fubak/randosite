@@ -76,13 +76,14 @@
     </section>
 
     <!-- Top Stories Grid -->
+    {% set display_top_stories = top_stories[:6] %}
     <section class="section top-stories-section">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
-            <span class="section-count">{{ top_stories|length }} Stories</span>
+            <span class="section-count">{{ display_top_stories|length }} Stories</span>
         </div>
         <div class="top-stories">
-            {% for story in top_stories %}
+            {% for story in display_top_stories %}
             {% set summary = story.summary or story.description %}
             <article class="story-card {% if loop.first %}featured{% endif %}{% if not summary %} no-summary{% endif %}">
                 <div class="story-actions">
@@ -94,16 +95,19 @@
                     </button>
                 </div>
                 <div class="story-wrapper">
-                    {% if story.image_url %}
                     <figure class="story-media">
+                        {% if story.image_url %}
                         <img src="{{ story.image_url }}" 
                              alt="{{ story.title }}" 
                              class="story-image" 
                              loading="eager" 
+                             referrerpolicy="no-referrer"
                              width="800" 
                              height="450">
+                        {% else %}
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        {% endif %}
                     </figure>
-                    {% endif %}
                     
                     <div class="story-content">
                         <header>
@@ -141,7 +145,8 @@
             <span class="section-count">{{ stories|length }}</span>
         </div>
         <div class="stories-grid">
-            {% for story in stories[:4] %}
+            {% set has_images = stories | selectattr('image_url') | list | length > 0 %}
+            {% for story in stories[:5] %}
             <article class="story-card no-summary">
                 <div class="story-actions">
                     <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source | replace('_', ' ') | title }}" aria-label="Save story" aria-pressed="false" title="Save for later">
@@ -152,15 +157,19 @@
                     </button>
                 </div>
                 <div class="story-wrapper">
-                    {# Add image for category cards too if available and not featured already #}
-                    {% if story.image_url and not loop.first %} {# Avoid duplicate images if first story in section is also top story #}
+                    {% if has_images %}
                     <figure class="story-media">
+                        {% if story.image_url %}
                         <img src="{{ story.image_url }}" 
                              alt="{{ story.title }}" 
                              class="story-image" 
                              loading="lazy" 
+                             referrerpolicy="no-referrer"
                              width="400" 
                              height="225">
+                        {% else %}
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        {% endif %}
                     </figure>
                     {% endif %}
                     <div class="story-content">
