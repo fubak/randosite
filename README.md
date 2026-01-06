@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-06 21:39 UTC | [Refresh story placeholders](https://github.com/fubak/daily-trending-info/commit/5cbbe2eaad3d4c4e058771a888d6779c9cb0de2e) |
 | 2026-01-06 21:22 UTC | [Adjust story cards and placeholders](https://github.com/fubak/daily-trending-info/commit/ecb6ed2ea8ed36e0f696b02167242b6a8137e281) |
 | 2026-01-06 15:42 UTC | [Update story card summaries and image focus](https://github.com/fubak/daily-trending-info/commit/0a3b4fb5abd5e3a468061d142379c7de8d8e77a4) |
 | 2026-01-06 01:56 UTC | [Improve layout density and adjust Matrix colors](https://github.com/fubak/daily-trending-info/commit/2b227b03c71db14b178c6dc766dd0d6cd782574e) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-05 18:50 UTC | [fix: Resolve dark/light mode persistence and variable conflicts](https://github.com/fubak/daily-trending-info/commit/4cea27094171412dd2354c1cc93e590d02477dc8) |
 | 2026-01-05 17:44 UTC | [fix: Resolve home page layout breakage](https://github.com/fubak/daily-trending-info/commit/6678924788a0eeae4d95d78c55c3e3189d59b635) |
 | 2026-01-05 17:28 UTC | [fix: Resolve undefined 'story' variable in ticker template](https://github.com/fubak/daily-trending-info/commit/b7c1dac5b8d129e29843f0f5512078544846eb33) |
-| 2026-01-05 15:39 UTC | [fix: Resolve theme toggle issue](https://github.com/fubak/daily-trending-info/commit/2ee179a84824d39775a0261ff90835208ea97af9) |
 <!-- CHANGELOG_END -->
 
 ## Features
