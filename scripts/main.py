@@ -84,6 +84,31 @@ class Pipeline:
         self.yesterday_trends = []
         self.media_data = None
 
+    def _load_daily_design(self) -> dict:
+        """Load today's design spec if it already exists."""
+        design_file = self.data_dir / "design.json"
+        if not design_file.exists():
+            return {}
+
+        try:
+            with open(design_file) as f:
+                design_data = json.load(f)
+        except Exception:
+            return {}
+
+        today = datetime.now().strftime("%Y-%m-%d")
+        if design_data.get("design_seed") == today:
+            return design_data
+
+        return {}
+
+    def _persist_daily_design(self, design) -> None:
+        """Persist today's design spec for deterministic rebuilds."""
+        design_file = self.data_dir / "design.json"
+        design_data = asdict(design) if hasattr(design, "__dataclass_fields__") else design
+        with open(design_file, "w") as f:
+            json.dump(design_data, f, indent=2)
+
     def _validate_environment(self) -> List[str]:
         """
         Validate environment configuration and API keys.
@@ -483,14 +508,25 @@ class Pipeline:
         """Generate the design specification."""
         logger.info("[6/16] Generating design...")
 
-        # Convert trends to dict format for the generator
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+        cached_design = self._load_daily_design()
+        if cached_design:
+            self.design = cached_design
+            logger.info("Using persisted design for today")
+        else:
+            # Convert trends to dict format for the generator
+            trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
 
-        self.design = self.design_generator.generate(trends_data, self.keywords)
+            self.design = self.design_generator.generate(trends_data, self.keywords)
+            self._persist_daily_design(self.design)
 
-        logger.info(f"Theme: {self.design.theme_name}")
-        logger.info(f"Mood: {self.design.mood}")
-        logger.info(f"Headline: {self.design.headline}")
+        if isinstance(self.design, dict):
+            logger.info(f"Theme: {self.design.get('theme_name')}")
+            logger.info(f"Mood: {self.design.get('mood')}")
+            logger.info(f"Headline: {self.design.get('headline')}")
+        else:
+            logger.info(f"Theme: {self.design.theme_name}")
+            logger.info(f"Mood: {self.design.mood}")
+            logger.info(f"Headline: {self.design.headline}")
 
     def _step_generate_editorial(self):
         """Generate editorial article and Why This Matters context."""
@@ -813,19 +849,21 @@ class Pipeline:
         from datetime import datetime
         import html as html_module
 
-        # Topic-specific color schemes for unique designs
-        topic_colors = {
-            'tech': {'accent': '#00d4ff', 'accent_secondary': '#7c3aed', 'gradient': 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)'},
-            'world': {'accent': '#ef4444', 'accent_secondary': '#f97316', 'gradient': 'linear-gradient(135deg, #1a0a0a 0%, #2d1f1f 100%)'},
-            'science': {'accent': '#10b981', 'accent_secondary': '#06b6d4', 'gradient': 'linear-gradient(135deg, #0a1a14 0%, #1a2f25 100%)'},
-            'politics': {'accent': '#8b5cf6', 'accent_secondary': '#ec4899', 'gradient': 'linear-gradient(135deg, #1a0f2e 0%, #2d1f3f 100%)'},
-            'finance': {'accent': '#f59e0b', 'accent_secondary': '#84cc16', 'gradient': 'linear-gradient(135deg, #1a1408 0%, #2d2410 100%)'},
+        colors = {
+            'bg': design.get('color_bg', '#0a0a0a'),
+            'card_bg': design.get('color_card_bg', '#18181b'),
+            'text': design.get('color_text', '#ffffff'),
+            'muted': design.get('color_muted', '#a1a1aa'),
+            'border': design.get('color_border', '#27272a'),
+            'accent': design.get('color_accent', '#6366f1'),
+            'accent_secondary': design.get('color_accent_secondary', '#8b5cf6'),
         }
-
-        colors = topic_colors.get(config['slug'], {'accent': '#6366f1', 'accent_secondary': '#8b5cf6', 'gradient': 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)'})
-        accent = colors['accent']
-        accent_secondary = colors['accent_secondary']
-        gradient = colors['gradient']
+        font_primary = design.get('font_primary', 'Space Grotesk')
+        font_secondary = design.get('font_secondary', 'Inter')
+        radius = design.get('card_radius', '1rem')
+        card_padding = design.get('card_padding', '1.5rem')
+        transition = design.get('transition_speed', '200ms')
+        base_mode = "dark-mode" if design.get('is_dark_mode', True) else "light-mode"
 
         # Get date info
         now = datetime.now()
@@ -894,25 +932,28 @@ class Pipeline:
     }}
     </script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={font_primary.replace(' ', '+')}:wght@400;500;600;700;800&family={font_secondary.replace(' ', '+')}:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {{
-            --color-bg: #0a0a0a;
-            --color-card-bg: #18181b;
-            --color-text: #ffffff;
-            --color-muted: #a1a1aa;
-            --color-border: #27272a;
-            --color-accent: {accent};
-            --color-accent-secondary: {accent_secondary};
-            --radius: 1rem;
-            --transition: 200ms ease;
+            --color-bg: {colors['bg']};
+            --color-card-bg: {colors['card_bg']};
+            --color-text: {colors['text']};
+            --color-muted: {colors['muted']};
+            --color-border: {colors['border']};
+            --color-accent: {colors['accent']};
+            --color-accent-secondary: {colors['accent_secondary']};
+            --radius: {radius};
+            --card-padding: {card_padding};
+            --transition: {transition} ease;
+            --font-primary: '{font_primary}', system-ui, sans-serif;
+            --font-secondary: '{font_secondary}', system-ui, sans-serif;
         }}
 
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 
         body {{
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: {gradient};
+            font-family: var(--font-secondary);
+            background: var(--color-bg);
             color: var(--color-text);
             line-height: 1.6;
             min-height: 100vh;
@@ -920,11 +961,11 @@ class Pipeline:
 
         body.light-mode {{
             --color-bg: #ffffff;
-            --color-card-bg: #f8f8f8;
+            --color-card-bg: #f8fafc;
             --color-text: #1a1a2e;
-            --color-muted: rgba(0,0,0,0.6);
-            --color-border: rgba(0,0,0,0.1);
-            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            --color-muted: #64748b;
+            --color-border: #e2e8f0;
+            background: var(--color-bg);
         }}
 
         {get_header_styles()}
@@ -945,7 +986,7 @@ class Pipeline:
             background-size: contain;
             background-position: center center;
             background-repeat: no-repeat;
-            background-color: #0a0a0a;
+            background-color: var(--color-bg);
             z-index: 0;
         }}
 
@@ -992,7 +1033,7 @@ class Pipeline:
         }}
 
         .hero-title {{
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-size: clamp(1.75rem, 4vw, 2.75rem);
             font-weight: 700;
             line-height: 1.2;
@@ -1082,7 +1123,7 @@ class Pipeline:
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
-            padding: 1.5rem;
+            padding: var(--card-padding);
             transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
         }}
 
@@ -1094,7 +1135,7 @@ class Pipeline:
 
         .story-card.featured {{
             grid-column: 1 / -1;
-            background: linear-gradient(135deg, var(--color-card-bg) 0%, rgba(99, 102, 241, 0.1) 100%);
+            background: var(--color-card-bg);
             border-color: var(--color-accent);
         }}
 
@@ -1178,7 +1219,7 @@ class Pipeline:
         }}
     </style>
 </head>
-<body class="dark-mode">
+<body class="{base_mode}">
     {build_header(config['slug'], date_str)}
 
     <header class="topic-hero">
@@ -1269,6 +1310,21 @@ class Pipeline:
         now = datetime.now()
         date_str = now.strftime('%B %d, %Y')
         date_iso = now.isoformat()
+
+        colors = {
+            'bg': design.get('color_bg', '#0a0a0a'),
+            'card_bg': design.get('color_card_bg', '#18181b'),
+            'text': design.get('color_text', '#ffffff'),
+            'muted': design.get('color_muted', '#a1a1aa'),
+            'border': design.get('color_border', '#27272a'),
+            'accent': design.get('color_accent', '#6366f1'),
+            'accent_secondary': design.get('color_accent_secondary', '#8b5cf6'),
+        }
+        font_primary = design.get('font_primary', 'Space Grotesk')
+        font_secondary = design.get('font_secondary', 'Inter')
+        radius = design.get('card_radius', '1rem')
+        transition = design.get('transition_speed', '200ms')
+        base_mode = "dark-mode" if design.get('is_dark_mode', True) else "light-mode"
 
         # Get image data
         image = media_data.get('image_of_day') or {}
@@ -1467,25 +1523,27 @@ class Pipeline:
     <meta name="twitter:title" content="Media of the Day | DailyTrending.info">
     <meta name="twitter:description" content="Daily curated image and video content">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={font_primary.replace(' ', '+')}:wght@400;500;600;700;800&family={font_secondary.replace(' ', '+')}:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {{
-            --color-bg: #0a0a0a;
-            --color-card-bg: #18181b;
-            --color-text: #ffffff;
-            --color-muted: #a1a1aa;
-            --color-border: #27272a;
-            --color-accent: #6366f1;
-            --color-accent-secondary: #8b5cf6;
-            --radius: 1rem;
-            --transition: 200ms ease;
+            --color-bg: {colors['bg']};
+            --color-card-bg: {colors['card_bg']};
+            --color-text: {colors['text']};
+            --color-muted: {colors['muted']};
+            --color-border: {colors['border']};
+            --color-accent: {colors['accent']};
+            --color-accent-secondary: {colors['accent_secondary']};
+            --radius: {radius};
+            --transition: {transition} ease;
+            --font-primary: '{font_primary}', system-ui, sans-serif;
+            --font-secondary: '{font_secondary}', system-ui, sans-serif;
         }}
 
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 
         body {{
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%);
+            font-family: var(--font-secondary);
+            background: var(--color-bg);
             color: var(--color-text);
             line-height: 1.6;
             min-height: 100vh;
@@ -1493,11 +1551,11 @@ class Pipeline:
 
         body.light-mode {{
             --color-bg: #ffffff;
-            --color-card-bg: #f8f8f8;
+            --color-card-bg: #f8fafc;
             --color-text: #1a1a2e;
-            --color-muted: rgba(0,0,0,0.6);
-            --color-border: rgba(0,0,0,0.1);
-            background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+            --color-muted: #64748b;
+            --color-border: #e2e8f0;
+            background: var(--color-bg);
         }}
 
         {get_header_styles()}
@@ -1510,7 +1568,7 @@ class Pipeline:
         }}
 
         .page-title {{
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-size: clamp(2rem, 5vw, 3.5rem);
             font-weight: 700;
             margin-bottom: 1rem;
@@ -1549,7 +1607,7 @@ class Pipeline:
         }}
 
         .section-title {{
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-size: 1.5rem;
             font-weight: 600;
             display: flex;
@@ -1793,7 +1851,7 @@ class Pipeline:
         }}
     </style>
 </head>
-<body class="dark-mode">
+<body class="{base_mode}">
     {build_header('media', date_str)}
 
     <header class="page-header">

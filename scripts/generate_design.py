@@ -369,9 +369,9 @@ COLOR_SCHEMES = [
     },
     {
         "name": "Matrix",
-        "bg": "#0a0a0a", "text": "#00ff00", "accent": "#00ff00",
-        "accent_secondary": "#00cc00", "muted": "#008800",
-        "card_bg": "#0d1a0d", "border": "#1a2f1a", "dark": True,
+        "bg": "#0a0a0a", "text": "#e2e8f0", "accent": "#38bdf8",
+        "accent_secondary": "#22d3ee", "muted": "#7c9ab3",
+        "card_bg": "#0d141c", "border": "#1c2733", "dark": True,
         "mood": "retro", "personalities": ["tech", "brutalist"]
     },
     # Light themes
@@ -855,10 +855,9 @@ class DesignGenerator:
         """Generate a unique design based on trends and timestamp."""
         print("Generating design specification...")
 
-        # Use timestamp as seed for unique designs on each generation
-        # This ensures each run produces a different design
-        timestamp_seed = datetime.now().isoformat()
-        rng = random.Random(timestamp_seed)
+        # Use a stable daily seed so rebuilds are deterministic for the day
+        day_seed = datetime.now().strftime("%Y-%m-%d")
+        rng = random.Random(day_seed)
 
         # Try AI generation for colors/theme
         ai_enhancements = self._try_ai_generation(trends, keywords)

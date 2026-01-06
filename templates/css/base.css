@@ -99,6 +99,27 @@ h1, h2, h3, h4, h5, h6 {
     scroll-margin-top: 6rem;
 }
 
+body.density-compact {
+    --section-gap: 2.5rem;
+    --card-padding: 1.1rem;
+    --card-gap: 1rem;
+    --card-min-height: 160px;
+}
+
+body.density-comfortable {
+    --section-gap: 3.5rem;
+    --card-padding: 1.5rem;
+    --card-gap: 1.5rem;
+    --card-min-height: 190px;
+}
+
+body.density-spacious {
+    --section-gap: 5rem;
+    --card-padding: 1.75rem;
+    --card-gap: 2rem;
+    --card-min-height: 230px;
+}
+
 .section-header {
     display: flex;
     justify-content: space-between;

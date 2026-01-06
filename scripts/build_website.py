@@ -27,6 +27,23 @@ from fetch_images import FallbackImageGenerator
 from shared_components import build_header, build_footer, get_header_styles, get_footer_styles, get_theme_script
 
 
+LAYOUT_TEMPLATES = ["newspaper", "magazine", "bold", "mosaic"]
+HERO_STYLES = [
+    "cinematic",
+    "glassmorphism",
+    "neon",
+    "duotone",
+    "particles",
+    "waves",
+    "geometric",
+    "spotlight",
+    "glitch",
+    "aurora",
+    "mesh",
+    "retro",
+]
+
+
 @dataclass
 class BuildContext:
     """Context for building the website."""
@@ -67,8 +84,15 @@ class WebsiteBuilder:
         timestamp_seed = datetime.now().isoformat()
         self.rng = random.Random(timestamp_seed)
 
-        self.layout = self.design.layout_style if self.design and hasattr(self.design, 'layout_style') else self.rng.choice(LAYOUT_TEMPLATES)
-        self.hero_style = self.design.hero_style if self.design and hasattr(self.design, 'hero_style') else self.rng.choice(HERO_STYLES)
+        if isinstance(self.design, dict):
+            layout_style = self.design.get('layout_style')
+            hero_style = self.design.get('hero_style')
+        else:
+            layout_style = self.design.layout_style if self.design and hasattr(self.design, 'layout_style') else None
+            hero_style = self.design.hero_style if self.design and hasattr(self.design, 'hero_style') else None
+
+        self.layout = layout_style or self.rng.choice(LAYOUT_TEMPLATES)
+        self.hero_style = hero_style or self.rng.choice(HERO_STYLES)
 
         # Group trends by category
         self.grouped_trends = self._group_trends()
@@ -345,6 +369,9 @@ class WebsiteBuilder:
 
         # Prepare styles from design spec
         d = self.design
+        card_style = d.get('card_style', 'bordered')
+        hover_effect = d.get('hover_effect', 'lift')
+        animation_level = d.get('animation_level', 'subtle')
         custom_styles = f"""
             .hero-content {{ 
                 text-align: { 'center' if d.get('hero_style') in ['minimal', 'centered'] else 'left' }; 
@@ -357,6 +384,7 @@ class WebsiteBuilder:
         # Build body classes - dynamically set mode from design
         # JavaScript will override based on user preference from localStorage
         base_mode = "dark-mode" if d.get('is_dark_mode', True) else "light-mode"
+        spacing = d.get('spacing', 'comfortable')
         body_classes = [
             f"layout-{self.layout}",
             f"hero-{self.hero_style}",
@@ -397,6 +425,16 @@ class WebsiteBuilder:
         if card_aspect and card_aspect != 'auto':
             body_classes.append(f"aspect-{card_aspect}")
 
+        if spacing:
+            body_classes.append(f"density-{spacing}")
+
+        section_gap_map = {
+            "compact": "2.5rem",
+            "comfortable": "3.5rem",
+            "spacious": "5rem",
+        }
+        section_gap = section_gap_map.get(spacing, "3.5rem")
+
         # Build context variables for the template
         render_context = {
             'page_title': f"DailyTrending.info - {self._get_top_topic()}",
@@ -406,11 +444,13 @@ class WebsiteBuilder:
             'date_str': self.ctx.generated_at,
             'date_iso': datetime.now().strftime("%Y-%m-%d"),
             'last_modified': datetime.now().isoformat(),
+            'active_page': 'home',
             'font_primary': d.get('font_primary', 'Space Grotesk').replace(' ', '+'),
             'font_secondary': d.get('font_secondary', 'Inter').replace(' ', '+'),
             'font_primary_family': d.get('font_primary', 'Space Grotesk'),
             'font_secondary_family': d.get('font_secondary', 'Inter'),
             'hero_image_url': hero_image_url,
+            'section_gap': section_gap,
             'colors': {
                 'bg': d.get('color_bg', '#0a0a0a'),
                 'bg_rgb': hex_to_rgb(d.get('color_bg', '#0a0a0a')),

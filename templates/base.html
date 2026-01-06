@@ -196,6 +196,57 @@
                 });
             }
 
+            // Reading controls
+            const densityButtons = document.querySelectorAll('[data-density]');
+            const viewButtons = document.querySelectorAll('[data-view]');
+            const densityClasses = ['density-compact', 'density-comfortable', 'density-spacious'];
+
+            const setDensityActive = (value) => {
+                densityButtons.forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.density === value);
+                });
+            };
+
+            const setViewActive = (value) => {
+                viewButtons.forEach((btn) => {
+                    btn.classList.toggle('active', btn.dataset.view === value);
+                });
+            };
+
+            const applyDensity = (value) => {
+                densityClasses.forEach((cls) => body.classList.remove(cls));
+                if (value) {
+                    body.classList.add(`density-${value}`);
+                    localStorage.setItem('reading_density', value);
+                }
+                setDensityActive(value);
+            };
+
+            const applyView = (value) => {
+                body.classList.toggle('view-list', value === 'list');
+                localStorage.setItem('reading_view', value);
+                setViewActive(value);
+            };
+
+            if (densityButtons.length) {
+                const savedDensity = localStorage.getItem('reading_density');
+                const currentDensity = densityClasses.find((cls) => body.classList.contains(cls));
+                applyDensity(savedDensity || (currentDensity ? currentDensity.replace('density-', '') : 'comfortable'));
+
+                densityButtons.forEach((btn) => {
+                    btn.addEventListener('click', () => applyDensity(btn.dataset.density));
+                });
+            }
+
+            if (viewButtons.length) {
+                const savedView = localStorage.getItem('reading_view') || 'grid';
+                applyView(savedView);
+
+                viewButtons.forEach((btn) => {
+                    btn.addEventListener('click', () => applyView(btn.dataset.view));
+                });
+            }
+
             // Save and Share actions
             const savedKey = 'dailytrending_saved';
             const saveButtons = document.querySelectorAll('.save-btn');

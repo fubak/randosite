@@ -51,6 +51,20 @@
 
 {% block content %}
 <main id="main-content" role="main" class="container">
+
+    <section class="reading-controls" aria-label="Reading controls">
+        <div class="reading-group">
+            <span class="reading-label">Density</span>
+            <button class="reading-button" type="button" data-density="compact">Compact</button>
+            <button class="reading-button" type="button" data-density="comfortable">Comfortable</button>
+            <button class="reading-button" type="button" data-density="spacious">Spacious</button>
+        </div>
+        <div class="reading-group">
+            <span class="reading-label">View</span>
+            <button class="reading-button" type="button" data-view="grid">Grid</button>
+            <button class="reading-button" type="button" data-view="list">List</button>
+        </div>
+    </section>
     
     <!-- Word Cloud -->
     <section class="word-cloud-section" aria-label="Trending keywords">
@@ -62,7 +76,7 @@
     </section>
 
     <!-- Top Stories Grid -->
-    <section class="section">
+    <section class="section top-stories-section">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
             <span class="section-count">{{ top_stories|length }} Stories</span>
@@ -120,7 +134,7 @@
 
     <!-- Category Sections -->
     {% for category, stories in categories %}
-    <section class="section" aria-labelledby="cat-{{ category|lower|replace(' ', '-') }}">
+    <section class="section category-section" aria-labelledby="cat-{{ category|lower|replace(' ', '-') }}">
         <div class="section-header">
             <h2 id="cat-{{ category|lower|replace(' ', '-') }}" class="section-title">{{ category }}</h2>
             <span class="section-count">{{ stories|length }}</span>

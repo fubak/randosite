@@ -109,6 +109,43 @@ class EditorialGenerator:
         })
         self._last_call_time = 0.0  # Track last API call for rate limiting
 
+    def _get_design_tokens(self, design: Optional[Dict]) -> Dict:
+        """Normalize design tokens for editorial templates."""
+        tokens = {
+            'primary_color': '#667eea',
+            'accent_color': '#4facfe',
+            'bg_color': '#0f0f23',
+            'text_color': '#ffffff',
+            'muted_color': '#a1a1aa',
+            'border_color': '#27272a',
+            'card_bg': 'rgba(255,255,255,0.03)',
+            'font_primary': 'Playfair Display',
+            'font_secondary': 'Inter',
+            'radius': '1rem',
+            'transition': '200ms',
+            'base_mode': 'dark-mode',
+        }
+
+        if not design:
+            return tokens
+
+        tokens.update({
+            'primary_color': design.get('color_accent', tokens['primary_color']),
+            'accent_color': design.get('color_accent_secondary', tokens['accent_color']),
+            'bg_color': design.get('color_bg', tokens['bg_color']),
+            'text_color': design.get('color_text', tokens['text_color']),
+            'muted_color': design.get('color_muted', tokens['muted_color']),
+            'border_color': design.get('color_border', tokens['border_color']),
+            'card_bg': design.get('color_card_bg', tokens['card_bg']),
+            'font_primary': design.get('font_primary', tokens['font_primary']),
+            'font_secondary': design.get('font_secondary', tokens['font_secondary']),
+            'radius': design.get('card_radius', tokens['radius']),
+            'transition': design.get('transition_speed', tokens['transition']),
+            'base_mode': 'dark-mode' if design.get('is_dark_mode', True) else 'light-mode',
+        })
+
+        return tokens
+
     def generate_editorial(
         self,
         trends: List[Dict],
@@ -508,17 +545,13 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         article_dir = self.articles_dir / date_parts[0] / date_parts[1] / date_parts[2] / article.slug
         article_dir.mkdir(parents=True, exist_ok=True)
 
-        # Get design colors (fallback to defaults)
-        primary_color = design.get('primary_color', '#667eea') if design else '#667eea'
-        accent_color = design.get('accent_color', '#4facfe') if design else '#4facfe'
-        bg_color = design.get('background_color', '#0f0f23') if design else '#0f0f23'
-        text_color = design.get('text_color', '#ffffff') if design else '#ffffff'
+        tokens = self._get_design_tokens(design)
 
         # Get related articles for internal linking
         related_articles = self._get_related_articles(article.date, article.slug, limit=3)
 
         # Generate HTML
-        html = self._generate_article_html(article, primary_color, accent_color, bg_color, text_color, related_articles)
+        html = self._generate_article_html(article, tokens, related_articles)
 
         # Save index.html
         (article_dir / "index.html").write_text(html, encoding='utf-8')
@@ -535,10 +568,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
     def _generate_article_html(
         self,
         article: EditorialArticle,
-        primary_color: str,
-        accent_color: str,
-        bg_color: str,
-        text_color: str,
+        tokens: Dict,
         related_articles: Optional[List[Dict]] = None
     ) -> str:
         """Generate full HTML page for an editorial article."""
@@ -653,29 +683,32 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={tokens['font_secondary'].replace(' ', '+')}:wght@400;500;600;700&family={tokens['font_primary'].replace(' ', '+')}:wght@600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {{
-            --primary: {primary_color};
-            --accent: {accent_color};
-            --bg: {bg_color};
-            --text: {text_color};
-            --text-muted: rgba(255,255,255,0.7);
-            --border: rgba(255,255,255,0.1);
+            --primary: {tokens['primary_color']};
+            --accent: {tokens['accent_color']};
+            --bg: {tokens['bg_color']};
+            --text: {tokens['text_color']};
+            --text-muted: {tokens['muted_color']};
+            --border: {tokens['border_color']};
+            --card-bg: {tokens['card_bg']};
+            --font-primary: '{tokens['font_primary']}', system-ui, sans-serif;
+            --font-secondary: '{tokens['font_secondary']}', system-ui, sans-serif;
             /* Shared component color mappings */
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
             --color-accent: var(--accent);
             --color-border: var(--border);
-            --color-card-bg: rgba(255,255,255,0.03);
+            --color-card-bg: var(--card-bg);
         }}
 
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 
         body {{
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--font-secondary);
             background: var(--bg);
             color: var(--text);
             line-height: 1.7;
@@ -685,13 +718,14 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         body.light-mode {{
             --bg: #ffffff;
             --text: #1a1a2e;
-            --text-muted: rgba(0,0,0,0.6);
-            --border: rgba(0,0,0,0.1);
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --card-bg: #f8fafc;
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
             --color-border: var(--border);
-            --color-card-bg: rgba(0,0,0,0.03);
+            --color-card-bg: var(--card-bg);
         }}
 
         .container {{
@@ -742,7 +776,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         }}
 
         h1 {{
-            font-family: 'Playfair Display', Georgia, serif;
+            font-family: var(--font-primary);
             font-size: clamp(2rem, 5vw, 3rem);
             font-weight: 700;
             line-height: 1.2;
@@ -768,7 +802,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         }}
 
         .article-content h2 {{
-            font-family: 'Playfair Display', Georgia, serif;
+            font-family: var(--font-primary);
             font-size: 1.5rem;
             margin: 2.5rem 0 1rem;
             color: var(--accent);
@@ -974,27 +1008,18 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             }}
         }}
 
-        @media (prefers-color-scheme: light) {{
-            :root {{
-                --bg: #ffffff;
-                --text: #1a1a2e;
-                --text-muted: rgba(0,0,0,0.6);
-                --border: rgba(0,0,0,0.1);
-            }}
-
-            h1 {{
-                background: linear-gradient(135deg, var(--text), var(--primary));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }}
+        body.light-mode h1 {{
+            background: linear-gradient(135deg, var(--text), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }}
 
         {get_header_styles()}
         {get_footer_styles()}
     </style>
 </head>
-<body class="dark-mode">
+<body class="{tokens['base_mode']} editorial-mode">
     {build_header('articles', date_formatted)}
 
     <article class="container">
@@ -1810,11 +1835,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             logger.info("No articles directory found")
             return 0
 
-        # Get design colors (fallback to defaults)
-        primary_color = design.get('primary_color', '#667eea') if design else '#667eea'
-        accent_color = design.get('accent_color', '#4facfe') if design else '#4facfe'
-        bg_color = design.get('background_color', '#0f0f23') if design else '#0f0f23'
-        text_color = design.get('text_color', '#ffffff') if design else '#ffffff'
+        tokens = self._get_design_tokens(design)
 
         count = 0
         for metadata_file in self.articles_dir.rglob("metadata.json"):
@@ -1840,9 +1861,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 related_articles = self._get_related_articles(article.date, article.slug, limit=3)
 
                 # Generate new HTML
-                html = self._generate_article_html(
-                    article, primary_color, accent_color, bg_color, text_color, related_articles
-                )
+                html = self._generate_article_html(article, tokens, related_articles)
 
                 # Save to index.html in same directory as metadata.json
                 article_dir = metadata_file.parent
@@ -1889,10 +1908,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         """
         articles = self.get_all_articles()
 
-        # Get design colors
-        primary_color = design.get('primary_color', '#667eea') if design else '#667eea'
-        accent_color = design.get('accent_color', '#4facfe') if design else '#4facfe'
-        bg_color = design.get('background_color', '#0f0f23') if design else '#0f0f23'
+        tokens = self._get_design_tokens(design)
 
         # Calculate stats
         total_articles = len(articles)
@@ -1928,29 +1944,32 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
     <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family={tokens['font_secondary'].replace(' ', '+')}:wght@400;500;600;700&family={tokens['font_primary'].replace(' ', '+')}:wght@600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {{
-            --primary: {primary_color};
-            --accent: {accent_color};
-            --bg: {bg_color};
-            --text: #ffffff;
-            --text-muted: rgba(255,255,255,0.7);
-            --border: rgba(255,255,255,0.1);
+            --primary: {tokens['primary_color']};
+            --accent: {tokens['accent_color']};
+            --bg: {tokens['bg_color']};
+            --text: {tokens['text_color']};
+            --text-muted: {tokens['muted_color']};
+            --border: {tokens['border_color']};
+            --card-bg: {tokens['card_bg']};
+            --font-primary: '{tokens['font_primary']}', system-ui, sans-serif;
+            --font-secondary: '{tokens['font_secondary']}', system-ui, sans-serif;
             /* Shared component color mappings */
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
             --color-accent: var(--accent);
             --color-border: var(--border);
-            --color-card-bg: rgba(255,255,255,0.03);
+            --color-card-bg: var(--card-bg);
         }}
 
         * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 
         body {{
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: var(--font-secondary);
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -1960,13 +1979,14 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         body.light-mode {{
             --bg: #ffffff;
             --text: #1a1a2e;
-            --text-muted: rgba(0,0,0,0.6);
-            --border: rgba(0,0,0,0.1);
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --card-bg: #f8fafc;
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
             --color-border: var(--border);
-            --color-card-bg: rgba(0,0,0,0.03);
+            --color-card-bg: var(--card-bg);
         }}
 
         .container {{
@@ -1993,7 +2013,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         }}
 
         .page-header h1 {{
-            font-family: 'Playfair Display', Georgia, serif;
+            font-family: var(--font-primary);
             font-size: clamp(2rem, 5vw, 3rem);
             margin-bottom: 0.5rem;
         }}
@@ -2226,7 +2246,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         }}
 
         .article-card h2 {{
-            font-family: 'Playfair Display', Georgia, serif;
+            font-family: var(--font-primary);
             font-size: 1.5rem;
             margin: 0.5rem 0;
         }}
@@ -2423,7 +2443,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         {get_footer_styles()}
     </style>
 </head>
-<body class="dark-mode">
+<body class="{tokens['base_mode']} editorial-mode">
     {build_header('articles', datetime.now().strftime('%B %d, %Y'))}
 
     <div class="container">

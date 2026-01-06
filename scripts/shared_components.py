@@ -158,14 +158,14 @@ def get_header_styles() -> str:
             align-items: center;
             justify-content: space-between;
             padding: 1rem 2rem;
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--color-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--color-border);
         }
 
         .nav-logo {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-weight: 700;
             font-size: 1.25rem;
             color: var(--color-text);
@@ -338,7 +338,7 @@ def get_footer_styles() -> str:
         }
 
         .footer-brand {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-weight: 700;
             font-size: 1.5rem;
             color: var(--color-text);
