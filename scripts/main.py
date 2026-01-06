@@ -20,6 +20,7 @@ import os
 import sys
 import json
 import argparse
+import re
 from datetime import datetime
 from pathlib import Path
 from dataclasses import asdict
@@ -487,6 +488,39 @@ class Pipeline:
 
         return headline_keywords
 
+    def _normalize_title(self, title: str) -> str:
+        """Normalize titles for summary matching."""
+        if not title:
+            return ""
+        cleaned = re.sub(r"[^a-z0-9]+", " ", title.lower())
+        return re.sub(r"\s+", " ", cleaned).strip()
+
+    def _apply_story_summaries(self, trends: List[dict]) -> None:
+        """Attach AI summaries to trend items when available."""
+        if not self.enriched_content or not getattr(self.enriched_content, "story_summaries", None):
+            return
+
+        summary_map = {}
+        for item in self.enriched_content.story_summaries:
+            title = getattr(item, "title", None) or item.get("title")
+            summary = getattr(item, "summary", None) or item.get("summary")
+            if not title or not summary:
+                continue
+            summary_map[self._normalize_title(title)] = summary.strip()
+
+        if not summary_map:
+            return
+
+        for trend in trends:
+            title = trend.get("title", "")
+            if not title:
+                continue
+            summary = summary_map.get(self._normalize_title(title))
+            if summary:
+                trend["summary"] = summary
+                if not trend.get("description"):
+                    trend["description"] = summary
+
     def _step_enrich_content(self):
         """Enrich content with Word of Day, Grokipedia article, and story summaries."""
         logger.info("[5/16] Enriching content...")
@@ -577,6 +611,8 @@ class Pipeline:
             sample = trends_data[0]
             logger.info(f"Sample trend: title='{sample.get('title', '')[:50]}', source='{sample.get('source', '')}'")
 
+        self._apply_story_summaries(trends_data)
+
         images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
         design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
 
@@ -644,6 +680,8 @@ class Pipeline:
         trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
         design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
         images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
+
+        self._apply_story_summaries(trends_data)
 
         # Define topic categories and their filters
         # Sources use prefix matching: 'tech_' matches 'tech_verge', 'tech_wired', etc.
@@ -882,7 +920,7 @@ class Pipeline:
         featured_title = html_module.escape((featured_story.get('title') or '')[:100])
         featured_url = html_module.escape(featured_story.get('url') or '#')
         featured_source = html_module.escape((featured_story.get('source') or '').replace('_', ' ').title())
-        featured_desc = html_module.escape((featured_story.get('description') or '')[:200])
+        featured_desc = html_module.escape((featured_story.get('summary') or featured_story.get('description') or '')[:200])
 
         # Build story cards with enhanced design (skip first since it's in hero)
         cards = []
@@ -890,13 +928,19 @@ class Pipeline:
             title = html_module.escape((t.get('title') or '')[:100])
             url = html_module.escape(t.get('url') or '#')
             source = html_module.escape((t.get('source') or '').replace('_', ' ').title())
-            desc = html_module.escape((t.get('description') or '')[:150])
+            image_url = html_module.escape(t.get('image_url') or '')
+            image_block = ""
+            if image_url:
+                image_block = f'''
+                <figure class="story-media">
+                    <img src="{image_url}" alt="{title}" class="story-image" loading="lazy" width="640" height="360">
+                </figure>'''
 
             cards.append(f'''
             <article class="story-card">
+                {image_block}
                 <span class="source-badge">{source}</span>
                 <h3><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>
-                {'<p class="story-desc">' + desc + '</p>' if desc else ''}
             </article>''')
 
         return f'''<!DOCTYPE html>
@@ -1137,6 +1181,19 @@ class Pipeline:
             grid-column: 1 / -1;
             background: var(--color-card-bg);
             border-color: var(--color-accent);
+        }}
+
+        .story-media {{
+            margin-bottom: 0.9rem;
+        }}
+
+        .story-image {{
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            object-position: center;
+            border-radius: calc(var(--radius) - 2px);
+            background: var(--color-border);
         }}
 
         .source-badge {{

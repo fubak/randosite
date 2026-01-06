@@ -16,10 +16,14 @@ import json
 import html
 import random
 import hashlib
+import re
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass, asdict
 from collections import defaultdict
+
+import requests
+from bs4 import BeautifulSoup
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -69,6 +73,7 @@ class WebsiteBuilder:
     def __init__(self, context: BuildContext):
         self.ctx = context
         self.design = context.design
+        self._description_cache = {}
         
         # Setup Jinja2 environment
         # Assuming templates are in a 'templates' folder at the project root
@@ -297,8 +302,54 @@ class WebsiteBuilder:
                     top_stories.append(story)
                     if len(top_stories) >= 8:
                         break
-        
+
+        for story in top_stories:
+            self._ensure_story_description(story)
+
         return top_stories
+
+    def _fetch_story_description(self, url: str) -> str:
+        """Fetch a concise meta description for a story URL."""
+        if not url or not url.startswith(("http://", "https://")):
+            return ""
+        if url in self._description_cache:
+            return self._description_cache[url]
+
+        description = ""
+        try:
+            response = requests.get(
+                url,
+                timeout=6,
+                headers={"User-Agent": "DailyTrendingBot/1.0"}
+            )
+            if response.status_code >= 400:
+                self._description_cache[url] = ""
+                return ""
+
+            soup = BeautifulSoup(response.text, "lxml")
+            for attr, key in (("property", "og:description"), ("name", "description"), ("name", "twitter:description")):
+                tag = soup.find("meta", attrs={attr: key})
+                if tag and tag.get("content"):
+                    description = tag.get("content", "").strip()
+                    break
+        except Exception:
+            description = ""
+
+        description = html.unescape(description)
+        description = re.sub(r"\s+", " ", description).strip()
+        if len(description) > 220:
+            description = description[:217].rsplit(" ", 1)[0] + "..."
+
+        self._description_cache[url] = description
+        return description
+
+    def _ensure_story_description(self, story: Dict) -> None:
+        """Add a non-AI summary when a story lacks description content."""
+        if story.get("summary") or story.get("description"):
+            return
+        description = self._fetch_story_description(story.get("url", ""))
+        if description:
+            story["description"] = description
 
     def _calculate_keyword_freq(self) -> List[Tuple[str, int, int]]:
         """Calculate keyword frequencies and assign size classes 1-6."""
