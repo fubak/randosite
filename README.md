@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-06 15:42 UTC | [Update story card summaries and image focus](https://github.com/fubak/daily-trending-info/commit/0a3b4fb5abd5e3a468061d142379c7de8d8e77a4) |
 | 2026-01-06 01:56 UTC | [Improve layout density and adjust Matrix colors](https://github.com/fubak/daily-trending-info/commit/2b227b03c71db14b178c6dc766dd0d6cd782574e) |
 | 2026-01-05 22:39 UTC | [Fix layout clipping and add story actions](https://github.com/fubak/daily-trending-info/commit/7e5185541a62943acb33c1beec943ac6dd4cc85c) |
 | 2026-01-05 19:07 UTC | [fix: Resolve theme initialization and layout overflow](https://github.com/fubak/daily-trending-info/commit/b6c542008f57adb5ca9f249997a08bace942a643) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-05 17:28 UTC | [fix: Resolve undefined 'story' variable in ticker template](https://github.com/fubak/daily-trending-info/commit/b7c1dac5b8d129e29843f0f5512078544846eb33) |
 | 2026-01-05 15:39 UTC | [fix: Resolve theme toggle issue](https://github.com/fubak/daily-trending-info/commit/2ee179a84824d39775a0261ff90835208ea97af9) |
 | 2026-01-05 13:33 UTC | [fix: Correct 'NONE' badge issue and compact category layout](https://github.com/fubak/daily-trending-info/commit/f6e58f3874c8158ec933c8ad98d8b1f7a6785348) |
-| 2026-01-05 13:22 UTC | [design: Modernize UI/UX with CSS Grid, semantic HTML, and accessibility improvements](https://github.com/fubak/daily-trending-info/commit/fed69d95e2bc126e868c3d7cbecb3375f1b93b02) |
 <!-- CHANGELOG_END -->
 
 ## Features
