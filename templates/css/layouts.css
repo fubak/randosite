@@ -1,6 +1,14 @@
 /* ===== LAYOUTS ===== */
 
 /* Top Stories Grid - Responsive Columns */
+.top-stories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--card-gap, 1.5rem);
+    align-items: stretch;
+    grid-auto-flow: dense;
+}
+
 body.layout-split .top-stories {
     margin-top: 0;
 }
@@ -64,9 +72,7 @@ body.layout-split .top-stories {
 }
 
 .top-stories .story-image.placeholder {
-    background: color-mix(in srgb, rgba(15,23,33,0.95), rgba(40,52,71,0.85));
-    background-image: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), transparent 45%),
-                      radial-gradient(circle at 70% 75%, rgba(255,255,255,0.08), transparent 40%);
+    background-image: url('/assets/nano-banana.png');
     background-size: cover;
     background-position: center;
 }
@@ -151,9 +157,9 @@ body.layout-split .top-stories {
 /* Grid Layouts */
 .stories-grid { /* For category sections */
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--card-gap);
-    grid-auto-flow: row dense;
+    grid-auto-flow: dense;
 }
 
 body.view-list .top-stories,
@@ -191,11 +197,14 @@ body.view-list .top-stories article.story-card.featured {
 }
 
 .stories-grid .story-image.placeholder {
-    background: color-mix(in srgb, rgba(15,23,33,0.9), rgba(34,45,62,0.8));
-    background-image: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.16), transparent 50%),
-                      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 55%);
+    background-image: url('/assets/nano-banana.png');
     background-size: cover;
     background-position: center;
+}
+
+.story-image--placeholder {
+    object-fit: cover;
+    opacity: 0.92;
 }
 
 

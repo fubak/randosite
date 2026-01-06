@@ -76,7 +76,7 @@
     </section>
 
     <!-- Top Stories Grid -->
-    {% set display_top_stories = top_stories[:6] %}
+    {% set display_top_stories = top_stories[:5] %}
     <section class="section top-stories-section">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
@@ -105,7 +105,7 @@
                              width="800" 
                              height="450">
                         {% else %}
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         {% endif %}
                     </figure>
                     
@@ -168,7 +168,7 @@
                              width="400" 
                              height="225">
                         {% else %}
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         {% endif %}
                     </figure>
                     {% endif %}

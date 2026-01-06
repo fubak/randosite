@@ -7,8 +7,8 @@
     <!-- Primary Meta Tags -->
     <title>DailyTrending.info - Vienam bans unskippable ads</title>
     <meta name="title" content="DailyTrending.info - Vienam bans unskippable ads">
-    <meta name="description" content="Daily trending topics for January 06, 2026. 516 stories covering Hacker News, World News, Technology, Politics.">
-    <meta name="keywords" content="vienam, bans, unskippable, ads, prism, tools, free, privacy, focused, gmail, app, doug, lamalfa, dead, republican">
+    <meta name="description" content="Daily trending topics for January 06, 2026. 518 stories covering Hacker News, World News, Technology, Politics.">
+    <meta name="keywords" content="vienam, bans, unskippable, ads, prism, tools, free, privacy, focused, gmail, app, spherical, snake, doug, lamalfa">
     <meta name="author" content="DailyTrending.info">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     
@@ -23,10 +23,10 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dailytrending.info/">
     <meta property="og:title" content="DailyTrending.info - Vienam bans unskippable ads">
-    <meta property="og:description" content="Daily trending topics for January 06, 2026. 516 stories covering Hacker News, World News, Technology, Politics.">
+    <meta property="og:description" content="Daily trending topics for January 06, 2026. 518 stories covering Hacker News, World News, Technology, Politics.">
     <meta property="og:site_name" content="DailyTrending.info">
     <meta property="og:locale" content="en_US">
-    <meta property="og:image" content="https://picsum.photos/seed/dailytrending_20260106_0/1200/800">
+    <meta property="og:image" content="https://media.urbanistnetwork.com/saigoneer/article-images/2026/01/06/2.webp">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
@@ -34,13 +34,13 @@
     <meta name="twitter:creator" content="@bradshannon">
     <meta name="twitter:url" content="https://dailytrending.info/">
     <meta name="twitter:title" content="DailyTrending.info - Vienam bans unskippable ads">
-    <meta name="twitter:description" content="Daily trending topics for January 06, 2026. 516 stories covering Hacker News, World News, Technology, Politics.">
-    <meta name="twitter:image" content="https://picsum.photos/seed/dailytrending_20260106_0/1200/800">
+    <meta name="twitter:description" content="Daily trending topics for January 06, 2026. 518 stories covering Hacker News, World News, Technology, Politics.">
+    <meta name="twitter:image" content="https://media.urbanistnetwork.com/saigoneer/article-images/2026/01/06/2.webp">
 
     <!-- Additional SEO -->
     <meta name="generator" content="DailyTrending.info Autonomous Generator">
     <meta name="date" content="2026-01-06">
-    <meta name="last-modified" content="2026-01-06T17:04:59.807044">
+    <meta name="last-modified" content="2026-01-06T17:15:17.752764">
 
     <!-- Structured Data -->
     
@@ -60,7 +60,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700;800;900&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <link rel="preload" as="image" href="https://picsum.photos/seed/dailytrending_20260106_0/1200/800">
+    <link rel="preload" as="image" href="https://media.urbanistnetwork.com/saigoneer/article-images/2026/01/06/2.webp">
     
 
     <!-- Styles -->
@@ -90,7 +90,7 @@
             --top-stories-columns: repeat(auto-fit, minmax(240px, 1fr));
             --stories-grid-columns: repeat(auto-fit, minmax(220px, 1fr));
 
-            --hero-bg: url('https://picsum.photos/seed/dailytrending_20260106_0/1200/800') center center / cover no-repeat #0a0a0a;
+            --hero-bg: url('https://media.urbanistnetwork.com/saigoneer/article-images/2026/01/06/2.webp') center center / cover no-repeat #0a0a0a;
         }
 
         /* Base Styles */
@@ -341,6 +341,14 @@ body.dark-mode {
         /* ===== LAYOUTS ===== */
 
 /* Top Stories Grid - Responsive Columns */
+.top-stories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--card-gap, 1.5rem);
+    align-items: stretch;
+    grid-auto-flow: dense;
+}
+
 body.layout-split .top-stories {
     margin-top: 0;
 }
@@ -404,9 +412,7 @@ body.layout-split .top-stories {
 }
 
 .top-stories .story-image.placeholder {
-    background: color-mix(in srgb, rgba(15,23,33,0.95), rgba(40,52,71,0.85));
-    background-image: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), transparent 45%),
-                      radial-gradient(circle at 70% 75%, rgba(255,255,255,0.08), transparent 40%);
+    background-image: url('/assets/nano-banana.png');
     background-size: cover;
     background-position: center;
 }
@@ -491,9 +497,9 @@ body.layout-split .top-stories {
 /* Grid Layouts */
 .stories-grid { /* For category sections */
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--card-gap);
-    grid-auto-flow: row dense;
+    grid-auto-flow: dense;
 }
 
 body.view-list .top-stories,
@@ -531,11 +537,14 @@ body.view-list .top-stories article.story-card.featured {
 }
 
 .stories-grid .story-image.placeholder {
-    background: color-mix(in srgb, rgba(15,23,33,0.9), rgba(34,45,62,0.8));
-    background-image: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.16), transparent 50%),
-                      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.08), transparent 55%);
+    background-image: url('/assets/nano-banana.png');
     background-size: cover;
     background-position: center;
+}
+
+.story-image--placeholder {
+    object-fit: cover;
+    opacity: 0.92;
 }
 
 
@@ -2071,7 +2080,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
         <div class="hero-meta">
             <span>January 06, 2026</span>
             <span aria-hidden="true">•</span>
-            <span>516 stories analyzed</span>
+            <span>518 stories analyzed</span>
         </div>
     </div>
 </header>
@@ -2108,16 +2117,16 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             
             
-            <span class="ticker-source">News Nyt</span>
-            <strong><a href="https://www.nytimes.com/2026/01/06/us/politics/doug-lamalfa-dead.html" target="_blank" rel="noopener">Doug LaMalfa Is Dead: Republican Congressman From California Was 65</a></strong>
+            <span class="ticker-source">Hackernews</span>
+            <strong><a href="https://kevinalbs.com/spherical_snake/" target="_blank" rel="noopener">Spherical Snake</a></strong>
         </div>
         
         <div class="ticker-item">
             
             
             
-            <span class="ticker-source">News Bbc</span>
-            <strong><a href="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lego unveils tech-filled Smart Bricks - to play experts&#39; unease</a></strong>
+            <span class="ticker-source">News Nyt</span>
+            <strong><a href="https://www.nytimes.com/2026/01/06/us/politics/doug-lamalfa-dead.html" target="_blank" rel="noopener">Doug LaMalfa Is Dead: Republican Congressman From California Was 65</a></strong>
         </div>
         
         <div class="ticker-item">
@@ -2148,8 +2157,8 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             
             
-            <span class="ticker-source">News Abc News</span>
-            <strong><a href="https://abcnews.go.com/Politics/republican-rep-doug-lamalfa-died-gop-leaders/story?id=128945837" target="_blank" rel="noopener">Republican Rep. Doug LaMalfa dies at 65</a></strong>
+            <span class="ticker-source">Hackernews</span>
+            <strong><a href="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" target="_blank" rel="noopener">Video Game Websites in the early 00s</a></strong>
         </div>
         
         <div class="ticker-item">
@@ -2166,6 +2175,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="ticker-source">News Bbc</span>
             <strong><a href="https://www.bbc.com/news/articles/c17zee20qpzo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">UK and France to send troops to Ukraine if peace deal agreed</a></strong>
+        </div>
+        
+        <div class="ticker-item">
+            
+            
+            
+            <span class="ticker-source">News Bbc</span>
+            <strong><a href="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lego unveils tech-filled Smart Bricks - to play experts&#39; unease</a></strong>
         </div>
         
         <div class="ticker-item">
@@ -2190,14 +2207,6 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="ticker-source">News Abc News</span>
             <strong><a href="https://abcnews.go.com/GMA/News/video/students-develop-high-tech-fight-wildfires-128943477" target="_blank" rel="noopener">WATCH: Students develop high-tech way to fight wildfires</a></strong>
-        </div>
-        
-        <div class="ticker-item">
-            
-            
-            
-            <span class="ticker-source">News Cbs News</span>
-            <strong><a href="https://www.cbsnews.com/live-updates/venezuela-maduro-jail-trump-future/" target="_blank" rel="noopener">Venezuela&#39;s future in balance after Trump officials brief lawmakers; Maduro in jail</a></strong>
         </div>
         
     </div>
@@ -2229,39 +2238,39 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="word-cloud-item size-2" role="img" aria-label="venezuela">venezuela</span>
             
-            <span class="word-cloud-item size-2" role="img" aria-label="maduro">maduro</span>
+            <span class="word-cloud-item size-2" role="img" aria-label="ces">ces</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="year">year</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="ces">ces</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="jan">jan</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="you">you</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="jan">jan</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="maduro">maduro</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="house">house</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="greenland">greenland</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="one">one</span>
-            
             <span class="word-cloud-item size-1" role="img" aria-label="tech">tech</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="back">back</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="stranger">stranger</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="california">california</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="ukraine">ukraine</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="top">top</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="things">things</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="one">one</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="best">best</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="lamalfa">lamalfa</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="ukraine">ukraine</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="president">president</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="white">white</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="stranger">stranger</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="years">years</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="best">best</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="america">america</span>
             
@@ -2269,31 +2278,41 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="word-cloud-item size-1" role="img" aria-label="people">people</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="first">first</span>
-            
             <span class="word-cloud-item size-1" role="img" aria-label="doug">doug</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="lamalfa">lamalfa</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="republican">republican</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="back">back</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="california">california</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="deal">deal</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="musk">musk</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="white">white</span>
-            
             <span class="word-cloud-item size-1" role="img" aria-label="shows">shows</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="things">things</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="week">week</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="oil">oil</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="now">now</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="security">security</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="life">life</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="ceo">ceo</span>
+            
+            <span class="word-cloud-item size-1" role="img" aria-label="robot">robot</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="killed">killed</span>
             
+            <span class="word-cloud-item size-1" role="img" aria-label="first">first</span>
+            
             <span class="word-cloud-item size-1" role="img" aria-label="his">his</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="republican">republican</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="man">man</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="unveils">unveils</span>
             
@@ -2303,27 +2322,17 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <span class="word-cloud-item size-1" role="img" aria-label="high">high</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="future">future</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="big">big</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="president">president</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="day">day</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="technica">technica</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="anti">anti</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="our">our</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="big">big</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="updates">updates</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="rep">rep</span>
             
             <span class="word-cloud-item size-1" role="img" aria-label="fast">fast</span>
             
-            <span class="word-cloud-item size-1" role="img" aria-label="security">security</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="climate">climate</span>
-            
-            <span class="word-cloud-item size-1" role="img" aria-label="star">star</span>
+            <span class="word-cloud-item size-1" role="img" aria-label="now">now</span>
             
         </div>
     </section>
@@ -2333,7 +2342,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     <section class="section top-stories-section">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
-            <span class="section-count">6 Stories</span>
+            <span class="section-count">5 Stories</span>
         </div>
         <div class="top-stories">
             
@@ -2350,7 +2359,13 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 <div class="story-wrapper">
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <img src="https://media.urbanistnetwork.com/saigoneer/article-images/2026/01/06/2.webp" 
+                             alt="Vienam bans unskippable ads" 
+                             class="story-image" 
+                             loading="eager" 
+                             referrerpolicy="no-referrer"
+                             width="800" 
+                             height="450">
                         
                     </figure>
                     
@@ -2373,7 +2388,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:09.425394">Just now</time>
+                            <time datetime="2026-01-06 17:14:22.313836">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2421,7 +2436,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>News Nyt</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:21.340488">Just now</time>
+                            <time datetime="2026-01-06 17:13:34.367224">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2440,7 +2455,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 <div class="story-wrapper">
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -2463,7 +2478,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:09.907548">Just now</time>
+                            <time datetime="2026-01-06 17:14:22.869115">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2482,7 +2497,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 <div class="story-wrapper">
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -2505,7 +2520,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Finance Cnbc</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:59.556920">Just now</time>
+                            <time datetime="2026-01-06 17:14:12.350196">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2524,7 +2539,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 <div class="story-wrapper">
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -2547,55 +2562,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:10.332273">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            
-            <article class="story-card ">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" data-title="Lego unveils tech-filled Smart Bricks - to play experts&#39; unease" data-source="News Bbc" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" data-title="Lego unveils tech-filled Smart Bricks - to play experts&#39; unease" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    <figure class="story-media">
-                        
-                        <img src="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/32fb/live/ee3d5460-eaf1-11f0-8a5c-81e1c85f6b52.jpg" 
-                             alt="Lego unveils tech-filled Smart Bricks - to play experts&#39; unease" 
-                             class="story-image" 
-                             loading="eager" 
-                             referrerpolicy="no-referrer"
-                             width="800" 
-                             height="450">
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <header>
-                            
-                            
-                            
-                            <span class="source-badge news-bbc">News Bbc</span>
-                            
-                            <h3 class="story-title">
-                                <a href="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lego unveils tech-filled Smart Bricks - to play experts&#39; unease</a>
-                            </h3>
-                        </header>
-                        
-                        
-                        <p class="story-summary">Lego says its new tech-enabled products are its &#34;most revolutionary innovation&#34; since it launched its mini-figurines in ...</p>
-                        
-                        
-                        <footer class="story-meta">
-                            <span>News Bbc</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:21.641655">Just now</time>
+                            <time datetime="2026-01-06 17:14:23.193415">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2609,17 +2576,17 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     <section class="section category-section" aria-labelledby="cat-technology">
         <div class="section-header">
             <h2 id="cat-technology" class="section-title">Technology</h2>
-            <span class="section-count">143</span>
+            <span class="section-count">137</span>
         </div>
         <div class="stories-grid">
             
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://arstechnica.com/gaming/2025/12/ars-technicas-top-20-video-games-of-2025/" data-title="Ars Technica’s Top 20 video games of 2025" data-source="Ars Features" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://arstechnica.com/tech-policy/2025/12/big-tech-basically-took-trumps-unpredictable-trade-war-lying-down/" data-title="Big Tech basically took Trump’s unpredictable trade war lying down" data-source="Ars Features" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://arstechnica.com/gaming/2025/12/ars-technicas-top-20-video-games-of-2025/" data-title="Ars Technica’s Top 20 video games of 2025" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://arstechnica.com/tech-policy/2025/12/big-tech-basically-took-trumps-unpredictable-trade-war-lying-down/" data-title="Big Tech basically took Trump’s unpredictable trade war lying down" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -2627,8 +2594,8 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <img src="https://cdn.arstechnica.net/wp-content/uploads/2025/12/ars-best-games-2025-1152x648.jpg" 
-                             alt="Ars Technica’s Top 20 video games of 2025" 
+                        <img src="https://cdn.arstechnica.net/wp-content/uploads/2025/11/trump-tariffs-triton-1152x648.jpg" 
+                             alt="Big Tech basically took Trump’s unpredictable trade war lying down" 
                              class="story-image" 
                              loading="lazy" 
                              referrerpolicy="no-referrer"
@@ -2639,12 +2606,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://arstechnica.com/gaming/2025/12/ars-technicas-top-20-video-games-of-2025/" target="_blank" rel="noopener">Ars Technica’s Top 20 video games of 2025</a>
+                            <a href="https://arstechnica.com/tech-policy/2025/12/big-tech-basically-took-trumps-unpredictable-trade-war-lying-down/" target="_blank" rel="noopener">Big Tech basically took Trump’s unpredictable trade war lying down</a>
                         </h3>
                         <footer class="story-meta">
                             <span>Ars Features</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:23.058762">Just now</time>
+                            <time datetime="2026-01-06 17:14:35.127613">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2680,7 +2647,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Ars Features</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:23.058537">Just now</time>
+                            <time datetime="2026-01-06 17:14:35.127500">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2688,10 +2655,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://arstechnica.com/tech-policy/2025/12/big-tech-basically-took-trumps-unpredictable-trade-war-lying-down/" data-title="Big Tech basically took Trump’s unpredictable trade war lying down" data-source="Ars Features" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://arstechnica.com/gaming/2025/12/ars-technicas-top-20-video-games-of-2025/" data-title="Ars Technica’s Top 20 video games of 2025" data-source="Ars Features" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://arstechnica.com/tech-policy/2025/12/big-tech-basically-took-trumps-unpredictable-trade-war-lying-down/" data-title="Big Tech basically took Trump’s unpredictable trade war lying down" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://arstechnica.com/gaming/2025/12/ars-technicas-top-20-video-games-of-2025/" data-title="Ars Technica’s Top 20 video games of 2025" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -2699,8 +2666,8 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <img src="https://cdn.arstechnica.net/wp-content/uploads/2025/11/trump-tariffs-triton-1152x648.jpg" 
-                             alt="Big Tech basically took Trump’s unpredictable trade war lying down" 
+                        <img src="https://cdn.arstechnica.net/wp-content/uploads/2025/12/ars-best-games-2025-1152x648.jpg" 
+                             alt="Ars Technica’s Top 20 video games of 2025" 
                              class="story-image" 
                              loading="lazy" 
                              referrerpolicy="no-referrer"
@@ -2711,12 +2678,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://arstechnica.com/tech-policy/2025/12/big-tech-basically-took-trumps-unpredictable-trade-war-lying-down/" target="_blank" rel="noopener">Big Tech basically took Trump’s unpredictable trade war lying down</a>
+                            <a href="https://arstechnica.com/gaming/2025/12/ars-technicas-top-20-video-games-of-2025/" target="_blank" rel="noopener">Ars Technica’s Top 20 video games of 2025</a>
                         </h3>
                         <footer class="story-meta">
                             <span>Ars Features</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:23.058720">Just now</time>
+                            <time datetime="2026-01-06 17:14:35.127649">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2752,7 +2719,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Ars Features</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:23.058799">Just now</time>
+                            <time datetime="2026-01-06 17:14:35.127682">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2788,7 +2755,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Ars Features</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:23.058840">Just now</time>
+                            <time datetime="2026-01-06 17:14:35.127716">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2835,43 +2802,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>News Nyt</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:21.340488">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" data-title="Lego unveils tech-filled Smart Bricks - to play experts&#39; unease" data-source="News Bbc" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" data-title="Lego unveils tech-filled Smart Bricks - to play experts&#39; unease" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <img src="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/32fb/live/ee3d5460-eaf1-11f0-8a5c-81e1c85f6b52.jpg" 
-                             alt="Lego unveils tech-filled Smart Bricks - to play experts&#39; unease" 
-                             class="story-image" 
-                             loading="lazy" 
-                             referrerpolicy="no-referrer"
-                             width="400" 
-                             height="225">
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.bbc.com/news/articles/crmlnmnwzk2o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Lego unveils tech-filled Smart Bricks - to play experts&#39; unease</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>News Bbc</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:21.641655">Just now</time>
+                            <time datetime="2026-01-06 17:13:34.367224">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2907,7 +2838,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>News Bbc World</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:21.832194">Just now</time>
+                            <time datetime="2026-01-06 17:13:34.835444">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2943,7 +2874,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>News Guardian Us</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:22.436218">Just now</time>
+                            <time datetime="2026-01-06 17:13:35.437349">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2979,7 +2910,43 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>News Abc News</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:22.730828">Just now</time>
+                            <time datetime="2026-01-06 17:13:35.733466">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.nytimes.com/2026/01/06/us/politics/doug-lamalfa-house-republican-majority.html" data-title="Doug LaMalfa’s Death Further Depletes House G.O.P. Majority" data-source="News Nyt" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.nytimes.com/2026/01/06/us/politics/doug-lamalfa-house-republican-majority.html" data-title="Doug LaMalfa’s Death Further Depletes House G.O.P. Majority" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://static01.nyt.com/images/2026/01/06/multimedia/06dc-house-qgtf/06dc-house-qgtf-mediumSquareAt3X.jpg" 
+                             alt="Doug LaMalfa’s Death Further Depletes House G.O.P. Majority" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.nytimes.com/2026/01/06/us/politics/doug-lamalfa-house-republican-majority.html" target="_blank" rel="noopener">Doug LaMalfa’s Death Further Depletes House G.O.P. Majority</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>News Nyt</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:13:34.367177">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -2991,7 +2958,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     <section class="section category-section" aria-labelledby="cat-finance">
         <div class="section-header">
             <h2 id="cat-finance" class="section-title">Finance</h2>
-            <span class="section-count">57</span>
+            <span class="section-count">59</span>
         </div>
         <div class="stories-grid">
             
@@ -3009,7 +2976,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -3020,7 +2987,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Finance Cnbc</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:59.556920">Just now</time>
+                            <time datetime="2026-01-06 17:14:12.350196">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3028,10 +2995,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.marketwatch.com/story/emerging-market-stocks-even-in-venezuela-are-rallying-after-maduros-capture-10eb2e61?mod=mw_rss_topstories" data-title="Emerging-market stocks — even in Venezuela — are rallying after Maduro’s capture" data-source="Finance Marketwatch" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://www.cnbc.com/2026/01/06/doug-lamalfa-dies-congress-california.html" data-title="Republican Rep. Doug LaMalfa dies at 65" data-source="Finance Cnbc" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://www.marketwatch.com/story/emerging-market-stocks-even-in-venezuela-are-rallying-after-maduros-capture-10eb2e61?mod=mw_rss_topstories" data-title="Emerging-market stocks — even in Venezuela — are rallying after Maduro’s capture" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://www.cnbc.com/2026/01/06/doug-lamalfa-dies-congress-california.html" data-title="Republican Rep. Doug LaMalfa dies at 65" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -3039,8 +3006,68 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <img src="https://images.mktw.net/im-73169847" 
-                             alt="Emerging-market stocks — even in Venezuela — are rallying after Maduro’s capture" 
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.cnbc.com/2026/01/06/doug-lamalfa-dies-congress-california.html" target="_blank" rel="noopener">Republican Rep. Doug LaMalfa dies at 65</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Finance Cnbc</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:12.350298">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.cnbc.com/2026/01/06/trump-greenland-military-white-house.html" data-title="Trump weighs using U.S. military to acquire Greenland: White House" data-source="Finance Cnbc" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.cnbc.com/2026/01/06/trump-greenland-military-white-house.html" data-title="Trump weighs using U.S. military to acquire Greenland: White House" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.cnbc.com/2026/01/06/trump-greenland-military-white-house.html" target="_blank" rel="noopener">Trump weighs using U.S. military to acquire Greenland: White House</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Finance Cnbc</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:12.350120">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.marketwatch.com/story/what-you-need-to-know-about-changes-to-social-security-medicare-and-medicaid-in-2026-549b2f8c?mod=mw_rss_topstories" data-title="What you need to know about changes to Social Security, Medicare and Medicaid in 2026" data-source="Finance Marketwatch" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.marketwatch.com/story/what-you-need-to-know-about-changes-to-social-security-medicare-and-medicaid-in-2026-549b2f8c?mod=mw_rss_topstories" data-title="What you need to know about changes to Social Security, Medicare and Medicaid in 2026" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://images.mktw.net/im-22332988" 
+                             alt="What you need to know about changes to Social Security, Medicare and Medicaid in 2026" 
                              class="story-image" 
                              loading="lazy" 
                              referrerpolicy="no-referrer"
@@ -3051,42 +3078,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.marketwatch.com/story/emerging-market-stocks-even-in-venezuela-are-rallying-after-maduros-capture-10eb2e61?mod=mw_rss_topstories" target="_blank" rel="noopener">Emerging-market stocks — even in Venezuela — are rallying after Maduro’s capture</a>
+                            <a href="https://www.marketwatch.com/story/what-you-need-to-know-about-changes-to-social-security-medicare-and-medicaid-in-2026-549b2f8c?mod=mw_rss_topstories" target="_blank" rel="noopener">What you need to know about changes to Social Security, Medicare and Medicaid in 2026</a>
                         </h3>
                         <footer class="story-meta">
                             <span>Finance Marketwatch</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:59.996446">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://finance.yahoo.com/news/know-ahead-boeings-earnings-release-133312971.html" data-title="What You Need to Know Ahead of Boeing&#39;s Earnings Release" data-source="Finance Yahoo Finance" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://finance.yahoo.com/news/know-ahead-boeings-earnings-release-133312971.html" data-title="What You Need to Know Ahead of Boeing&#39;s Earnings Release" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://finance.yahoo.com/news/know-ahead-boeings-earnings-release-133312971.html" target="_blank" rel="noopener">What You Need to Know Ahead of Boeing&#39;s Earnings Release</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Finance Yahoo Finance</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:01.001077">Just now</time>
+                            <time datetime="2026-01-06 17:14:12.838087">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3105,7 +3102,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -3116,37 +3113,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Finance Economist</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:01.787167">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.reddit.com/r/Economics/comments/1q5pw05/californias_proposed_onetime_5_wealth_tax_sparks/" data-title="California’s proposed one-time 5% wealth tax sparks office expansions in Texas and Florida" data-source="Reddit Economics" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.reddit.com/r/Economics/comments/1q5pw05/californias_proposed_onetime_5_wealth_tax_sparks/" data-title="California’s proposed one-time 5% wealth tax sparks office expansions in Texas and Florida" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.reddit.com/r/Economics/comments/1q5pw05/californias_proposed_onetime_5_wealth_tax_sparks/" target="_blank" rel="noopener">California’s proposed one-time 5% wealth tax sparks office expansions in Texas and Florida</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Reddit Economics</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:17.421753">Just now</time>
+                            <time datetime="2026-01-06 17:14:14.783729">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3162,6 +3129,36 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
         </div>
         <div class="stories-grid">
             
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.sciencedaily.com/releases/2026/01/260105165822.htm" data-title="Earth’s toughest microbes could help humans live on Mars" data-source="Science Science Daily" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.sciencedaily.com/releases/2026/01/260105165822.htm" data-title="Earth’s toughest microbes could help humans live on Mars" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.sciencedaily.com/releases/2026/01/260105165822.htm" target="_blank" rel="noopener">Earth’s toughest microbes could help humans live on Mars</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Science Science Daily</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:13:51.285347">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
             
             <article class="story-card no-summary">
                 <div class="story-actions">
@@ -3193,7 +3190,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Science New Scientist</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:40.035364">Just now</time>
+                            <time datetime="2026-01-06 17:13:52.044551">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3212,7 +3209,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -3223,7 +3220,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Science</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:14.600478">Just now</time>
+                            <time datetime="2026-01-06 17:14:27.183241">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3231,10 +3228,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.sciencedaily.com/releases/2026/01/260105165822.htm" data-title="Earth’s toughest microbes could help humans live on Mars" data-source="Science Science Daily" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://www.newscientist.com/article/2509769-the-first-quantum-fluctuations-set-into-motion-a-huge-cosmic-mystery/?utm_campaign=RSS%7CNSNS&amp;utm_source=NSNS&amp;utm_medium=RSS&amp;utm_content=home" data-title="The first quantum fluctuations set into motion a huge cosmic mystery" data-source="Science New Scientist" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://www.sciencedaily.com/releases/2026/01/260105165822.htm" data-title="Earth’s toughest microbes could help humans live on Mars" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://www.newscientist.com/article/2509769-the-first-quantum-fluctuations-set-into-motion-a-huge-cosmic-mystery/?utm_campaign=RSS%7CNSNS&amp;utm_source=NSNS&amp;utm_medium=RSS&amp;utm_content=home" data-title="The first quantum fluctuations set into motion a huge cosmic mystery" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -3242,18 +3239,24 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <img src="https://images.newscientist.com/wp-content/uploads/2025/12/29181458/SEI_279178466.jpg" 
+                             alt="The first quantum fluctuations set into motion a huge cosmic mystery" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
                         
                     </figure>
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.sciencedaily.com/releases/2026/01/260105165822.htm" target="_blank" rel="noopener">Earth’s toughest microbes could help humans live on Mars</a>
+                            <a href="https://www.newscientist.com/article/2509769-the-first-quantum-fluctuations-set-into-motion-a-huge-cosmic-mystery/?utm_campaign=RSS%7CNSNS&amp;utm_source=NSNS&amp;utm_medium=RSS&amp;utm_content=home" target="_blank" rel="noopener">The first quantum fluctuations set into motion a huge cosmic mystery</a>
                         </h3>
                         <footer class="story-meta">
-                            <span>Science Science Daily</span>
+                            <span>Science New Scientist</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:39.230280">Just now</time>
+                            <time datetime="2026-01-06 17:13:52.044291">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3289,37 +3292,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Science New Scientist</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:40.035238">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.reddit.com/r/science/comments/1q5kzqf/global_analysis_reveals_sharp_rise_in_cancer/" data-title="Global Analysis Reveals Sharp Rise in Cancer Among People Under 50" data-source="Reddit Science" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.reddit.com/r/science/comments/1q5kzqf/global_analysis_reveals_sharp_rise_in_cancer/" data-title="Global Analysis Reveals Sharp Rise in Cancer Among People Under 50" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.reddit.com/r/science/comments/1q5kzqf/global_analysis_reveals_sharp_rise_in_cancer/" target="_blank" rel="noopener">Global Analysis Reveals Sharp Rise in Cancer Among People Under 50</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Reddit Science</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:14.600824">Just now</time>
+                            <time datetime="2026-01-06 17:13:52.044435">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3331,17 +3304,17 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     <section class="section category-section" aria-labelledby="cat-politics">
         <div class="section-header">
             <h2 id="cat-politics" class="section-title">Politics</h2>
-            <span class="section-count">39</span>
+            <span class="section-count">44</span>
         </div>
         <div class="stories-grid">
             
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://thehill.com/homenews/administration/5673270-live-updates-trump-maduro-venezuela-january-6th/" data-title="Live updates: White House escalates Greenland annexation threats" data-source="Politics The Hill" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://thehill.com/homenews/administration/5673270-live-updates-trump-maduro-venezuela-january-6th/" data-title="Live updates: White House escalates Greenland annexation threats; Democrats mark Jan. 6 anniversary" data-source="Politics The Hill" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://thehill.com/homenews/administration/5673270-live-updates-trump-maduro-venezuela-january-6th/" data-title="Live updates: White House escalates Greenland annexation threats" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://thehill.com/homenews/administration/5673270-live-updates-trump-maduro-venezuela-january-6th/" data-title="Live updates: White House escalates Greenland annexation threats; Democrats mark Jan. 6 anniversary" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -3350,7 +3323,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     <figure class="story-media">
                         
                         <img src="https://thehill.com/wp-content/uploads/sites/2/2026/01/AP26006551385024-e1767712842902.jpg?w=900" 
-                             alt="Live updates: White House escalates Greenland annexation threats" 
+                             alt="Live updates: White House escalates Greenland annexation threats; Democrats mark Jan. 6 anniversary" 
                              class="story-image" 
                              loading="lazy" 
                              referrerpolicy="no-referrer"
@@ -3361,12 +3334,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://thehill.com/homenews/administration/5673270-live-updates-trump-maduro-venezuela-january-6th/" target="_blank" rel="noopener">Live updates: White House escalates Greenland annexation threats</a>
+                            <a href="https://thehill.com/homenews/administration/5673270-live-updates-trump-maduro-venezuela-january-6th/" target="_blank" rel="noopener">Live updates: White House escalates Greenland annexation threats; Democrats mark Jan. 6 anniversary</a>
                         </h3>
                         <footer class="story-meta">
                             <span>Politics The Hill</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:44.034860">Just now</time>
+                            <time datetime="2026-01-06 17:13:59.793592">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3402,7 +3375,37 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Politics Nyt Politics</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:45.987248">Just now</time>
+                            <time datetime="2026-01-06 17:14:00.888611">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.washingtonpost.com/politics/2026/01/06/lamalfa-death-house-republicans/" data-title="Republican Rep. LaMalfa dies, further narrowing GOP’s House majority" data-source="Politics Wapo Politics" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.washingtonpost.com/politics/2026/01/06/lamalfa-death-house-republicans/" data-title="Republican Rep. LaMalfa dies, further narrowing GOP’s House majority" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.washingtonpost.com/politics/2026/01/06/lamalfa-death-house-republicans/" target="_blank" rel="noopener">Republican Rep. LaMalfa dies, further narrowing GOP’s House majority</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Politics Wapo Politics</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:09.257035">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3421,7 +3424,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -3432,7 +3435,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Politics Npr Politics</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:58.409797">Just now</time>
+                            <time datetime="2026-01-06 17:14:11.222384">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3468,37 +3471,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Politics Guardian Politics</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:56.617200">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.npr.org/2026/01/06/nx-s1-5668221/president-trump-again-is-remaking-the-republican-party" data-title="President Trump again is remaking the Republican Party" data-source="Politics Npr Politics" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.npr.org/2026/01/06/nx-s1-5668221/president-trump-again-is-remaking-the-republican-party" data-title="President Trump again is remaking the Republican Party" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.npr.org/2026/01/06/nx-s1-5668221/president-trump-again-is-remaking-the-republican-party" target="_blank" rel="noopener">President Trump again is remaking the Republican Party</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Politics Npr Politics</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:03:58.409140">Just now</time>
+                            <time datetime="2026-01-06 17:14:09.578266">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3533,7 +3506,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Television</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:18.798287">Just now</time>
+                            <time datetime="2026-01-06 17:14:30.903235">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3557,7 +3530,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Space</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:20.071201">Just now</time>
+                            <time datetime="2026-01-06 17:14:32.202935">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3581,7 +3554,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Movies</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:18.125125">Just now</time>
+                            <time datetime="2026-01-06 17:14:30.299454">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3605,7 +3578,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Television</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:18.795705">Just now</time>
+                            <time datetime="2026-01-06 17:14:30.900392">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3629,7 +3602,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Todayilearned</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:19.435685">Just now</time>
+                            <time datetime="2026-01-06 17:14:31.559054">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3657,6 +3630,18 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 </div>
                 <div class="story-wrapper">
                     
+                    <figure class="story-media">
+                        
+                        <img src="https://media.urbanistnetwork.com/saigoneer/article-images/2026/01/06/2.webp" 
+                             alt="Vienam bans unskippable ads" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
                             <a href="https://saigoneer.com/vietnam-news/28652-vienam-bans-unskippable-ads,-requires-skip-button-to-appear-after-5-seconds" target="_blank" rel="noopener">Vienam bans unskippable ads</a>
@@ -3664,7 +3649,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:09.425394">Just now</time>
+                            <time datetime="2026-01-06 17:14:22.313836">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3681,6 +3666,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 </div>
                 <div class="story-wrapper">
                     
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
                             <a href="https://blgardner.github.io/prism.tools/" target="_blank" rel="noopener">Show HN: Prism.Tools – Free and privacy-focused developer utilities</a>
@@ -3688,7 +3679,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:09.907548">Just now</time>
+                            <time datetime="2026-01-06 17:14:22.869115">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3705,6 +3696,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 </div>
                 <div class="story-wrapper">
                     
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
                             <a href="https://akr.am/blog/posts/why-is-the-gmail-app-700-mb" target="_blank" rel="noopener">Why is the Gmail app 700 MB?</a>
@@ -3712,31 +3709,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:10.332273">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" data-title="Video Game Websites in the early 00s" data-source="Hackernews" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" data-title="Video Game Websites in the early 00s" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" target="_blank" rel="noopener">Video Game Websites in the early 00s</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Hackernews</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:09.562172">Just now</time>
+                            <time datetime="2026-01-06 17:14:23.193415">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3753,6 +3726,12 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                 </div>
                 <div class="story-wrapper">
                     
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
                             <a href="https://kevinalbs.com/spherical_snake/" target="_blank" rel="noopener">Spherical Snake</a>
@@ -3760,54 +3739,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:09.224273">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-        </div>
-    </section>
-    
-    <section class="section category-section" aria-labelledby="cat-sports">
-        <div class="section-header">
-            <h2 id="cat-sports" class="section-title">Sports</h2>
-            <span class="section-count">24</span>
-        </div>
-        <div class="stories-grid">
-            
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.cbssports.com/womens-college-basketball/news/biggest-questions-uconn-texas-south-carolina-ucla-womens-college-basketball/" data-title="Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up" data-source="Sports Cbssports" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.cbssports.com/womens-college-basketball/news/biggest-questions-uconn-texas-south-carolina-ucla-womens-college-basketball/" data-title="Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <img src="https://sportshub.cbsistatic.com/i/2026/01/06/32b92fef-ddfd-4861-b7d9-4eb6581053e9/south-carolina-womens-basketball-celebration-bench.png" 
-                             alt="Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up" 
-                             class="story-image" 
-                             loading="lazy" 
-                             referrerpolicy="no-referrer"
-                             width="400" 
-                             height="225">
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.cbssports.com/womens-college-basketball/news/biggest-questions-uconn-texas-south-carolina-ucla-womens-college-basketball/" target="_blank" rel="noopener">Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Sports Cbssports</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:04.313967">Just now</time>
+                            <time datetime="2026-01-06 17:14:22.132380">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3815,10 +3747,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.bbc.com/sport/football/articles/c8j389dd211o?at_medium=RSS&amp;at_campaign=rss" data-title="Semenyo to Man City deal done pending medical" data-source="Sports Bbcsport" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" data-title="Video Game Websites in the early 00s" data-source="Hackernews" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://www.bbc.com/sport/football/articles/c8j389dd211o?at_medium=RSS&amp;at_campaign=rss" data-title="Semenyo to Man City deal done pending medical" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" data-title="Video Game Websites in the early 00s" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -3826,126 +3758,18 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <img src="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/c042/live/e62ddd30-eb28-11f0-a6a3-53d02379137e.jpg" 
-                             alt="Semenyo to Man City deal done pending medical" 
-                             class="story-image" 
-                             loading="lazy" 
-                             referrerpolicy="no-referrer"
-                             width="400" 
-                             height="225">
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.bbc.com/sport/football/articles/c8j389dd211o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Semenyo to Man City deal done pending medical</a>
+                            <a href="https://www.webdesignmuseum.org/exhibitions/video-game-websites-in-the-early-00s" target="_blank" rel="noopener">Video Game Websites in the early 00s</a>
                         </h3>
                         <footer class="story-meta">
-                            <span>Sports Bbcsport</span>
+                            <span>Hackernews</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:04.174469">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.bbc.com/sport/cricket/videos/cj4l9r24zpxo?at_medium=RSS&amp;at_campaign=rss" data-title="Smith and Head score centuries as Australia punish England on day three" data-source="Sports Bbcsport" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.bbc.com/sport/cricket/videos/cj4l9r24zpxo?at_medium=RSS&amp;at_campaign=rss" data-title="Smith and Head score centuries as Australia punish England on day three" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <img src="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/f1fa/live/82389d00-ead4-11f0-b385-5f48925de19a.jpg" 
-                             alt="Smith and Head score centuries as Australia punish England on day three" 
-                             class="story-image" 
-                             loading="lazy" 
-                             referrerpolicy="no-referrer"
-                             width="400" 
-                             height="225">
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.bbc.com/sport/cricket/videos/cj4l9r24zpxo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Smith and Head score centuries as Australia punish England on day three</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Sports Bbcsport</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:04.174513">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.espn.com/college-football/story/_/id/47529528/sources-oklahoma-lands-texas-transfer-parker-livingstone" data-title="Sources: Arch&#39;s roomie now rival as WR joins OU" data-source="Sports Espn" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.espn.com/college-football/story/_/id/47529528/sources-oklahoma-lands-texas-transfer-parker-livingstone" data-title="Sources: Arch&#39;s roomie now rival as WR joins OU" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.espn.com/college-football/story/_/id/47529528/sources-oklahoma-lands-texas-transfer-parker-livingstone" target="_blank" rel="noopener">Sources: Arch&#39;s roomie now rival as WR joins OU</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Sports Espn</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:03.905648">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.cbssports.com/college-football/news/brendan-sorsby-texas-tech-times-square-nyc-billboard/" data-title="Texas Tech celebrates signing of QB Brendan Sorsby with Times Square billboard" data-source="Sports Cbssports" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.cbssports.com/college-football/news/brendan-sorsby-texas-tech-times-square-nyc-billboard/" data-title="Texas Tech celebrates signing of QB Brendan Sorsby with Times Square billboard" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <img src="https://sportshub.cbsistatic.com/i/2026/01/06/6c7c991c-6331-4d2d-a072-d02e61c2f2df/gettyimages-2248549277-1.jpg" 
-                             alt="Texas Tech celebrates signing of QB Brendan Sorsby with Times Square billboard" 
-                             class="story-image" 
-                             loading="lazy" 
-                             referrerpolicy="no-referrer"
-                             width="400" 
-                             height="225">
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.cbssports.com/college-football/news/brendan-sorsby-texas-tech-times-square-nyc-billboard/" target="_blank" rel="noopener">Texas Tech celebrates signing of QB Brendan Sorsby with Times Square billboard</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Sports Cbssports</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:04.313822">Just now</time>
+                            <time datetime="2026-01-06 17:14:22.449234">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3957,7 +3781,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     <section class="section category-section" aria-labelledby="cat-entertainment">
         <div class="section-header">
             <h2 id="cat-entertainment" class="section-title">Entertainment</h2>
-            <span class="section-count">23</span>
+            <span class="section-count">24</span>
         </div>
         <div class="stories-grid">
             
@@ -3975,7 +3799,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
@@ -3986,7 +3810,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Entertainment Hollywoodreporter</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:07.533129">Just now</time>
+                            <time datetime="2026-01-06 17:14:20.570506">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -3994,10 +3818,10 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
             
             <article class="story-card no-summary">
                 <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.hollywoodreporter.com/tv/tv-news/stranger-things-5-finale-netfllix-ratings-top-10-all-time-1236465845/" data-title="‘Stranger Things 5’ Reaches Netflix’s All-Time Top 10 With Series Finale" data-source="Entertainment Hollywoodreporter" aria-label="Save story" aria-pressed="false" title="Save for later">
+                    <button class="save-btn" type="button" data-url="https://www.hollywoodreporter.com/lists/stranger-things-cast-react-final-scenes/" data-title="‘Stranger Things’ Cast Reacts to Their Final Scenes: “They Left Nothing More to Be Told”" data-source="Entertainment Hollywoodreporter" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                     </button>
-                    <button class="share-btn" type="button" data-url="https://www.hollywoodreporter.com/tv/tv-news/stranger-things-5-finale-netfllix-ratings-top-10-all-time-1236465845/" data-title="‘Stranger Things 5’ Reaches Netflix’s All-Time Top 10 With Series Finale" aria-label="Share story" title="Share">
+                    <button class="share-btn" type="button" data-url="https://www.hollywoodreporter.com/lists/stranger-things-cast-react-final-scenes/" data-title="‘Stranger Things’ Cast Reacts to Their Final Scenes: “They Left Nothing More to Be Told”" aria-label="Share story" title="Share">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
                     </button>
                 </div>
@@ -4005,54 +3829,18 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                     
                     <figure class="story-media">
                         
-                        <div class="story-image placeholder" role="presentation" aria-hidden="true"></div>
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
                         
                     </figure>
                     
                     <div class="story-content">
                         <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.hollywoodreporter.com/tv/tv-news/stranger-things-5-finale-netfllix-ratings-top-10-all-time-1236465845/" target="_blank" rel="noopener">‘Stranger Things 5’ Reaches Netflix’s All-Time Top 10 With Series Finale</a>
+                            <a href="https://www.hollywoodreporter.com/lists/stranger-things-cast-react-final-scenes/" target="_blank" rel="noopener">‘Stranger Things’ Cast Reacts to Their Final Scenes: “They Left Nothing More to Be Told”</a>
                         </h3>
                         <footer class="story-meta">
                             <span>Entertainment Hollywoodreporter</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:07.533313">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://variety.com/2026/tv/news/stranger-things-5-ratings-record-netflix-1236624603/" data-title="‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far" data-source="Entertainment Variety" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://variety.com/2026/tv/news/stranger-things-5-ratings-record-netflix-1236624603/" data-title="‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <figure class="story-media">
-                        
-                        <img src="https://variety.com/wp-content/uploads/2026/01/StrangerThings_S5_0821_R.jpg" 
-                             alt="‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far" 
-                             class="story-image" 
-                             loading="lazy" 
-                             referrerpolicy="no-referrer"
-                             width="400" 
-                             height="225">
-                        
-                    </figure>
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://variety.com/2026/tv/news/stranger-things-5-ratings-record-netflix-1236624603/" target="_blank" rel="noopener">‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Entertainment Variety</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:05.517002">Just now</time>
+                            <time datetime="2026-01-06 17:14:20.570212">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4088,7 +3876,43 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Entertainment Variety</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:05.516668">Just now</time>
+                            <time datetime="2026-01-06 17:14:18.428654">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://variety.com/2026/tv/news/stranger-things-5-ratings-record-netflix-1236624603/" data-title="‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far" data-source="Entertainment Variety" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://variety.com/2026/tv/news/stranger-things-5-ratings-record-netflix-1236624603/" data-title="‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://variety.com/wp-content/uploads/2026/01/StrangerThings_S5_0821_R.jpg" 
+                             alt="‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://variety.com/2026/tv/news/stranger-things-5-ratings-record-netflix-1236624603/" target="_blank" rel="noopener">‘Stranger Things 5’ Becomes Netflix’s No. 9 Most Popular English-Language Series of All Time With 105.7 Million Views So Far</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Entertainment Variety</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:18.428952">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4124,7 +3948,192 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Entertainment Billboard</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:07.745580">Just now</time>
+                            <time datetime="2026-01-06 17:14:20.765262">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+        </div>
+    </section>
+    
+    <section class="section category-section" aria-labelledby="cat-sports">
+        <div class="section-header">
+            <h2 id="cat-sports" class="section-title">Sports</h2>
+            <span class="section-count">24</span>
+        </div>
+        <div class="stories-grid">
+            
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.cbssports.com/nfl/news/nfl-coaching-gm-search-2026-interview-requests-tracker/" data-title="NFL coach, GM interview tracker, updates: Vance Joseph drawing plenty of interest" data-source="Sports Cbssports" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.cbssports.com/nfl/news/nfl-coaching-gm-search-2026-interview-requests-tracker/" data-title="NFL coach, GM interview tracker, updates: Vance Joseph drawing plenty of interest" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://sportshub.cbsistatic.com/i/2026/01/06/4bd53325-65c3-4d3b-9728-83dd14b3abc2/vance-jpeg.jpg" 
+                             alt="NFL coach, GM interview tracker, updates: Vance Joseph drawing plenty of interest" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.cbssports.com/nfl/news/nfl-coaching-gm-search-2026-interview-requests-tracker/" target="_blank" rel="noopener">NFL coach, GM interview tracker, updates: Vance Joseph drawing plenty of interest</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Sports Cbssports</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:17.372506">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.cbssports.com/womens-college-basketball/news/biggest-questions-uconn-texas-south-carolina-ucla-womens-college-basketball/" data-title="Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up" data-source="Sports Cbssports" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.cbssports.com/womens-college-basketball/news/biggest-questions-uconn-texas-south-carolina-ucla-womens-college-basketball/" data-title="Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://sportshub.cbsistatic.com/i/2026/01/06/32b92fef-ddfd-4861-b7d9-4eb6581053e9/south-carolina-womens-basketball-celebration-bench.png" 
+                             alt="Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.cbssports.com/womens-college-basketball/news/biggest-questions-uconn-texas-south-carolina-ucla-womens-college-basketball/" target="_blank" rel="noopener">Biggest questions facing UConn, Texas, South Carolina and UCLA as women&#39;s college basketball season ramps up</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Sports Cbssports</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:17.372754">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.espn.com/college-football/story/_/id/47525641/sources-oc-rbs-coach-stay-ole-miss-fiesta-bowl" data-title="Sources: OC Weis to coach Ole Miss in CFP semi" data-source="Sports Espn" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.espn.com/college-football/story/_/id/47525641/sources-oc-rbs-coach-stay-ole-miss-fiesta-bowl" data-title="Sources: OC Weis to coach Ole Miss in CFP semi" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <div class="story-image placeholder" role="presentation" aria-hidden="true" data-placeholder="true"></div>
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.espn.com/college-football/story/_/id/47525641/sources-oc-rbs-coach-stay-ole-miss-fiesta-bowl" target="_blank" rel="noopener">Sources: OC Weis to coach Ole Miss in CFP semi</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Sports Espn</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:16.950945">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.bbc.com/sport/football/articles/c8j389dd211o?at_medium=RSS&amp;at_campaign=rss" data-title="Semenyo to Man City deal done pending medical" data-source="Sports Bbcsport" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.bbc.com/sport/football/articles/c8j389dd211o?at_medium=RSS&amp;at_campaign=rss" data-title="Semenyo to Man City deal done pending medical" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/c042/live/e62ddd30-eb28-11f0-a6a3-53d02379137e.jpg" 
+                             alt="Semenyo to Man City deal done pending medical" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.bbc.com/sport/football/articles/c8j389dd211o?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Semenyo to Man City deal done pending medical</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Sports Bbcsport</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:17.240422">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.bbc.com/sport/cricket/videos/cj4l9r24zpxo?at_medium=RSS&amp;at_campaign=rss" data-title="Smith and Head score centuries as Australia punish England on day three" data-source="Sports Bbcsport" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.bbc.com/sport/cricket/videos/cj4l9r24zpxo?at_medium=RSS&amp;at_campaign=rss" data-title="Smith and Head score centuries as Australia punish England on day three" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <figure class="story-media">
+                        
+                        <img src="https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/f1fa/live/82389d00-ead4-11f0-b385-5f48925de19a.jpg" 
+                             alt="Smith and Head score centuries as Australia punish England on day three" 
+                             class="story-image" 
+                             loading="lazy" 
+                             referrerpolicy="no-referrer"
+                             width="400" 
+                             height="225">
+                        
+                    </figure>
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.bbc.com/sport/cricket/videos/cj4l9r24zpxo?at_medium=RSS&amp;at_campaign=rss" target="_blank" rel="noopener">Smith and Head score centuries as Australia punish England on day three</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Sports Bbcsport</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:17.240454">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4159,7 +4168,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Futurology</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:15.814582">Just now</time>
+                            <time datetime="2026-01-06 17:14:28.435353">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4183,31 +4192,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Futurology</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:15.816729">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.reddit.com/r/Futurology/comments/1q5da48/in_a_poll_of_20000_voters_in_europe_north_america/" data-title="In a poll of 20,000 voters in Europe, North America &amp; Japan, two-thirds of voters said the political system in their country was “failing people” and living standards were in decline. Do you think this will make it easier for radical ideas like UBI to gain traction in the 2030s?" data-source="Reddit Futurology" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.reddit.com/r/Futurology/comments/1q5da48/in_a_poll_of_20000_voters_in_europe_north_america/" data-title="In a poll of 20,000 voters in Europe, North America &amp; Japan, two-thirds of voters said the political system in their country was “failing people” and living standards were in decline. Do you think this will make it easier for radical ideas like UBI to gain traction in the 2030s?" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.reddit.com/r/Futurology/comments/1q5da48/in_a_poll_of_20000_voters_in_europe_north_america/" target="_blank" rel="noopener">In a poll of 20,000 voters in Europe, North America &amp; Japan, two-thirds of voters said the political system in their country was “failing people” and living standards were in decline. Do you think this will make it easier for radical ideas like UBI to gain traction in the 2030s?</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Reddit Futurology</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:15.817790">Just now</time>
+                            <time datetime="2026-01-06 17:14:28.437176">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4231,7 +4216,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Futurology</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:15.818308">Just now</time>
+                            <time datetime="2026-01-06 17:14:28.438222">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4255,7 +4240,31 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Futurology</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:15.815123">Just now</time>
+                            <time datetime="2026-01-06 17:14:28.435908">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.reddit.com/r/Futurology/comments/1q5da48/in_a_poll_of_20000_voters_in_europe_north_america/" data-title="In a poll of 20,000 voters in Europe, North America &amp; Japan, two-thirds of voters said the political system in their country was “failing people” and living standards were in decline. Do you think this will make it easier for radical ideas like UBI to gain traction in the 2030s?" data-source="Reddit Futurology" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.reddit.com/r/Futurology/comments/1q5da48/in_a_poll_of_20000_voters_in_europe_north_america/" data-title="In a poll of 20,000 voters in Europe, North America &amp; Japan, two-thirds of voters said the political system in their country was “failing people” and living standards were in decline. Do you think this will make it easier for radical ideas like UBI to gain traction in the 2030s?" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.reddit.com/r/Futurology/comments/1q5da48/in_a_poll_of_20000_voters_in_europe_north_america/" target="_blank" rel="noopener">In a poll of 20,000 voters in Europe, North America &amp; Japan, two-thirds of voters said the political system in their country was “failing people” and living standards were in decline. Do you think this will make it easier for radical ideas like UBI to gain traction in the 2030s?</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Reddit Futurology</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:28.437745">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4271,6 +4280,30 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
         </div>
         <div class="stories-grid">
             
+            
+            <article class="story-card no-summary">
+                <div class="story-actions">
+                    <button class="save-btn" type="button" data-url="https://www.reddit.com/r/business/comments/1q5vh04/what_do_you_personally_pay_for_website_hosting/" data-title="What do you personally pay for website hosting &amp; maintenance?" data-source="Reddit Business" aria-label="Save story" aria-pressed="false" title="Save for later">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    </button>
+                    <button class="share-btn" type="button" data-url="https://www.reddit.com/r/business/comments/1q5vh04/what_do_you_personally_pay_for_website_hosting/" data-title="What do you personally pay for website hosting &amp; maintenance?" aria-label="Share story" title="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                    </button>
+                </div>
+                <div class="story-wrapper">
+                    
+                    <div class="story-content">
+                        <h3 class="story-title" style="font-size: 1.1rem;">
+                            <a href="https://www.reddit.com/r/business/comments/1q5vh04/what_do_you_personally_pay_for_website_hosting/" target="_blank" rel="noopener">What do you personally pay for website hosting &amp; maintenance?</a>
+                        </h3>
+                        <footer class="story-meta">
+                            <span>Reddit Business</span>
+                            <span aria-hidden="true">•</span>
+                            <time datetime="2026-01-06 17:14:29.070857">Just now</time>
+                        </footer>
+                    </div>
+                </div>
+            </article>
             
             <article class="story-card no-summary">
                 <div class="story-actions">
@@ -4290,7 +4323,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Business</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:16.813235">Just now</time>
+                            <time datetime="2026-01-06 17:14:29.071326">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4314,31 +4347,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Business</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:16.811896">Just now</time>
-                        </footer>
-                    </div>
-                </div>
-            </article>
-            
-            <article class="story-card no-summary">
-                <div class="story-actions">
-                    <button class="save-btn" type="button" data-url="https://www.reddit.com/r/business/comments/1q5vh04/what_do_you_personally_pay_for_website_hosting/" data-title="What do you personally pay for website hosting &amp; maintenance?" data-source="Reddit Business" aria-label="Save story" aria-pressed="false" title="Save for later">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                    </button>
-                    <button class="share-btn" type="button" data-url="https://www.reddit.com/r/business/comments/1q5vh04/what_do_you_personally_pay_for_website_hosting/" data-title="What do you personally pay for website hosting &amp; maintenance?" aria-label="Share story" title="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                    </button>
-                </div>
-                <div class="story-wrapper">
-                    
-                    <div class="story-content">
-                        <h3 class="story-title" style="font-size: 1.1rem;">
-                            <a href="https://www.reddit.com/r/business/comments/1q5vh04/what_do_you_personally_pay_for_website_hosting/" target="_blank" rel="noopener">What do you personally pay for website hosting &amp; maintenance?</a>
-                        </h3>
-                        <footer class="story-meta">
-                            <span>Reddit Business</span>
-                            <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:16.812815">Just now</time>
+                            <time datetime="2026-01-06 17:14:29.069758">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4362,7 +4371,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Business</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:16.811080">Just now</time>
+                            <time datetime="2026-01-06 17:14:29.068779">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4386,7 +4395,7 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
                         <footer class="story-meta">
                             <span>Reddit Business</span>
                             <span aria-hidden="true">•</span>
-                            <time datetime="2026-01-06 17:04:16.810662">Just now</time>
+                            <time datetime="2026-01-06 17:14:29.068263">Just now</time>
                         </footer>
                     </div>
                 </div>
@@ -4610,14 +4619,14 @@ body.light-mode .theme-toggle .moon-icon { display: none; }
     </script>
     <script>
         (function () {
+            const placeholderImage = "/assets/nano-banana.png";
             const markBroken = (img) => {
-                const media = img.closest('.story-media');
-                if (!media) return;
-                media.classList.add('image-broken');
-                if (img.parentElement) {
-                    img.parentElement.classList.add('has-broken-image');
-                }
-                img.remove();
+                if (!placeholderImage) return;
+                if (img.dataset.fallbackApplied) return;
+                img.dataset.fallbackApplied = 'true';
+                img.src = placeholderImage;
+                img.classList.add('story-image--placeholder');
+                img.title = img.title || 'Fallback image';
             };
 
             const bindErrors = () => {

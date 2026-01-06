@@ -330,14 +330,14 @@
     </script>
     <script>
         (function () {
+            const placeholderImage = "{{ placeholder_image_url }}";
             const markBroken = (img) => {
-                const media = img.closest('.story-media');
-                if (!media) return;
-                media.classList.add('image-broken');
-                if (img.parentElement) {
-                    img.parentElement.classList.add('has-broken-image');
-                }
-                img.remove();
+                if (!placeholderImage) return;
+                if (img.dataset.fallbackApplied) return;
+                img.dataset.fallbackApplied = 'true';
+                img.src = placeholderImage;
+                img.classList.add('story-image--placeholder');
+                img.title = img.title || 'Fallback image';
             };
 
             const bindErrors = () => {

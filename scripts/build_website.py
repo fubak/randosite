@@ -523,6 +523,7 @@ class WebsiteBuilder:
             'hero_bg_css': hero_bg_css,
             'body_classes': ' '.join(body_classes),
             'custom_styles': custom_styles,
+            'placeholder_image_url': '/assets/nano-banana.png',
             
             # Content
             'hero_story': self.ctx.trends[0] if self.ctx.trends else {},
