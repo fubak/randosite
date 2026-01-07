@@ -298,6 +298,11 @@ class WebsiteBuilder:
         # Slot 1: Hero - Absolute highest scoring story
         if self.ctx.trends:
             hero = self.ctx.trends[0]
+            # Ensure the hero story has the same image as the hero section
+            if self._hero_image and not hero.get('image_url'):
+                hero_img_url = self._hero_image.get('url_large') or self._hero_image.get('url_medium') or self._hero_image.get('url_original')
+                if hero_img_url:
+                    hero['image_url'] = hero_img_url
             selected_urls.add(hero.get('url'))
             top_stories.append(hero)
 

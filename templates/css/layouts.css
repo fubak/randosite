@@ -1,9 +1,9 @@
 /* ===== LAYOUTS ===== */
 
-/* Top Stories - Compact Grid Layout */
+/* Top Stories - 4 Column Grid Layout */
 .top-stories {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
 }
 
@@ -146,34 +146,37 @@ body.layout-split .top-stories {
     border-top: none;
 }
 
-/* Featured Story - Spans 2 Columns */
+/* Featured Story - Spans 2 Columns x 2 Rows */
 .top-stories article.story-card.featured {
     grid-column: span 2;
+    grid-row: span 2;
 }
 
 .top-stories article.story-card.featured .story-media {
-    min-height: 240px;
-    height: 240px;
+    min-height: 320px;
+    height: 320px;
 }
 
 .top-stories article.story-card.featured .story-image {
-    min-height: 240px;
-    height: 240px;
+    min-height: 320px;
+    height: 320px;
 }
 
 .top-stories article.story-card.featured .story-content {
-    padding: 1.25rem;
+    padding: 1.5rem;
 }
 
 .top-stories article.story-card.featured .story-title {
-    font-size: 1.15rem;
+    font-size: 1.35rem;
     line-height: 1.3;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
+    margin-bottom: 0.75rem;
 }
 
 .top-stories article.story-card.featured .story-summary {
-    font-size: 0.875rem;
-    -webkit-line-clamp: 3;
+    font-size: 0.95rem;
+    -webkit-line-clamp: 4;
+    margin-bottom: 1rem;
 }
 
 /* Responsive: Mobile - Single Column */
@@ -184,6 +187,7 @@ body.layout-split .top-stories {
 
     .top-stories article.story-card.featured {
         grid-column: span 1;
+        grid-row: span 1;
     }
 
     .top-stories .story-media,
@@ -203,6 +207,23 @@ body.layout-split .top-stories {
 @media (min-width: 641px) and (max-width: 1024px) {
     .top-stories {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .top-stories article.story-card.featured {
+        grid-column: span 2;
+        grid-row: span 2;
+    }
+}
+
+/* Responsive: Desktop Small - Three Columns */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .top-stories {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .top-stories article.story-card.featured {
+        grid-column: span 2;
+        grid-row: span 2;
     }
 }
 
