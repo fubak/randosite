@@ -344,9 +344,22 @@
                 document.querySelectorAll('.story-image').forEach((img) => {
                     if (img.dataset.boundError) return;
                     img.dataset.boundError = 'true';
+
+                    // Handle successful image load
+                    img.addEventListener('load', () => {
+                        img.setAttribute('loaded', '');
+                    });
+
+                    // Handle image error
                     img.addEventListener('error', () => markBroken(img));
-                    if (img.complete && img.naturalWidth === 0) {
-                        markBroken(img);
+
+                    // Handle already-loaded images
+                    if (img.complete) {
+                        if (img.naturalWidth === 0) {
+                            markBroken(img);
+                        } else {
+                            img.setAttribute('loaded', '');
+                        }
                     }
                 });
             };
