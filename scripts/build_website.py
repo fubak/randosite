@@ -107,7 +107,33 @@ class WebsiteBuilder:
 
         # Find the best hero image based on headline content
         self._hero_image = self._find_relevant_hero_image()
+        self._category_card_limit = 12
 
+    def _choose_column_count(self, count: int) -> int:
+        if count <= 0:
+            return 1
+        for candidate in (4, 3, 2):
+            if count % candidate == 0:
+                return candidate
+        if count >= 8:
+            return 4
+        if count >= 6:
+            return 3
+        return min(count, 4)
+
+    def _prepare_categories(self) -> List[dict]:
+        categories = []
+        sorted_groups = sorted(self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True)
+        for title, stories in sorted_groups:
+            display_stories = stories[:self._category_card_limit]
+            columns = self._choose_column_count(len(display_stories))
+            categories.append({
+                'title': title,
+                'stories': display_stories,
+                'count': len(display_stories),
+                'columns': columns
+            })
+        return categories
     def _find_relevant_hero_image(self) -> Optional[Dict]:
         """Find an image that matches the headline/top story content.
 
@@ -486,6 +512,8 @@ class WebsiteBuilder:
         }
         section_gap = section_gap_map.get(spacing, "3.5rem")
 
+        categories = self._prepare_categories()
+
         # Build context variables for the template
         render_context = {
             'page_title': f"DailyTrending.info - {self._get_top_topic()}",
@@ -531,7 +559,7 @@ class WebsiteBuilder:
             'trends': self.ctx.trends,
             'total_trends_count': len(self.ctx.trends),
             'word_cloud': self.keyword_freq,
-            'categories': sorted(self.grouped_trends.items(), key=lambda x: len(x[1]), reverse=True),
+            'categories': categories,
             
             # SEO Placeholders (can be enhanced further)
             'og_image_tags': f'<meta property="og:image" content="{hero_image_url}">',

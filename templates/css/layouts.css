@@ -155,11 +155,10 @@ body.layout-split .top-stories {
 }
 
 /* Grid Layouts */
-.stories-grid { /* For category sections */
+.stories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(var(--category-columns, 4), minmax(220px, 1fr));
     gap: var(--card-gap);
-    grid-auto-flow: dense;
 }
 
 body.view-list .top-stories,

@@ -140,6 +140,10 @@ class Trend:
         return keywords[:5]  # Top 5 keywords
 
 
+from urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+
+
 class TrendCollector:
     """Collects and aggregates trends from multiple sources."""
 
@@ -148,7 +152,29 @@ class TrendCollector:
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         })
+        retries = Retry(
+            total=3,
+            backoff_factor=0.3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=None,
+        )
+        adapter = HTTPAdapter(max_retries=retries)
+        self.session.mount('https://', adapter)
+        self.session.mount('http://', adapter)
         self.trends: List[Trend] = []
+
+    def _fetch_rss(self, url: str, timeout: float = 10.0, allowed_status: tuple = (200, 301, 302, 404)) -> Optional[requests.Response]:
+        try:
+            response = self.session.get(url, timeout=timeout)
+        except Exception as exc:
+            logger.warning(f"RSS fetch error for {url}: {exc}")
+            return None
+
+        if response.status_code not in allowed_status:
+            logger.warning(f"RSS fetch: unexpected status {response.status_code} for {url}")
+            return None
+
+        return response
 
     def _scrape_og_image(self, url: str) -> Optional[str]:
         """Scrape the Open Graph image from a URL."""
@@ -414,8 +440,10 @@ class TrendCollector:
 
         for name, url in feeds:
             try:
-                response = self.session.get(url, timeout=10)
-                response.raise_for_status()
+                timeout = 15 if 'washingtonpost' in url else 10
+                response = self._fetch_rss(url, timeout=timeout)
+                if not response:
+                    continue
 
                 feed = feedparser.parse(response.content)
 

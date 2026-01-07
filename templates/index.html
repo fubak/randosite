@@ -138,16 +138,17 @@
     </section>
 
     <!-- Category Sections -->
-    {% for category, stories in categories %}
-    <section class="section category-section" aria-labelledby="cat-{{ category|lower|replace(' ', '-') }}">
+    {% for category in categories %}
+    <section class="section category-section" aria-labelledby="cat-{{ category.title|lower|replace(' ', '-') }}">
         <div class="section-header">
-            <h2 id="cat-{{ category|lower|replace(' ', '-') }}" class="section-title">{{ category }}</h2>
-            <span class="section-count">{{ stories|length }}</span>
+            <h2 id="cat-{{ category.title|lower|replace(' ', '-') }}" class="section-title">{{ category.title }}</h2>
+            <span class="section-count">{{ category.count }}</span>
         </div>
-        <div class="stories-grid">
-            {% set has_images = stories | selectattr('image_url') | list | length > 0 %}
-            {% for story in stories[:5] %}
-            <article class="story-card no-summary">
+        <div class="stories-grid" style="--category-columns: {{ category.columns }}">
+            {% set category_stories = category.stories %}
+            {% set has_images = category_stories | selectattr('image_url') | list | length > 0 %}
+            {% for story in category_stories %}
+                <article class="story-card no-summary">
                 <div class="story-actions">
                     <button class="save-btn" type="button" data-url="{{ story.url }}" data-title="{{ story.title }}" data-source="{{ story.source | replace('_', ' ') | title }}" aria-label="Save story" aria-pressed="false" title="Save for later">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
