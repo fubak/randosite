@@ -311,14 +311,19 @@ class TrendCollector:
         # Sort by score
         self.trends.sort(key=lambda t: t.score, reverse=True)
         
-        # Post-processing: Scrape OG images for top 5 stories if missing
+        # Post-processing: Scrape OG images for top stories if missing
         logger.info("Scraping OG images for top stories...")
-        for trend in self.trends[:5]:
+        scrape_limit = min(20, len(self.trends))  # Scrape up to top 20 stories
+        scraped_count = 0
+        for trend in self.trends[:scrape_limit]:
             if not trend.image_url:
                 trend.image_url = self._scrape_og_image(trend.url)
                 if trend.image_url:
                     logger.info(f"  Found OG image for: {trend.title[:30]}...")
-                time.sleep(0.5) # Be polite
+                    scraped_count += 1
+                time.sleep(0.3)  # Be polite but faster
+
+        logger.info(f"  Scraped {scraped_count} additional images from OG tags")
 
         logger.info(f"Total unique trends: {len(self.trends)}")
         return self.trends
