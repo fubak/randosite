@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-07 11:45 UTC | [Fix critical image loading bug - add load event handler](https://github.com/fubak/daily-trending-info/commit/9e0f57732d12997a705adcb121e49a6e3351065a) |
 | 2026-01-07 00:59 UTC | [Always show placeholder images in cards](https://github.com/fubak/daily-trending-info/commit/18c24801032bb7c74d75a5721a3639908bb24935) |
 | 2026-01-07 00:52 UTC | [Align category grids to square layouts](https://github.com/fubak/daily-trending-info/commit/d51f91ad465be855616e6f1b81d1283a4e3d7533) |
 | 2026-01-06 22:19 UTC | [Improve story cards and placeholder image](https://github.com/fubak/daily-trending-info/commit/c0b261a0c879a55c75c8df20e96068bb9ba7f954) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-06 15:42 UTC | [Update story card summaries and image focus](https://github.com/fubak/daily-trending-info/commit/0a3b4fb5abd5e3a468061d142379c7de8d8e77a4) |
 | 2026-01-06 01:56 UTC | [Improve layout density and adjust Matrix colors](https://github.com/fubak/daily-trending-info/commit/2b227b03c71db14b178c6dc766dd0d6cd782574e) |
 | 2026-01-05 22:39 UTC | [Fix layout clipping and add story actions](https://github.com/fubak/daily-trending-info/commit/7e5185541a62943acb33c1beec943ac6dd4cc85c) |
-| 2026-01-05 19:07 UTC | [fix: Resolve theme initialization and layout overflow](https://github.com/fubak/daily-trending-info/commit/b6c542008f57adb5ca9f249997a08bace942a643) |
 <!-- CHANGELOG_END -->
 
 ## Features
