@@ -75,12 +75,12 @@
         </div>
     </section>
 
-    <!-- Top Stories Grid -->
-    {% set display_top_stories = top_stories[:5] %}
+    <!-- Top Stories - Compact Horizontal Layout -->
+    {% set display_top_stories = top_stories[:8] %}
     <section class="section top-stories-section">
         <div class="section-header">
             <h2 class="section-title">Top Stories</h2>
-            <span class="section-count">{{ display_top_stories|length }} Stories</span>
+            <span class="section-count">{{ display_top_stories|length }}</span>
         </div>
         <div class="top-stories">
             {% for story in display_top_stories %}

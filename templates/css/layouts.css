@@ -1,12 +1,10 @@
 /* ===== LAYOUTS ===== */
 
-/* Top Stories Grid - Responsive Columns */
+/* Top Stories - Compact Horizontal Layout */
 .top-stories {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: var(--card-gap, 1.5rem);
-    align-items: stretch;
-    grid-auto-flow: dense;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 body.layout-split .top-stories {
@@ -45,27 +43,33 @@ body.layout-split .top-stories {
     pointer-events: none;
 }
 
+/* Top Stories: Horizontal Card Layout */
 .top-stories article.story-card {
-    grid-column: span 1;
-    min-height: 0;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    min-height: 0;
+    gap: 0;
+    overflow: hidden;
 }
 
 .top-stories .story-wrapper {
     display: flex;
-    flex-direction: column;
-    height: 100%;
-    gap: 1rem;
+    flex-direction: row;
+    width: 100%;
+    gap: 0;
 }
 
 .top-stories .story-media {
-    min-height: clamp(170px, 18vw, 240px);
+    flex-shrink: 0;
+    width: 200px;
+    min-height: 140px;
+    height: auto;
 }
 
 .top-stories .story-image {
     width: 100%;
-    height: clamp(160px, 18vw, 200px);
+    height: 100%;
+    min-height: 140px;
     object-fit: cover;
     object-position: center;
     background-color: var(--color-border);
@@ -78,21 +82,22 @@ body.layout-split .top-stories {
 }
 
 .top-stories .story-content {
-    padding: var(--card-padding);
+    padding: 1rem 1.25rem;
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0; /* Prevent flex overflow */
+    min-width: 0;
+    justify-content: center;
 }
 
 .top-stories .source-badge {
     display: inline-block;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-accent);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.4rem;
 }
 
 .source-badge.technology { color: #00d4ff; }
@@ -103,10 +108,10 @@ body.layout-split .top-stories {
 .source-badge.sports { color: #f59e0b; }
 
 .top-stories .story-title {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
+    margin-bottom: 0.35rem;
+    line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -123,35 +128,89 @@ body.layout-split .top-stories {
 }
 
 .top-stories .story-summary {
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 0.875rem;
+    line-height: 1.5;
     color: var(--color-muted);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
 .top-stories .story-meta {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--color-muted);
     margin-top: auto;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--color-border);
+    padding-top: 0;
+    border-top: none;
 }
 
-/* Featured story (first item) */
+/* Featured Story - Larger, More Prominent */
 .top-stories article.story-card.featured {
-    grid-column: span 2;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+}
+
+.top-stories article.story-card.featured .story-wrapper {
+    flex-direction: column;
+}
+
+.top-stories article.story-card.featured .story-media {
+    width: 100%;
+    min-height: 280px;
+    height: 280px;
+}
+
+.top-stories article.story-card.featured .story-image {
+    min-height: 280px;
+    height: 280px;
 }
 
 .top-stories article.story-card.featured .story-content {
-    padding: calc(var(--card-padding) * 1.25);
+    padding: 1.5rem;
 }
 
 .top-stories article.story-card.featured .story-title {
-    font-size: 1.45rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    -webkit-line-clamp: 3;
+}
+
+.top-stories article.story-card.featured .story-summary {
+    font-size: 1rem;
+    -webkit-line-clamp: 3;
+    margin-bottom: 1rem;
+}
+
+/* Responsive: Mobile - Stack Horizontally on Small Screens */
+@media (max-width: 640px) {
+    .top-stories article.story-card:not(.featured) {
+        flex-direction: column;
+    }
+
+    .top-stories article.story-card:not(.featured) .story-wrapper {
+        flex-direction: column;
+    }
+
+    .top-stories article.story-card:not(.featured) .story-media {
+        width: 100%;
+        height: 160px;
+        min-height: 160px;
+    }
+
+    .top-stories article.story-card.featured .story-media,
+    .top-stories article.story-card.featured .story-image {
+        min-height: 200px;
+        height: 200px;
+    }
+}
+
+/* Responsive: Tablet - Adjust Image Width */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .top-stories .story-media {
+        width: 180px;
+    }
 }
 
 /* Grid Layouts */
@@ -161,14 +220,9 @@ body.layout-split .top-stories {
     gap: var(--card-gap);
 }
 
-body.view-list .top-stories,
+/* View list mode - already in list format for top stories */
 body.view-list .stories-grid {
     grid-template-columns: 1fr;
-}
-
-body.view-list .top-stories article.story-card.featured {
-    grid-column: auto;
-    grid-row: auto;
 }
 
 .stories-grid article.story-card {
