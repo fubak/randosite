@@ -107,7 +107,7 @@ class WebsiteBuilder:
 
         # Find the best hero image based on headline content
         self._hero_image = self._find_relevant_hero_image()
-        self._category_card_limit = 12
+        self._category_card_limit = 8  # 2 rows × 4 columns
 
     def _choose_column_count(self, count: int) -> int:
         if count <= 0:

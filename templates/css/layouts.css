@@ -406,28 +406,28 @@ body.layout-mosaic .top-stories {
 }
 
 body.layout-mosaic .top-stories article.story-card:nth-child(1) {
-    grid-column: span 6;
+    grid-column: span 2;
     grid-row: span 2;
 }
 
 body.layout-mosaic .top-stories article.story-card:nth-child(2) {
-    grid-column: span 3;
+    grid-column: span 1;
 }
 
 body.layout-mosaic .top-stories article.story-card:nth-child(3) {
-    grid-column: span 3;
+    grid-column: span 1;
 }
 
 body.layout-mosaic .top-stories article.story-card:nth-child(4) {
-    grid-column: span 4;
+    grid-column: span 1;
 }
 
 body.layout-mosaic .top-stories article.story-card:nth-child(5) {
-    grid-column: span 4;
+    grid-column: span 1;
 }
 
 body.layout-mosaic .top-stories article.story-card:nth-child(6) {
-    grid-column: span 4;
+    grid-column: span 1;
 }
 
 body.layout-sidebar main.container {

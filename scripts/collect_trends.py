@@ -313,7 +313,7 @@ class TrendCollector:
         
         # Post-processing: Scrape OG images for top stories if missing
         logger.info("Scraping OG images for top stories...")
-        scrape_limit = min(20, len(self.trends))  # Scrape up to top 20 stories
+        scrape_limit = min(50, len(self.trends))  # Scrape up to top 50 stories to ensure coverage
         scraped_count = 0
         for trend in self.trends[:scrape_limit]:
             if not trend.image_url:
