@@ -46,9 +46,11 @@ class ArchiveManager:
         today = datetime.now().strftime("%Y-%m-%d")
         archive_path = self.archive_dir / today
 
-        # Don't overwrite existing archive
+        # Don't overwrite existing archive, but always regenerate index
         if archive_path.exists():
             print(f"Archive for {today} already exists, skipping")
+            # Still regenerate the index in case template changed
+            self.generate_index()
             return str(archive_path)
 
         archive_path.mkdir(parents=True, exist_ok=True)
