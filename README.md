@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-08 13:05 UTC | [feat(seo): Add static branded OG image for social sharing](https://github.com/fubak/daily-trending-info/commit/5ebd053bb8ab68b5d1634a1f4e2445760a94735b) |
 | 2026-01-08 12:53 UTC | [fix(seo): Add Archive link to Jinja2 template navigation](https://github.com/fubak/daily-trending-info/commit/f3ebb66345a61d39bc8da0d737c99153c4b03dfe) |
 | 2026-01-08 01:54 UTC | [feat: Implement code review recommendations - 75% complete](https://github.com/fubak/daily-trending-info/commit/40944ab9038084f3d313b9fcb7e1841c5817d066) |
 | 2026-01-07 13:08 UTC | [Add Business and Sports topic pages with 4-column grid layout](https://github.com/fubak/daily-trending-info/commit/e0dac4136d250071044720a49012108593f305d5) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-07 12:15 UTC | [Redesign Top Stories section with compact multi-column grid layout](https://github.com/fubak/daily-trending-info/commit/83dcc6200478fb88fbbb29878d79d4a1640b451f) |
 | 2026-01-07 11:58 UTC | [Expand OG image scraping from top 5 to top 20 stories](https://github.com/fubak/daily-trending-info/commit/998fb370eead3c6cc74a1883e4455365ec4fcbe9) |
 | 2026-01-07 11:57 UTC | [Redesign top stories section with compact horizontal layout](https://github.com/fubak/daily-trending-info/commit/b9ecd628a8ae5edcb251717b9f6de86cbe15c918) |
-| 2026-01-07 11:45 UTC | [Fix critical image loading bug - add load event handler](https://github.com/fubak/daily-trending-info/commit/9e0f57732d12997a705adcb121e49a6e3351065a) |
 <!-- CHANGELOG_END -->
 
 ## Features
