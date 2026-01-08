@@ -13,6 +13,15 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import html
 
+# Import shared components for consistent header/footer
+from shared_components import (
+    build_header,
+    build_footer,
+    get_header_styles,
+    get_footer_styles,
+    get_theme_script
+)
+
 
 class ArchiveManager:
     """Manages the archive of daily website generations."""
@@ -142,8 +151,9 @@ class ArchiveManager:
         return removed
 
     def generate_index(self) -> str:
-        """Generate the archive index page."""
+        """Generate the archive index page with consistent header/footer."""
         archives = self.list_archives()
+        date_str = datetime.now().strftime('%B %d, %Y')
 
         # Build archive cards
         cards_html = []
@@ -175,15 +185,24 @@ class ArchiveManager:
             </a>"""
             cards_html.append(card)
 
-        # Build the full index HTML
+        # Get shared styles
+        header_styles = get_header_styles()
+        footer_styles = get_footer_styles()
+
+        # Build the full index HTML with shared header/footer
         index_html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark-mode">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive | DailyTrending.info</title>
     <meta name="description" content="Browse the archive of daily trending topic designs. Each day features a unique layout, color scheme, and curated content.">
     <link rel="canonical" href="https://dailytrending.info/archive/">
+    <meta property="og:title" content="Archive | DailyTrending.info">
+    <meta property="og:description" content="Browse previous daily trend snapshots with unique designs and curated content.">
+    <meta property="og:image" content="https://dailytrending.info/og-image.png">
+    <meta property="og:url" content="https://dailytrending.info/archive/">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -194,8 +213,19 @@ class ArchiveManager:
             --color-muted: #a1a1aa;
             --color-card-bg: #18181b;
             --color-border: #27272a;
+            --color-accent: #6366f1;
             --font-primary: 'Space Grotesk', system-ui, sans-serif;
             --font-secondary: 'Inter', system-ui, sans-serif;
+            --radius: 1rem;
+        }}
+
+        /* Light mode */
+        body.light-mode {{
+            --color-bg: #fafafa;
+            --color-text: #18181b;
+            --color-muted: #71717a;
+            --color-card-bg: #ffffff;
+            --color-border: #e4e4e7;
         }}
 
         * {{
@@ -212,42 +242,63 @@ class ArchiveManager:
             line-height: 1.6;
         }}
 
-        .container {{
+        /* Shared navigation styles */
+        {header_styles}
+
+        /* Shared footer styles */
+        {footer_styles}
+
+        /* Archive page specific styles */
+        .archive-container {{
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem 1.5rem;
         }}
 
-        header {{
+        .archive-header {{
             text-align: center;
-            padding: 4rem 0 3rem;
+            padding: 3rem 0 2rem;
         }}
 
-        .back-link {{
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--color-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-            transition: color 0.2s;
-        }}
-
-        .back-link:hover {{
-            color: var(--color-text);
-        }}
-
-        h1 {{
+        .archive-header h1 {{
             font-family: var(--font-primary);
             font-size: clamp(2rem, 5vw, 3rem);
             font-weight: 700;
             margin-bottom: 0.5rem;
         }}
 
-        header p {{
+        .archive-header p {{
             color: var(--color-muted);
             font-size: 1.1rem;
+        }}
+
+        .archive-stats {{
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--color-card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+        }}
+
+        .archive-stat {{
+            text-align: center;
+        }}
+
+        .archive-stat-value {{
+            font-family: var(--font-primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-accent);
+        }}
+
+        .archive-stat-label {{
+            font-size: 0.8rem;
+            color: var(--color-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }}
 
         .archive-grid {{
@@ -262,16 +313,17 @@ class ArchiveManager:
             flex-direction: column;
             background: var(--color-card-bg);
             border: 1px solid var(--color-border);
-            border-radius: 1rem;
+            border-radius: var(--radius);
             padding: 1.5rem;
             text-decoration: none;
             color: inherit;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
         }}
 
         .archive-card:hover {{
             transform: translateY(-4px);
-            border-color: var(--card-accent, var(--color-border));
+            border-color: var(--card-accent, var(--color-accent));
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }}
 
         .archive-card-header {{
@@ -283,9 +335,10 @@ class ArchiveManager:
 
         .archive-day {{
             font-size: 0.8rem;
-            color: var(--card-accent, var(--color-muted));
+            color: var(--card-accent, var(--color-accent));
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-weight: 600;
         }}
 
         .archive-date {{
@@ -322,44 +375,47 @@ class ArchiveManager:
             opacity: 0.5;
         }}
 
-        footer {{
-            text-align: center;
-            padding: 3rem 0;
-            color: var(--color-muted);
-            font-size: 0.85rem;
-        }}
-
         @media (max-width: 640px) {{
             .archive-grid {{
                 grid-template-columns: 1fr;
             }}
 
-            header {{
+            .archive-header {{
                 padding: 2rem 0;
+            }}
+
+            .archive-stats {{
+                flex-direction: column;
+                gap: 1rem;
             }}
         }}
     </style>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <a href="../" class="back-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5"></path>
-                    <path d="M12 19l-7-7 7-7"></path>
-                </svg>
-                Back to Today
-            </a>
+<body class="dark-mode">
+    {build_header(active_page='archive', date_str=date_str)}
+
+    <main class="archive-container">
+        <div class="archive-header">
             <h1>Archive</h1>
             <p>Browse previous daily trend snapshots</p>
-        </header>
+            <div class="archive-stats">
+                <div class="archive-stat">
+                    <div class="archive-stat-value">{len(archives)}</div>
+                    <div class="archive-stat-label">{'Snapshot' if len(archives) == 1 else 'Snapshots'}</div>
+                </div>
+                <div class="archive-stat">
+                    <div class="archive-stat-value">30</div>
+                    <div class="archive-stat-label">Day Retention</div>
+                </div>
+            </div>
+        </div>
 
         {self._build_archive_content(cards_html)}
+    </main>
 
-        <footer>
-            <p>{len(archives)} archived {('snapshot' if len(archives) == 1 else 'snapshots')}</p>
-        </footer>
-    </div>
+    {build_footer(date_str=date_str)}
+
+    {get_theme_script()}
 </body>
 </html>"""
 

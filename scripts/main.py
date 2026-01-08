@@ -46,6 +46,7 @@ from sitemap_generator import save_sitemap
 from editorial_generator import EditorialGenerator
 from fetch_media_of_day import MediaOfDayFetcher
 from shared_components import build_header, build_footer, get_header_styles, get_footer_styles, get_theme_script
+from image_utils import validate_image_url, sanitize_image_url, get_image_quality_score, get_fallback_gradient_css
 
 # Setup logging
 logger = setup_logging("pipeline")
@@ -947,17 +948,24 @@ class Pipeline:
             title = html_module.escape((t.get('title') or '')[:100])
             url = html_module.escape(t.get('url') or '#')
             source = html_module.escape((t.get('source') or '').replace('_', ' ').title())
-            image_url = t.get('image_url') or ''
+            raw_image_url = t.get('image_url') or ''
 
-            # Always show an image - use placeholder if no image available
-            if image_url:
-                img_src = html_module.escape(image_url)
+            # Validate and sanitize the image URL for reliability
+            is_valid, validated_url = validate_image_url(raw_image_url)
+
+            # Always show an image - use placeholder if no valid image available
+            if is_valid and validated_url:
+                img_src = html_module.escape(validated_url)
                 img_class = "story-image"
                 img_alt = title
+                # Add data attribute for quality score (helps with debugging)
+                img_quality = get_image_quality_score(validated_url)
+                img_data_attrs = f'data-quality="{img_quality}"'
             else:
                 img_src = placeholder_url
                 img_class = "story-image placeholder"
-                img_alt = "Placeholder image"
+                img_alt = f"{source} story placeholder"
+                img_data_attrs = 'data-is-placeholder="true"'
 
             cards.append(f'''
             <article class="story-card">
@@ -969,7 +977,9 @@ class Pipeline:
                              loading="lazy"
                              referrerpolicy="no-referrer"
                              width="640"
-                             height="360">
+                             height="360"
+                             {img_data_attrs}
+                             onerror="this.onerror=null;this.src='{placeholder_url}';this.classList.add('placeholder');">
                     </figure>
                     <div class="story-content">
                         <span class="source-badge">{source}</span>
@@ -1250,10 +1260,43 @@ class Pipeline:
             object-fit: cover;
             object-position: center;
             background-color: var(--color-border);
+            transition: opacity 0.3s ease;
+        }}
+
+        /* Loading state - shimmer effect */
+        .story-image:not([loaded]):not(.placeholder) {{
+            opacity: 0;
+        }}
+
+        .story-media:not(.image-loaded):not(.image-fallback)::after {{
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                transparent 100%);
+            animation: shimmer 1.5s infinite;
+        }}
+
+        @keyframes shimmer {{
+            0% {{ transform: translateX(-100%); }}
+            100% {{ transform: translateX(100%); }}
+        }}
+
+        /* Loaded state */
+        .story-image[loaded] {{
+            opacity: 1;
         }}
 
         .story-image.placeholder {{
-            opacity: 0.92;
+            opacity: 0.85;
+            filter: grayscale(0.1);
+        }}
+
+        /* Fallback indicator (subtle) */
+        .image-fallback .story-image {{
+            opacity: 0.8;
         }}
 
         .story-content {{
@@ -1403,13 +1446,18 @@ class Pipeline:
     <script>
         (function () {{
             const placeholderImage = "{placeholder_url}";
-            const markBroken = (img) => {{
+            const LOAD_TIMEOUT_MS = 8000; // 8 second timeout for slow images
+
+            const markBroken = (img, reason = 'error') => {{
                 if (!placeholderImage) return;
                 if (img.dataset.fallbackApplied) return;
                 img.dataset.fallbackApplied = 'true';
+                img.dataset.fallbackReason = reason;
                 img.src = placeholderImage;
                 img.classList.add('placeholder');
-                img.title = 'Fallback image';
+                img.title = 'Image unavailable';
+                // Add visual indicator class for styling
+                img.parentElement?.classList.add('image-fallback');
             }};
 
             const bindErrors = () => {{
@@ -1417,21 +1465,50 @@ class Pipeline:
                     if (img.dataset.boundError) return;
                     img.dataset.boundError = 'true';
 
+                    // Skip if already a placeholder
+                    if (img.dataset.isPlaceholder === 'true') {{
+                        img.setAttribute('loaded', '');
+                        return;
+                    }}
+
+                    // Set up timeout for slow-loading images
+                    let loadTimeout;
+                    const startTimeout = () => {{
+                        loadTimeout = setTimeout(() => {{
+                            if (!img.complete || img.naturalWidth === 0) {{
+                                markBroken(img, 'timeout');
+                            }}
+                        }}, LOAD_TIMEOUT_MS);
+                    }};
+
                     // Handle successful image load
                     img.addEventListener('load', () => {{
-                        img.setAttribute('loaded', '');
+                        clearTimeout(loadTimeout);
+                        if (img.naturalWidth > 0) {{
+                            img.setAttribute('loaded', '');
+                            img.parentElement?.classList.add('image-loaded');
+                        }} else {{
+                            markBroken(img, 'zero-size');
+                        }}
                     }});
 
                     // Handle image error
-                    img.addEventListener('error', () => markBroken(img));
+                    img.addEventListener('error', () => {{
+                        clearTimeout(loadTimeout);
+                        markBroken(img, 'error');
+                    }});
 
                     // Handle already-loaded images
                     if (img.complete) {{
                         if (img.naturalWidth === 0) {{
-                            markBroken(img);
+                            markBroken(img, 'already-broken');
                         }} else {{
                             img.setAttribute('loaded', '');
+                            img.parentElement?.classList.add('image-loaded');
                         }}
+                    }} else {{
+                        // Start timeout for images still loading
+                        startTimeout();
                     }}
                 }});
             }};
