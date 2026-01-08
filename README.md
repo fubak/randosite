@@ -12,6 +12,7 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 <!-- CHANGELOG_START -->
 | Date | Change |
 |------|--------|
+| 2026-01-08 15:23 UTC | [Add IndexNow API key for search engine indexing](https://github.com/fubak/daily-trending-info/commit/0cfab110090869eea4dad83faede5c292e5b4ad3) |
 | 2026-01-08 15:16 UTC | [fix: Point robots.txt to sitemap_main.xml (working sitemap)](https://github.com/fubak/daily-trending-info/commit/782fcfc5f2cf1aa81da5a8d1640eaa96fddaf09b) |
 | 2026-01-08 14:49 UTC | [fix: Use sitemap index format for better Google compatibility](https://github.com/fubak/daily-trending-info/commit/97bcb10da1f7630b44e9cedb9766c32f5635488f) |
 | 2026-01-08 14:33 UTC | [fix: Improve sitemap XML formatting and expand robots.txt crawler permissions](https://github.com/fubak/daily-trending-info/commit/ef1267f40621af9972a424de3487e73f21be6d98) |
@@ -21,7 +22,6 @@ A fully autonomous trend aggregation website that regenerates daily with unique 
 | 2026-01-08 12:53 UTC | [fix(seo): Add Archive link to Jinja2 template navigation](https://github.com/fubak/daily-trending-info/commit/f3ebb66345a61d39bc8da0d737c99153c4b03dfe) |
 | 2026-01-08 01:54 UTC | [feat: Implement code review recommendations - 75% complete](https://github.com/fubak/daily-trending-info/commit/40944ab9038084f3d313b9fcb7e1841c5817d066) |
 | 2026-01-07 13:08 UTC | [Add Business and Sports topic pages with 4-column grid layout](https://github.com/fubak/daily-trending-info/commit/e0dac4136d250071044720a49012108593f305d5) |
-| 2026-01-07 12:56 UTC | [Add 9th story and enforce source diversity in Top Stories](https://github.com/fubak/daily-trending-info/commit/d1b388a507a22b37d0428a78855cec19a3e31795) |
 <!-- CHANGELOG_END -->
 
 ## Features
