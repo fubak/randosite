@@ -696,9 +696,9 @@ class WebsiteBuilder:
             'word_cloud': self.keyword_freq,
             'categories': categories,
             
-            # SEO Placeholders (can be enhanced further)
-            'og_image_tags': f'<meta property="og:image" content="{hero_image_url}">',
-            'twitter_image_tags': f'<meta name="twitter:image" content="{hero_image_url}">',
+            # SEO - Static branded OG image for consistent social sharing
+            'og_image_tags': '<meta property="og:image" content="https://dailytrending.info/og-image.png">\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n    <meta property="og:image:type" content="image/png">',
+            'twitter_image_tags': '<meta name="twitter:image" content="https://dailytrending.info/twitter-image.png">\n    <meta name="twitter:card" content="summary_large_image">',
             'structured_data': self._build_structured_data()
         }
 
