@@ -212,7 +212,7 @@ User-agent: Google-Extended
 Allow: /
 
 # Sitemap location
-Sitemap: {base_url}/sitemap.xml
+Sitemap: {base_url}/sitemap_main.xml
 """
 
 

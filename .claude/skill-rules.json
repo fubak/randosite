@@ -1,0 +1,180 @@
+{
+  "skills": {
+    "skill-developer": {
+      "triggers": {
+        "keywords": ["skill", "hook", "claude code", "automation"],
+        "pathPatterns": [".claude/**/*"],
+        "fileExtensions": [".md", ".sh"]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "data-pipeline": {
+      "triggers": {
+        "keywords": [
+          "pipeline",
+          "main.py",
+          "collect",
+          "fetch",
+          "aggregate",
+          "trending",
+          "data flow"
+        ],
+        "pathPatterns": [
+          "scripts/*.py"
+        ],
+        "fileExtensions": [".py"]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "content-generation": {
+      "triggers": {
+        "keywords": [
+          "editorial",
+          "article",
+          "content",
+          "generate",
+          "groq",
+          "ai",
+          "llm",
+          "enrich"
+        ],
+        "pathPatterns": [
+          "scripts/editorial_generator.py",
+          "scripts/enrich_content.py",
+          "scripts/generate_design.py"
+        ]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "web-builder": {
+      "triggers": {
+        "keywords": [
+          "html",
+          "website",
+          "build",
+          "template",
+          "css",
+          "design system",
+          "hero",
+          "layout"
+        ],
+        "pathPatterns": [
+          "scripts/build_website.py",
+          "public/**/*"
+        ],
+        "fileExtensions": [".html", ".css", ".js"]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "image-handling": {
+      "triggers": {
+        "keywords": [
+          "image",
+          "pexels",
+          "unsplash",
+          "photo",
+          "cache",
+          "fetch images"
+        ],
+        "pathPatterns": [
+          "scripts/fetch_images.py",
+          "data/image_cache/**/*"
+        ]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "rss-sitemap": {
+      "triggers": {
+        "keywords": [
+          "rss",
+          "feed",
+          "sitemap",
+          "xml",
+          "seo"
+        ],
+        "pathPatterns": [
+          "scripts/generate_rss.py",
+          "scripts/sitemap_generator.py",
+          "public/feed.xml",
+          "public/sitemap.xml"
+        ],
+        "fileExtensions": [".xml"]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "testing": {
+      "triggers": {
+        "keywords": [
+          "test",
+          "pytest",
+          "coverage",
+          "fixture",
+          "mock"
+        ],
+        "pathPatterns": [
+          "tests/**/*.py"
+        ]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "github-actions": {
+      "triggers": {
+        "keywords": [
+          "workflow",
+          "github actions",
+          "ci",
+          "cd",
+          "deploy",
+          "cron",
+          "daily regenerate"
+        ],
+        "pathPatterns": [
+          ".github/workflows/**/*.yml"
+        ],
+        "fileExtensions": [".yml", ".yaml"]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "config-management": {
+      "triggers": {
+        "keywords": [
+          "config",
+          "limits",
+          "timeouts",
+          "constants",
+          "settings"
+        ],
+        "pathPatterns": [
+          "scripts/config.py"
+        ]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    },
+    "archive-management": {
+      "triggers": {
+        "keywords": [
+          "archive",
+          "history",
+          "snapshot",
+          "yesterday",
+          "compare"
+        ],
+        "pathPatterns": [
+          "scripts/archive_manager.py",
+          "public/archive/**/*"
+        ]
+      },
+      "enforcement": "suggest",
+      "type": "domain"
+    }
+  }
+}
