@@ -216,6 +216,27 @@ Sitemap: {base_url}/sitemap.xml
 """
 
 
+def generate_sitemap_index(base_url: str = "https://dailytrending.info") -> str:
+    """
+    Generate a sitemap index pointing to the main sitemap.
+
+    Args:
+        base_url: Base URL of the website
+
+    Returns:
+        XML string for sitemap index
+    """
+    today = datetime.now().strftime('%Y-%m-%d')
+    return f'''<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>{base_url}/sitemap_main.xml</loc>
+    <lastmod>{today}</lastmod>
+  </sitemap>
+</sitemapindex>
+'''
+
+
 def save_sitemap(
     public_dir: Path,
     base_url: str = "https://dailytrending.info",
@@ -229,15 +250,23 @@ def save_sitemap(
         base_url: Base URL of the website
         extra_urls: Additional URLs to include (articles, topic pages, etc.)
     """
-    # Generate and save sitemap
+    # Generate and save main sitemap
     sitemap_content = generate_sitemap(
         base_url=base_url,
         public_dir=public_dir,
         extra_urls=extra_urls
     )
+
+    # Save as sitemap_main.xml
+    main_sitemap_path = public_dir / 'sitemap_main.xml'
+    main_sitemap_path.write_text(sitemap_content)
+    print(f"  Created {main_sitemap_path}")
+
+    # Also save as sitemap.xml (sitemap index pointing to main)
+    sitemap_index_content = generate_sitemap_index(base_url=base_url)
     sitemap_path = public_dir / 'sitemap.xml'
-    sitemap_path.write_text(sitemap_content)
-    print(f"  Created {sitemap_path}")
+    sitemap_path.write_text(sitemap_index_content)
+    print(f"  Created {sitemap_path} (index)")
 
     # Generate and save robots.txt
     robots_content = generate_robots_txt(base_url=base_url)
