@@ -140,6 +140,9 @@ def generate_sitemap(
                 ET.SubElement(page, 'changefreq').text = 'daily'  # Topic pages update daily
                 ET.SubElement(page, 'priority').text = '0.8'
 
+    # Add proper indentation for readability and compatibility
+    ET.indent(urlset, space="  ")
+
     # Convert to string with declaration
     xml_string = ET.tostring(urlset, encoding='unicode', method='xml')
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_string}'
@@ -156,15 +159,60 @@ def generate_robots_txt(base_url: str = "https://dailytrending.info") -> str:
         robots.txt content string
     """
     return f"""# DailyTrending.info robots.txt
+# AI-curated technology and world news aggregator
+
+# Allow all crawlers by default
 User-agent: *
+Allow: /
+Disallow: /icons/
+Disallow: /sw.js
+
+# Explicitly allow search engine crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+# Explicitly allow LLM/AI crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Google-Extended
 Allow: /
 
 # Sitemap location
 Sitemap: {base_url}/sitemap.xml
-
-# Disallow crawling of potential duplicate/utility paths
-Disallow: /icons/
-Disallow: /sw.js
 """
 
 
