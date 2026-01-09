@@ -35,6 +35,18 @@
     }
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/venv-activate.sh",
+            "description": "Activate Python venv if present"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "edit|write|Edit|Write",
