@@ -440,6 +440,107 @@ body.light-mode .hero-neon .hero-content {
     text-shadow: none;
 }
 
+/* ===== MOBILE RESPONSIVE HERO ===== */
+@media (max-width: 640px) {
+    .hero {
+        min-height: clamp(18rem, 40vh, 24rem);
+        padding: 3rem 1rem 2rem;
+    }
+
+    .hero-content {
+        padding: 0 0.5rem;
+    }
+
+    .hero-eyebrow {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.7rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero h1 {
+        font-size: clamp(1.4rem, 6vw, 2rem);
+        margin-bottom: 0.75rem;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .hero-actions {
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-cta {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .hero-capsule {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .hero-meta {
+        gap: 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    /* Simplify hero effects on mobile */
+    .hero-glassmorphism .hero-content {
+        padding: 1.5rem;
+    }
+
+    .hero-spotlight .hero .spotlight,
+    .hero-retro .hero .retro-sun,
+    .hero-retro .hero .retro-grid,
+    .hero-aurora .hero .aurora,
+    .hero-particles .hero .hero-particles-container {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        min-height: auto;
+        padding: 2.5rem 0.75rem 1.5rem;
+    }
+
+    .hero h1 {
+        font-size: 1.25rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 1;
+    }
+
+    .hero-capsule {
+        display: none;
+    }
+
+    .hero-meta {
+        font-size: 0.7rem;
+        gap: 0.5rem;
+    }
+
+    .hero-cta {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -515,12 +616,4 @@ body.light-mode .hero::after {
 body.light-mode .hero-glassmorphism .hero-content {
     background: rgba(255, 255, 255, 0.6);
     border-color: rgba(0, 0, 0, 0.1);
-}
-
-body.light-mode .hero-neon .hero {
-    background: linear-gradient(135deg, #f0f0ff 0%, #e0e0ff 100%);
-}
-
-body.light-mode .hero-neon .hero-content {
-    text-shadow: none;
 }

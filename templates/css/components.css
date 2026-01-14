@@ -138,6 +138,61 @@
     }
 }
 
+/* Extra small mobile - hide ticker completely */
+@media (max-width: 480px) {
+    .ticker-wrap {
+        display: none;
+    }
+
+    /* Compact reading controls */
+    .reading-controls {
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        gap: 0.5rem;
+    }
+
+    .reading-group {
+        gap: 0.25rem;
+    }
+
+    .reading-label {
+        font-size: 0.7rem;
+    }
+
+    .reading-button {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.75rem;
+    }
+
+    /* Compact word cloud */
+    .word-cloud-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        min-height: auto;
+    }
+
+    .word-cloud {
+        gap: 0.35rem 0.6rem;
+    }
+
+    .size-1 { font-size: 0.7rem; }
+    .size-2 { font-size: 0.8rem; }
+    .size-3 { font-size: 0.95rem; }
+    .size-4 { font-size: 1.1rem; }
+    .size-5 { font-size: 1.35rem; }
+    .size-6 { font-size: 1.6rem; }
+
+    /* Compact section headers */
+    .section-header {
+        padding: 0.5rem 0;
+        margin-bottom: 0.75rem;
+    }
+
+    .section-header h2 {
+        font-size: 1rem;
+    }
+}
+
 /* ===== CARD BASE ===== */
 .story-card {
     background: var(--color-card-bg);

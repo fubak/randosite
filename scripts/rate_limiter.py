@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RateLimitStatus:
     """Rate limit status for an API."""
+
     requests_remaining: Optional[int] = None
     requests_limit: Optional[int] = None
     tokens_remaining: Optional[int] = None
@@ -26,6 +27,17 @@ class RateLimitStatus:
     reset_time: Optional[datetime] = None
     is_available: bool = True
     wait_seconds: float = 0.0
+    error: Optional[str] = None
+
+
+@dataclass
+class OpenRouterCredits:
+    """OpenRouter credit balance information."""
+
+    usage: float = 0.0  # Current usage in credits
+    limit: Optional[float] = None  # Credit limit (None = unlimited)
+    remaining: Optional[float] = None  # Remaining credits
+    is_low: bool = False  # Warning flag
     error: Optional[str] = None
 
 
@@ -38,7 +50,7 @@ class RateLimiter:
 
     # Thresholds for rate limit warnings
     REQUEST_THRESHOLD_PERCENT = 10  # Warn when less than 10% requests remaining
-    TOKEN_THRESHOLD_PERCENT = 10    # Warn when less than 10% tokens remaining
+    TOKEN_THRESHOLD_PERCENT = 10  # Warn when less than 10% tokens remaining
 
     def __init__(
         self,
@@ -48,26 +60,26 @@ class RateLimiter:
         opencode_key: Optional[str] = None,
         huggingface_key: Optional[str] = None,
         anthropic_key: Optional[str] = None,
-        mistral_key: Optional[str] = None
+        mistral_key: Optional[str] = None,
     ):
-        self.google_key = google_key or os.getenv('GOOGLE_AI_API_KEY')
-        self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
-        self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
-        self.opencode_key = opencode_key or os.getenv('OPENCODE_API_KEY')
-        self.huggingface_key = huggingface_key or os.getenv('HUGGINGFACE_API_KEY')
-        self.anthropic_key = anthropic_key or os.getenv('ANTHROPIC_API_KEY')
-        self.mistral_key = mistral_key or os.getenv('MISTRAL_API_KEY')
+        self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
+        self.openrouter_key = openrouter_key or os.getenv("OPENROUTER_API_KEY")
+        self.groq_key = groq_key or os.getenv("GROQ_API_KEY")
+        self.opencode_key = opencode_key or os.getenv("OPENCODE_API_KEY")
+        self.huggingface_key = huggingface_key or os.getenv("HUGGINGFACE_API_KEY")
+        self.anthropic_key = anthropic_key or os.getenv("ANTHROPIC_API_KEY")
+        self.mistral_key = mistral_key or os.getenv("MISTRAL_API_KEY")
         self.session = requests.Session()
 
         # Track last call times per provider
         self._last_call_time: Dict[str, float] = {
-            'google': 0.0,
-            'openrouter': 0.0,
-            'groq': 0.0,
-            'opencode': 0.0,
-            'huggingface': 0.0,
-            'anthropic': 0.0,
-            'mistral': 0.0
+            "google": 0.0,
+            "openrouter": 0.0,
+            "groq": 0.0,
+            "opencode": 0.0,
+            "huggingface": 0.0,
+            "anthropic": 0.0,
+            "mistral": 0.0,
         }
 
         # Cache rate limit status
@@ -90,12 +102,11 @@ class RateLimiter:
         """
         if not self.google_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No Google AI API key configured"
+                is_available=False, error="No Google AI API key configured"
             )
 
         # Check cache
-        cache_key = 'google'
+        cache_key = "google"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
@@ -103,7 +114,7 @@ class RateLimiter:
 
         # Google AI doesn't have a rate limit check endpoint
         # We track timing and rely on response headers/errors
-        elapsed = time.time() - self._last_call_time.get('google', 0)
+        elapsed = time.time() - self._last_call_time.get("google", 0)
 
         status = RateLimitStatus(is_available=True)
 
@@ -123,12 +134,11 @@ class RateLimiter:
         """
         if not self.openrouter_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No OpenRouter API key configured"
+                is_available=False, error="No OpenRouter API key configured"
             )
 
         # Check cache
-        cache_key = 'openrouter'
+        cache_key = "openrouter"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
@@ -141,38 +151,41 @@ class RateLimiter:
                 "https://openrouter.ai/api/v1/key",
                 headers={
                     "Authorization": f"Bearer {self.openrouter_key}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
-                timeout=10
+                timeout=10,
             )
 
             if response.status_code == 200:
-                data = response.json().get('data', {})
+                data = response.json().get("data", {})
 
                 # Extract rate limit info
-                rate_limit = data.get('rate_limit', {})
-                requests_remaining = rate_limit.get('requests')
-                interval = rate_limit.get('interval', 'minute')
+                rate_limit = data.get("rate_limit", {})
+                requests_remaining = rate_limit.get("requests")
+                interval = rate_limit.get("interval", "minute")
 
                 # Check usage
-                usage = data.get('usage', 0)
-                limit = data.get('limit', None)
+                usage = data.get("usage", 0)
+                limit = data.get("limit", None)
 
                 status = RateLimitStatus(
-                    requests_remaining=requests_remaining,
-                    is_available=True
+                    requests_remaining=requests_remaining, is_available=True
                 )
 
                 # Check if we're running low on requests
                 if requests_remaining is not None and requests_remaining < 5:
                     status.wait_seconds = self.MAX_RETRY_WAIT
-                    logger.warning(f"OpenRouter: Only {requests_remaining} requests remaining")
+                    logger.warning(
+                        f"OpenRouter: Only {requests_remaining} requests remaining"
+                    )
 
                 # Check if usage is approaching limit
                 if limit is not None and usage is not None:
                     usage_percent = (usage / limit) * 100 if limit > 0 else 0
                     if usage_percent > 90:
-                        logger.warning(f"OpenRouter: {usage_percent:.1f}% of credit limit used")
+                        logger.warning(
+                            f"OpenRouter: {usage_percent:.1f}% of credit limit used"
+                        )
                         status.is_available = False
                         status.error = f"Usage at {usage_percent:.1f}% of limit"
 
@@ -182,22 +195,22 @@ class RateLimiter:
 
             elif response.status_code == 429:
                 # Already rate limited
-                retry_after = response.headers.get('Retry-After', '10')
+                retry_after = response.headers.get("Retry-After", "10")
                 try:
                     wait_seconds = min(float(retry_after), self.MAX_RETRY_WAIT)
                 except ValueError:
                     wait_seconds = self.MAX_RETRY_WAIT
 
                 status = RateLimitStatus(
-                    is_available=False,
-                    wait_seconds=wait_seconds,
-                    error="Rate limited"
+                    is_available=False, wait_seconds=wait_seconds, error="Rate limited"
                 )
                 self._rate_limit_cache[cache_key] = (status, time.time())
                 return status
 
             else:
-                logger.warning(f"OpenRouter rate limit check failed: {response.status_code}")
+                logger.warning(
+                    f"OpenRouter rate limit check failed: {response.status_code}"
+                )
                 # Assume available but unknown status
                 return RateLimitStatus(is_available=True)
 
@@ -217,12 +230,11 @@ class RateLimiter:
         """
         if not self.groq_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No Groq API key configured"
+                is_available=False, error="No Groq API key configured"
             )
 
         # Check cache
-        cache_key = 'groq'
+        cache_key = "groq"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
@@ -233,14 +245,11 @@ class RateLimiter:
         # We track this from response headers after each call
 
         # For now, check if we should wait based on last call time
-        elapsed = time.time() - self._last_call_time.get('groq', 0)
+        elapsed = time.time() - self._last_call_time.get("groq", 0)
 
         if elapsed < self.MIN_CALL_INTERVAL:
             wait_seconds = self.MIN_CALL_INTERVAL - elapsed
-            return RateLimitStatus(
-                is_available=True,
-                wait_seconds=wait_seconds
-            )
+            return RateLimitStatus(is_available=True, wait_seconds=wait_seconds)
 
         return RateLimitStatus(is_available=True)
 
@@ -256,26 +265,22 @@ class RateLimiter:
         """
         if not self.opencode_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No OpenCode API key configured"
+                is_available=False, error="No OpenCode API key configured"
             )
 
         # Check cache
-        cache_key = 'opencode'
+        cache_key = "opencode"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
                 return cached_status
 
         # For now, check if we should wait based on last call time
-        elapsed = time.time() - self._last_call_time.get('opencode', 0)
+        elapsed = time.time() - self._last_call_time.get("opencode", 0)
 
         if elapsed < self.MIN_CALL_INTERVAL:
             wait_seconds = self.MIN_CALL_INTERVAL - elapsed
-            return RateLimitStatus(
-                is_available=True,
-                wait_seconds=wait_seconds
-            )
+            return RateLimitStatus(is_available=True, wait_seconds=wait_seconds)
 
         return RateLimitStatus(is_available=True)
 
@@ -291,26 +296,22 @@ class RateLimiter:
         """
         if not self.huggingface_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No Hugging Face API key configured"
+                is_available=False, error="No Hugging Face API key configured"
             )
 
         # Check cache
-        cache_key = 'huggingface'
+        cache_key = "huggingface"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
                 return cached_status
 
         # For now, check if we should wait based on last call time
-        elapsed = time.time() - self._last_call_time.get('huggingface', 0)
+        elapsed = time.time() - self._last_call_time.get("huggingface", 0)
 
         if elapsed < self.MIN_CALL_INTERVAL:
             wait_seconds = self.MIN_CALL_INTERVAL - elapsed
-            return RateLimitStatus(
-                is_available=True,
-                wait_seconds=wait_seconds
-            )
+            return RateLimitStatus(is_available=True, wait_seconds=wait_seconds)
 
         return RateLimitStatus(is_available=True)
 
@@ -326,12 +327,11 @@ class RateLimiter:
         """
         if not self.anthropic_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No Anthropic API key configured"
+                is_available=False, error="No Anthropic API key configured"
             )
 
         # Check cache
-        cache_key = 'anthropic'
+        cache_key = "anthropic"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
@@ -339,15 +339,12 @@ class RateLimiter:
 
         # For now, check if we should wait based on last call time
         # Anthropic free tier is 5 RPM, so we need 12 seconds between calls
-        elapsed = time.time() - self._last_call_time.get('anthropic', 0)
+        elapsed = time.time() - self._last_call_time.get("anthropic", 0)
         min_interval = 12.0  # 5 RPM = 12 seconds between calls
 
         if elapsed < min_interval:
             wait_seconds = min_interval - elapsed
-            return RateLimitStatus(
-                is_available=True,
-                wait_seconds=wait_seconds
-            )
+            return RateLimitStatus(is_available=True, wait_seconds=wait_seconds)
 
         return RateLimitStatus(is_available=True)
 
@@ -363,30 +360,79 @@ class RateLimiter:
         """
         if not self.mistral_key:
             return RateLimitStatus(
-                is_available=False,
-                error="No Mistral API key configured"
+                is_available=False, error="No Mistral API key configured"
             )
 
         # Check cache
-        cache_key = 'mistral'
+        cache_key = "mistral"
         if not force_refresh and cache_key in self._rate_limit_cache:
             cached_status, cached_time = self._rate_limit_cache[cache_key]
             if time.time() - cached_time < self._cache_ttl:
                 return cached_status
 
         # For now, check if we should wait based on last call time
-        elapsed = time.time() - self._last_call_time.get('mistral', 0)
+        elapsed = time.time() - self._last_call_time.get("mistral", 0)
 
         if elapsed < self.MIN_CALL_INTERVAL:
             wait_seconds = self.MIN_CALL_INTERVAL - elapsed
-            return RateLimitStatus(
-                is_available=True,
-                wait_seconds=wait_seconds
-            )
+            return RateLimitStatus(is_available=True, wait_seconds=wait_seconds)
 
         return RateLimitStatus(is_available=True)
 
-    def mark_provider_exhausted(self, provider: str, reason: str = "daily limit") -> None:
+    def get_openrouter_credits(self) -> OpenRouterCredits:
+        """
+        Get OpenRouter credit balance and usage information.
+
+        Returns detailed credit info including warnings when balance is low.
+        Useful for monitoring costs at the end of pipeline runs.
+
+        Returns:
+            OpenRouterCredits with balance info
+        """
+        if not self.openrouter_key:
+            return OpenRouterCredits(error="No OpenRouter API key configured")
+
+        try:
+            response = self.session.get(
+                "https://openrouter.ai/api/v1/key",
+                headers={
+                    "Authorization": f"Bearer {self.openrouter_key}",
+                    "Content-Type": "application/json",
+                },
+                timeout=10,
+            )
+
+            if response.status_code == 200:
+                data = response.json().get("data", {})
+
+                usage = data.get("usage", 0)
+                limit = data.get("limit")
+
+                # Calculate remaining
+                remaining = None
+                is_low = False
+                if limit is not None:
+                    remaining = limit - usage
+                    # Warn if less than 20% remaining or less than $1
+                    if limit > 0:
+                        usage_percent = (usage / limit) * 100
+                        is_low = usage_percent > 80 or remaining < 1.0
+
+                return OpenRouterCredits(
+                    usage=usage,
+                    limit=limit,
+                    remaining=remaining,
+                    is_low=is_low,
+                )
+            else:
+                return OpenRouterCredits(error=f"API returned {response.status_code}")
+
+        except Exception as e:
+            return OpenRouterCredits(error=str(e))
+
+    def mark_provider_exhausted(
+        self, provider: str, reason: str = "daily limit"
+    ) -> None:
         """
         Mark a provider as exhausted for this pipeline run.
 
@@ -399,8 +445,10 @@ class RateLimiter:
         """
         if provider not in self._exhausted_providers:
             self._exhausted_providers.add(provider)
-            logger.warning(f"Provider '{provider}' marked as EXHAUSTED ({reason}). "
-                          f"Will not retry until next pipeline run.")
+            logger.warning(
+                f"Provider '{provider}' marked as EXHAUSTED ({reason}). "
+                f"Will not retry until next pipeline run."
+            )
 
     def is_provider_exhausted(self, provider: str) -> bool:
         """
@@ -424,9 +472,7 @@ class RateLimiter:
         logger.info("Reset exhausted providers list")
 
     def update_from_response_headers(
-        self,
-        provider: str,
-        headers: Dict[str, str]
+        self, provider: str, headers: Dict[str, str]
     ) -> None:
         """
         Update rate limit status from API response headers.
@@ -438,11 +484,11 @@ class RateLimiter:
         status = RateLimitStatus(is_available=True)
 
         # Common rate limit headers
-        remaining_requests = headers.get('x-ratelimit-remaining-requests')
-        limit_requests = headers.get('x-ratelimit-limit-requests')
-        remaining_tokens = headers.get('x-ratelimit-remaining-tokens')
-        limit_tokens = headers.get('x-ratelimit-limit-tokens')
-        reset_time = headers.get('x-ratelimit-reset-requests')
+        remaining_requests = headers.get("x-ratelimit-remaining-requests")
+        limit_requests = headers.get("x-ratelimit-limit-requests")
+        remaining_tokens = headers.get("x-ratelimit-remaining-tokens")
+        limit_tokens = headers.get("x-ratelimit-limit-tokens")
+        reset_time = headers.get("x-ratelimit-reset-requests")
 
         if remaining_requests is not None:
             try:
@@ -471,7 +517,9 @@ class RateLimiter:
         # Check if we're running low
         if status.requests_remaining is not None and status.requests_limit is not None:
             if status.requests_limit > 0:
-                remaining_percent = (status.requests_remaining / status.requests_limit) * 100
+                remaining_percent = (
+                    status.requests_remaining / status.requests_limit
+                ) * 100
                 if remaining_percent < self.REQUEST_THRESHOLD_PERCENT:
                     logger.warning(
                         f"{provider}: Only {status.requests_remaining}/{status.requests_limit} "
@@ -481,7 +529,9 @@ class RateLimiter:
 
         if status.tokens_remaining is not None and status.tokens_limit is not None:
             if status.tokens_limit > 0:
-                remaining_percent = (status.tokens_remaining / status.tokens_limit) * 100
+                remaining_percent = (
+                    status.tokens_remaining / status.tokens_limit
+                ) * 100
                 if remaining_percent < self.TOKEN_THRESHOLD_PERCENT:
                     logger.warning(
                         f"{provider}: Only {status.tokens_remaining}/{status.tokens_limit} "
@@ -501,26 +551,28 @@ class RateLimiter:
         Args:
             provider: 'google', 'openrouter', 'groq', 'opencode', 'huggingface', 'mistral', or 'anthropic'
         """
-        if provider == 'google':
+        if provider == "google":
             status = self.check_google_limits()
-        elif provider == 'openrouter':
+        elif provider == "openrouter":
             status = self.check_openrouter_limits()
-        elif provider == 'opencode':
+        elif provider == "opencode":
             status = self.check_opencode_limits()
-        elif provider == 'huggingface':
+        elif provider == "huggingface":
             status = self.check_huggingface_limits()
-        elif provider == 'mistral':
+        elif provider == "mistral":
             status = self.check_mistral_limits()
-        elif provider == 'anthropic':
+        elif provider == "anthropic":
             status = self.check_anthropic_limits()
         else:
             status = self.check_groq_limits()
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for {provider} rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for {provider} rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
-    def get_best_provider(self, task_complexity: str = 'simple') -> Optional[str]:
+    def get_best_provider(self, task_complexity: str = "simple") -> Optional[str]:
         """
         Get the best available provider based on rate limits and task complexity.
 
@@ -545,30 +597,33 @@ class RateLimiter:
 
         # Define priority order based on task complexity
         # Note: Anthropic excluded from routing (no free tier)
-        if task_complexity == 'simple':
+        if task_complexity == "simple":
             # For simple tasks, prefer free models to save quota
             priority = [
-                ('opencode', opencode_status),
-                ('mistral', mistral_status),
-                ('huggingface', huggingface_status),
-                ('groq', groq_status),
-                ('openrouter', openrouter_status),
-                ('google', google_status),
+                ("opencode", opencode_status),
+                ("mistral", mistral_status),
+                ("huggingface", huggingface_status),
+                ("groq", groq_status),
+                ("openrouter", openrouter_status),
+                ("google", google_status),
             ]
         else:
             # For complex tasks, prefer higher quality models (Mistral is high quality)
             priority = [
-                ('mistral', mistral_status),
-                ('google', google_status),
-                ('openrouter', openrouter_status),
-                ('opencode', opencode_status),
-                ('huggingface', huggingface_status),
-                ('groq', groq_status),
+                ("mistral", mistral_status),
+                ("google", google_status),
+                ("openrouter", openrouter_status),
+                ("opencode", opencode_status),
+                ("huggingface", huggingface_status),
+                ("groq", groq_status),
             ]
 
         # Filter out exhausted providers
-        priority = [(name, status) for name, status in priority
-                    if not self.is_provider_exhausted(name)]
+        priority = [
+            (name, status)
+            for name, status in priority
+            if not self.is_provider_exhausted(name)
+        ]
 
         if not priority:
             logger.error("All providers are exhausted! No API available.")
@@ -587,8 +642,13 @@ class RateLimiter:
 
         return None
 
-    def log_status(self) -> None:
-        """Log current rate limit status for all providers."""
+    def log_status(self, include_credits: bool = True) -> None:
+        """
+        Log current rate limit status for all providers.
+
+        Args:
+            include_credits: If True, include OpenRouter credit balance info
+        """
         google_status = self.check_google_limits()
         openrouter_status = self.check_openrouter_limits()
         groq_status = self.check_groq_limits()
@@ -597,50 +657,78 @@ class RateLimiter:
         mistral_status = self.check_mistral_limits()
         anthropic_status = self.check_anthropic_limits()
 
-        logger.info("=== Rate Limit Status ===")
+        logger.info("=" * 50)
+        logger.info("=== RATE LIMIT STATUS REPORT ===")
+        logger.info("=" * 50)
 
-        if self.google_key:
-            logger.info(f"Google AI: available={google_status.is_available}, "
-                       f"wait={google_status.wait_seconds:.1f}s")
-        else:
-            logger.info("Google AI: not configured")
+        # Provider status
+        providers = [
+            ("Google AI", self.google_key, google_status),
+            ("OpenRouter", self.openrouter_key, openrouter_status),
+            ("Groq", self.groq_key, groq_status),
+            ("OpenCode", self.opencode_key, opencode_status),
+            ("Hugging Face", self.huggingface_key, huggingface_status),
+            ("Mistral", self.mistral_key, mistral_status),
+            ("Anthropic", self.anthropic_key, anthropic_status),
+        ]
 
-        if self.openrouter_key:
-            logger.info(f"OpenRouter: available={openrouter_status.is_available}, "
-                       f"wait={openrouter_status.wait_seconds:.1f}s, "
-                       f"requests_remaining={openrouter_status.requests_remaining}")
-        else:
-            logger.info("OpenRouter: not configured")
+        configured_count = 0
+        available_count = 0
 
-        if self.groq_key:
-            logger.info(f"Groq: available={groq_status.is_available}, "
-                       f"wait={groq_status.wait_seconds:.1f}s")
-        else:
-            logger.info("Groq: not configured")
+        for name, key, status in providers:
+            if key:
+                configured_count += 1
+                exhausted = self.is_provider_exhausted(name.lower().replace(" ", ""))
+                if exhausted:
+                    logger.info(f"  {name}: EXHAUSTED (hit daily limit)")
+                elif status.is_available:
+                    available_count += 1
+                    extra = ""
+                    if status.requests_remaining is not None:
+                        extra = f", requests_remaining={status.requests_remaining}"
+                    logger.info(f"  {name}: AVAILABLE{extra}")
+                else:
+                    logger.info(f"  {name}: unavailable ({status.error or 'unknown'})")
+            else:
+                logger.info(f"  {name}: not configured")
 
-        if self.opencode_key:
-            logger.info(f"OpenCode: available={opencode_status.is_available}, "
-                       f"wait={opencode_status.wait_seconds:.1f}s")
-        else:
-            logger.info("OpenCode: not configured")
+        # Summary
+        logger.info("-" * 50)
+        logger.info(
+            f"Summary: {available_count}/{configured_count} providers available"
+        )
 
-        if self.huggingface_key:
-            logger.info(f"Hugging Face: available={huggingface_status.is_available}, "
-                       f"wait={huggingface_status.wait_seconds:.1f}s")
-        else:
-            logger.info("Hugging Face: not configured")
+        # Exhausted providers
+        exhausted = self.get_exhausted_providers()
+        if exhausted:
+            logger.warning(f"Exhausted this session: {', '.join(sorted(exhausted))}")
 
-        if self.mistral_key:
-            logger.info(f"Mistral: available={mistral_status.is_available}, "
-                       f"wait={mistral_status.wait_seconds:.1f}s")
-        else:
-            logger.info("Mistral: not configured")
+        # OpenRouter credits (if configured and requested)
+        if include_credits and self.openrouter_key:
+            credits = self.get_openrouter_credits()
+            logger.info("-" * 50)
+            logger.info("=== OpenRouter Credits ===")
+            if credits.error:
+                logger.warning(f"  Could not fetch credits: {credits.error}")
+            else:
+                if credits.limit is not None:
+                    usage_pct = (
+                        (credits.usage / credits.limit * 100)
+                        if credits.limit > 0
+                        else 0
+                    )
+                    logger.info(
+                        f"  Usage: ${credits.usage:.4f} / ${credits.limit:.2f} ({usage_pct:.1f}%)"
+                    )
+                    logger.info(f"  Remaining: ${credits.remaining:.4f}")
+                    if credits.is_low:
+                        logger.warning(
+                            "  WARNING: Credit balance is LOW! Consider adding credits."
+                        )
+                else:
+                    logger.info(f"  Usage: ${credits.usage:.4f} (no limit set)")
 
-        if self.anthropic_key:
-            logger.info(f"Anthropic: available={anthropic_status.is_available}, "
-                       f"wait={anthropic_status.wait_seconds:.1f}s")
-        else:
-            logger.info("Anthropic: not configured")
+        logger.info("=" * 50)
 
 
 # Global rate limiter instance
@@ -671,22 +759,22 @@ def check_before_call(provider: str) -> RateLimitStatus:
     if limiter.is_provider_exhausted(provider):
         return RateLimitStatus(
             is_available=False,
-            error=f"Provider {provider} is exhausted (hit daily limit)"
+            error=f"Provider {provider} is exhausted (hit daily limit)",
         )
 
-    if provider == 'google':
+    if provider == "google":
         return limiter.check_google_limits()
-    elif provider == 'openrouter':
+    elif provider == "openrouter":
         return limiter.check_openrouter_limits()
-    elif provider == 'groq':
+    elif provider == "groq":
         return limiter.check_groq_limits()
-    elif provider == 'opencode':
+    elif provider == "opencode":
         return limiter.check_opencode_limits()
-    elif provider == 'huggingface':
+    elif provider == "huggingface":
         return limiter.check_huggingface_limits()
-    elif provider == 'mistral':
+    elif provider == "mistral":
         return limiter.check_mistral_limits()
-    elif provider == 'anthropic':
+    elif provider == "anthropic":
         return limiter.check_anthropic_limits()
     else:
         return RateLimitStatus(is_available=True)
@@ -716,3 +804,27 @@ def is_provider_exhausted(provider: str) -> bool:
     """
     limiter = get_rate_limiter()
     return limiter.is_provider_exhausted(provider)
+
+
+def get_openrouter_credits() -> OpenRouterCredits:
+    """
+    Get OpenRouter credit balance information.
+
+    Returns:
+        OpenRouterCredits with balance, usage, and warning info
+    """
+    limiter = get_rate_limiter()
+    return limiter.get_openrouter_credits()
+
+
+def log_rate_limit_status(include_credits: bool = True) -> None:
+    """
+    Log comprehensive rate limit status for all providers.
+
+    Useful for end-of-pipeline reporting.
+
+    Args:
+        include_credits: Include OpenRouter credit balance info
+    """
+    limiter = get_rate_limiter()
+    limiter.log_status(include_credits=include_credits)

@@ -38,11 +38,11 @@ LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 # Per-source limits (how many items to fetch from each source)
 LIMITS = {
     "google_trends": 20,
-    "news_rss": 8,        # Per feed
-    "tech_rss": 6,        # Per feed
+    "news_rss": 8,  # Per feed
+    "tech_rss": 6,  # Per feed
     "hackernews": 25,
     "lobsters": 20,
-    "reddit": 8,          # Per subreddit
+    "reddit": 8,  # Per subreddit
     "product_hunt": 15,
     "devto": 15,
     "slashdot": 10,
@@ -52,9 +52,9 @@ LIMITS = {
 }
 
 # Quality gates
-MIN_TRENDS = 5                    # Minimum trends required to build
-MIN_FRESH_RATIO = 0.5             # At least 50% of trends must be from past 24h
-TREND_FRESHNESS_HOURS = 24        # How old a trend can be to count as "fresh"
+MIN_TRENDS = 5  # Minimum trends required to build
+MIN_FRESH_RATIO = 0.5  # At least 50% of trends must be from past 24h
+TREND_FRESHNESS_HOURS = 24  # How old a trend can be to count as "fresh"
 
 # ============================================================================
 # API TIMEOUTS & RETRIES
@@ -71,9 +71,11 @@ TIMEOUTS = {
 
 # Retry settings
 RETRY_MAX_ATTEMPTS = 3
-RETRY_BACKOFF_FACTOR = 2          # Exponential backoff: 1s, 2s, 4s
+RETRY_BACKOFF_FACTOR = 2  # Exponential backoff: 1s, 2s, 4s
 RETRY_STATUS_CODES = [429, 500, 502, 503, 504]
-MAX_RETRY_WAIT_SECONDS = 10       # Cap retry waits to prevent long delays (e.g., 360s from Groq)
+MAX_RETRY_WAIT_SECONDS = (
+    10  # Cap retry waits to prevent long delays (e.g., 360s from Groq)
+)
 
 # Rate limiting delays (seconds)
 DELAYS = {
@@ -92,9 +94,42 @@ IMAGE_CACHE_MAX_AGE_DAYS = 7
 IMAGE_CACHE_MAX_ENTRIES = 500
 
 # Fetching settings
-IMAGES_PER_KEYWORD = 3      # Images to fetch per keyword (was 2)
-MAX_IMAGE_KEYWORDS = 10     # Max keywords to search for (was 8)
-MIN_IMAGES_REQUIRED = 5     # Total: 30 images (10 × 3) for better variety
+IMAGES_PER_KEYWORD = 3  # Images to fetch per keyword (was 2)
+MAX_IMAGE_KEYWORDS = 10  # Max keywords to search for (was 8)
+MIN_IMAGES_REQUIRED = 5  # Total: 30 images (10 × 3) for better variety
+
+
+# ============================================================================
+# API KEY ROTATION
+# ============================================================================
+
+
+def get_api_keys(env_var: str) -> list:
+    """
+    Get API keys from environment variable, supporting comma-separated multiple keys.
+
+    Example: PEXELS_API_KEY="key1,key2,key3"
+
+    Args:
+        env_var: Environment variable name
+
+    Returns:
+        List of API keys (empty if not set)
+    """
+    value = os.getenv(env_var, "")
+    if not value:
+        return []
+    # Split by comma and strip whitespace
+    keys = [k.strip() for k in value.split(",") if k.strip()]
+    return keys
+
+
+# API key collections (supports multiple keys per service for rotation)
+PEXELS_KEYS = get_api_keys("PEXELS_API_KEY")
+UNSPLASH_KEYS = get_api_keys("UNSPLASH_ACCESS_KEY")
+PIXABAY_KEYS = get_api_keys("PIXABAY_API_KEY")
+GROQ_KEYS = get_api_keys("GROQ_API_KEY")
+OPENROUTER_KEYS = get_api_keys("OPENROUTER_API_KEY")
 
 # ============================================================================
 # DEDUPLICATION
@@ -102,7 +137,7 @@ MIN_IMAGES_REQUIRED = 5     # Total: 30 images (10 × 3) for better variety
 
 # Similarity threshold for considering two titles as duplicates
 DEDUP_SIMILARITY_THRESHOLD = 0.8
-DEDUP_SEMANTIC_THRESHOLD = 0.7    # Lower threshold for semantic matching
+DEDUP_SEMANTIC_THRESHOLD = 0.7  # Lower threshold for semantic matching
 
 # ============================================================================
 # DESIGN SETTINGS
@@ -110,11 +145,32 @@ DEDUP_SEMANTIC_THRESHOLD = 0.7    # Lower threshold for semantic matching
 
 # Font whitelist (prevents injection via font names)
 ALLOWED_FONTS = [
-    "Space Grotesk", "Inter", "Playfair Display", "Roboto", "Open Sans",
-    "Lato", "Montserrat", "Oswald", "Raleway", "Poppins", "Merriweather",
-    "Source Sans Pro", "Nunito", "Work Sans", "Fira Sans", "IBM Plex Sans",
-    "IBM Plex Mono", "JetBrains Mono", "Courier Prime", "DM Sans", "Outfit",
-    "Plus Jakarta Sans", "Sora", "Lexend", "Manrope", "Archivo",
+    "Space Grotesk",
+    "Inter",
+    "Playfair Display",
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Montserrat",
+    "Oswald",
+    "Raleway",
+    "Poppins",
+    "Merriweather",
+    "Source Sans Pro",
+    "Nunito",
+    "Work Sans",
+    "Fira Sans",
+    "IBM Plex Sans",
+    "IBM Plex Mono",
+    "JetBrains Mono",
+    "Courier Prime",
+    "DM Sans",
+    "Outfit",
+    "Plus Jakarta Sans",
+    "Sora",
+    "Lexend",
+    "Manrope",
+    "Archivo",
 ]
 
 # ============================================================================
@@ -129,7 +185,9 @@ ARCHIVE_SUBDIR = "archive"
 # ============================================================================
 
 RSS_FEED_TITLE = "DailyTrending.info"
-RSS_FEED_DESCRIPTION = "Daily aggregated trending topics from news, technology, social media, and more"
+RSS_FEED_DESCRIPTION = (
+    "Daily aggregated trending topics from news, technology, social media, and more"
+)
 RSS_FEED_LINK = "https://dailytrending.info"
 RSS_FEED_MAX_ITEMS = 50
 
@@ -138,7 +196,7 @@ RSS_FEED_MAX_ITEMS = 50
 # ============================================================================
 
 KEYWORD_HISTORY_FILE = DATA_DIR / "keyword_history.json"
-KEYWORD_HISTORY_DAYS = 30         # How many days to keep keyword history
+KEYWORD_HISTORY_DAYS = 30  # How many days to keep keyword history
 
 
 def setup_logging(name: str = "dailytrending") -> logging.Logger:
