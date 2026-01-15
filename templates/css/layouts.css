@@ -469,7 +469,7 @@ body.layout-magazine .top-stories .story-image {
 }
 
 body.layout-magazine .stories-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 body.layout-dashboard .top-stories {
@@ -519,7 +519,7 @@ body.layout-bold .top-stories article.story-card.featured .story-title {
 }
 
 body.layout-bold .stories-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 body.layout-mosaic .top-stories {
