@@ -237,6 +237,38 @@ class ArchiveManager:
             --color-border: #27272a;
         }}
 
+        /* Density settings */
+        body.density-compact {{
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }}
+        body.density-comfortable {{
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }}
+        body.density-spacious {{
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
+        }}
+
+        /* View list mode */
+        body.view-list .archive-grid {{
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }}
+        body.view-list .archive-card {{
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 0;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+        }}
+
         * {{
             box-sizing: border-box;
             margin: 0;

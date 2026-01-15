@@ -862,6 +862,23 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             --color-card-bg: var(--card-bg);
         }}
 
+        /* Density settings */
+        body.density-compact {{
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }}
+        body.density-comfortable {{
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }}
+        body.density-spacious {{
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
+        }}
+
         .container {{
             max-width: 720px;
             margin: 0 auto;
@@ -2252,6 +2269,23 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             --color-bg: var(--bg);
             --color-border: var(--border);
             --color-card-bg: var(--card-bg);
+        }}
+
+        /* Density settings */
+        body.density-compact {{
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }}
+        body.density-comfortable {{
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }}
+        body.density-spacious {{
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
         }}
 
         .container {{

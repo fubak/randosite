@@ -487,4 +487,23 @@ def get_theme_script() -> str:
                 });
             }
         })();
+
+        // Apply saved density/view preferences
+        (function() {
+            const body = document.body;
+            const densityClasses = ['density-compact', 'density-comfortable', 'density-spacious'];
+
+            // Apply saved density or default to compact
+            const savedDensity = localStorage.getItem('reading_density');
+            const density = savedDensity || 'compact';
+            densityClasses.forEach(cls => body.classList.remove(cls));
+            body.classList.add('density-' + density);
+            if (!savedDensity) localStorage.setItem('reading_density', 'compact');
+
+            // Apply saved view or default to grid
+            const savedView = localStorage.getItem('reading_view');
+            const view = savedView || 'grid';
+            body.classList.toggle('view-list', view === 'list');
+            if (!savedView) localStorage.setItem('reading_view', 'grid');
+        })();
     </script>"""

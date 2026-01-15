@@ -1405,6 +1405,45 @@ class Pipeline:
             background: var(--color-bg);
         }}
 
+        /* Density settings */
+        body.density-compact {{
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }}
+        body.density-comfortable {{
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }}
+        body.density-spacious {{
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
+        }}
+
+        /* View list mode */
+        body.view-list .stories-grid,
+        body.view-list .trend-grid {{
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }}
+        body.view-list .story-card,
+        body.view-list .trend-card {{
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 0;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+        }}
+        body.view-list .story-card img,
+        body.view-list .trend-card img,
+        body.view-list .card-image {{
+            display: none;
+        }}
+
         {get_header_styles()}
 
         /* Hero Header with Featured Story */
@@ -2195,6 +2234,45 @@ class Pipeline:
             --color-muted: #a1a1aa;
             --color-border: #27272a;
             background: var(--color-bg);
+        }}
+
+        /* Density settings */
+        body.density-compact {{
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }}
+        body.density-comfortable {{
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }}
+        body.density-spacious {{
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
+        }}
+
+        /* View list mode */
+        body.view-list .stories-grid,
+        body.view-list .trend-grid {{
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }}
+        body.view-list .story-card,
+        body.view-list .trend-card {{
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 0;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+        }}
+        body.view-list .story-card img,
+        body.view-list .trend-card img,
+        body.view-list .card-image {{
+            display: none;
         }}
 
         {get_header_styles()}
