@@ -1,10 +1,11 @@
 """
 Shared HTML components for consistent header/footer across all pages.
 """
+
 from datetime import datetime
 
 
-def get_nav_links(active_page: str = '') -> str:
+def get_nav_links(active_page: str = "") -> str:
     """
     Generate navigation links HTML.
 
@@ -13,26 +14,26 @@ def get_nav_links(active_page: str = '') -> str:
                      'finance', 'media', 'articles' to mark as active
     """
     links = [
-        ('/', 'Home', 'home'),
-        ('/tech/', 'Tech', 'tech'),
-        ('/world/', 'World', 'world'),
-        ('/science/', 'Science', 'science'),
-        ('/politics/', 'Politics', 'politics'),
-        ('/finance/', 'Finance', 'finance'),
-        ('/media/', 'Media', 'media'),
-        ('/articles/', 'Articles', 'articles'),
-        ('/archive/', 'Archive', 'archive'),
+        ("/", "Home", "home"),
+        ("/tech/", "Tech", "tech"),
+        ("/world/", "World", "world"),
+        ("/science/", "Science", "science"),
+        ("/politics/", "Politics", "politics"),
+        ("/finance/", "Finance", "finance"),
+        ("/media/", "Media", "media"),
+        ("/articles/", "Articles", "articles"),
+        ("/archive/", "Archive", "archive"),
     ]
 
     items = []
     for href, label, page_id in links:
-        active_class = ' class="active"' if page_id == active_page else ''
+        active_class = ' class="active"' if page_id == active_page else ""
         items.append(f'<li><a href="{href}"{active_class}>{label}</a></li>')
 
-    return '\n            '.join(items)
+    return "\n            ".join(items)
 
 
-def build_header(active_page: str = '', date_str: str = None) -> str:
+def build_header(active_page: str = "", date_str: str = None) -> str:
     """
     Build consistent header/navigation HTML.
 
@@ -41,11 +42,11 @@ def build_header(active_page: str = '', date_str: str = None) -> str:
         date_str: Date string to display (defaults to today)
     """
     if date_str is None:
-        date_str = datetime.now().strftime('%B %d, %Y')
+        date_str = datetime.now().strftime("%B %d, %Y")
 
     nav_links = get_nav_links(active_page)
 
-    return f'''
+    return f"""
     <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
         <a href="/" class="nav-logo" aria-label="DailyTrending.info Home">
             <span>DailyTrending.info</span>
@@ -81,10 +82,10 @@ def build_header(active_page: str = '', date_str: str = None) -> str:
                 </svg>
             </a>
         </div>
-    </nav>'''
+    </nav>"""
 
 
-def build_footer(date_str: str = None, style_info: str = '') -> str:
+def build_footer(date_str: str = None, style_info: str = "") -> str:
     """
     Build consistent footer HTML.
 
@@ -93,11 +94,11 @@ def build_footer(date_str: str = None, style_info: str = '') -> str:
         style_info: Optional style/theme info line
     """
     if date_str is None:
-        date_str = datetime.now().strftime('%B %d, %Y')
+        date_str = datetime.now().strftime("%B %d, %Y")
 
-    style_line = f'<p class="footer-description">{style_info}</p>' if style_info else ''
+    style_line = f'<p class="footer-description">{style_info}</p>' if style_info else ""
 
-    return f'''
+    return f"""
     <footer class="footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-main">
@@ -145,12 +146,12 @@ def build_footer(date_str: str = None, style_info: str = '') -> str:
                 </a>
             </div>
         </div>
-    </footer>'''
+    </footer>"""
 
 
 def get_header_styles() -> str:
     """Get CSS styles for the header/navigation."""
-    return '''
+    return """
         /* Navigation */
         .nav {
             position: sticky;
@@ -311,12 +312,12 @@ def get_header_styles() -> str:
                 padding: 0.75rem 1rem;
             }
         }
-    '''
+    """
 
 
 def get_footer_styles() -> str:
     """Get CSS styles for the footer."""
-    return '''
+    return """
         /* Footer */
         .footer {
             margin-top: 4rem;
@@ -434,26 +435,28 @@ def get_footer_styles() -> str:
             color: var(--color-text);
             background: rgba(255, 255, 255, 0.1);
         }
-    '''
+    """
 
 
 def get_theme_script() -> str:
     """Get JavaScript for theme toggle and mobile menu."""
-    return '''
+    return """
     <script>
         // Theme toggle functionality
         (function() {
             const themeToggle = document.getElementById('theme-toggle');
             const body = document.body;
 
-            // Check for saved theme preference
+            // Apply saved theme or default to dark mode for new users
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 body.classList.remove('dark-mode');
                 body.classList.add('light-mode');
             } else {
+                // Default to dark mode
                 body.classList.remove('light-mode');
                 body.classList.add('dark-mode');
+                if (!savedTheme) localStorage.setItem('theme', 'dark');
             }
 
             if (themeToggle) {
@@ -484,4 +487,4 @@ def get_theme_script() -> str:
                 });
             }
         })();
-    </script>'''
+    </script>"""

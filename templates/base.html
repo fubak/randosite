@@ -163,15 +163,15 @@
             const body = document.body;
             const saved = localStorage.getItem('theme');
 
-            // Only override default if user has a preference saved
-            if (saved) {
-                if (saved === 'light') {
-                    body.classList.remove('dark-mode');
-                    body.classList.add('light-mode');
-                } else {
-                    body.classList.remove('light-mode');
-                    body.classList.add('dark-mode');
-                }
+            // Apply saved theme or default to dark mode for new users
+            if (saved === 'light') {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+            } else {
+                // Default to dark mode
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                if (!saved) localStorage.setItem('theme', 'dark');
             }
 
             if (toggle) {
@@ -237,8 +237,9 @@
 
             if (densityButtons.length) {
                 const savedDensity = localStorage.getItem('reading_density');
-                const currentDensity = densityClasses.find((cls) => body.classList.contains(cls));
-                applyDensity(savedDensity || (currentDensity ? currentDensity.replace('density-', '') : 'comfortable'));
+                // Default to compact for new users
+                applyDensity(savedDensity || 'compact');
+                if (!savedDensity) localStorage.setItem('reading_density', 'compact');
 
                 densityButtons.forEach((btn) => {
                     btn.addEventListener('click', () => applyDensity(btn.dataset.density));
@@ -246,8 +247,10 @@
             }
 
             if (viewButtons.length) {
-                const savedView = localStorage.getItem('reading_view') || 'grid';
-                applyView(savedView);
+                const savedView = localStorage.getItem('reading_view');
+                // Default to grid for new users
+                applyView(savedView || 'grid');
+                if (!savedView) localStorage.setItem('reading_view', 'grid');
 
                 viewButtons.forEach((btn) => {
                     btn.addEventListener('click', () => applyView(btn.dataset.view));
