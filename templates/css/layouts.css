@@ -363,10 +363,22 @@ body.layout-split .top-stories {
     gap: var(--card-gap);
 }
 
-/* View list mode */
+/* View list mode - simple text list */
 body.view-list .top-stories,
 body.view-list .stories-grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+body.view-list .top-stories article.story-card,
+body.view-list .stories-grid article.story-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 0.75rem 0;
+    min-height: auto;
 }
 
 body.view-list .top-stories article.story-card.featured {
@@ -376,35 +388,58 @@ body.view-list .top-stories article.story-card.featured {
 
 body.view-list .top-stories .story-wrapper,
 body.view-list .stories-grid .story-wrapper {
-    display: grid;
-    grid-template-columns: 200px 1fr;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: 1rem;
-    align-items: start;
 }
 
+/* Hide images and media in list view */
 body.view-list .top-stories .story-media,
-body.view-list .stories-grid .story-media {
-    min-height: 120px;
-    height: 120px;
-}
-
+body.view-list .stories-grid .story-media,
 body.view-list .top-stories .story-image,
-body.view-list .stories-grid .story-image {
-    height: 120px;
-    min-height: 120px;
+body.view-list .stories-grid .story-image,
+body.view-list .story-actions,
+body.view-list .story-summary {
+    display: none !important;
 }
 
-body.view-list .top-stories article.story-card.featured .story-media,
-body.view-list .top-stories article.story-card.featured .story-image {
-    min-height: 120px;
-    height: 120px;
+body.view-list .top-stories .story-content,
+body.view-list .stories-grid .story-content {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
-@media (max-width: 640px) {
-    body.view-list .top-stories .story-wrapper,
-    body.view-list .stories-grid .story-wrapper {
-        grid-template-columns: 1fr;
-    }
+body.view-list .top-stories .story-title,
+body.view-list .stories-grid .story-title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+}
+
+body.view-list .top-stories article.story-card.featured .story-title {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+body.view-list .top-stories .source-badge,
+body.view-list .stories-grid .source-badge {
+    margin: 0;
+    order: -1;
+}
+
+body.view-list .top-stories .story-meta,
+body.view-list .stories-grid .story-meta {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.75rem;
 }
 
 .stories-grid article.story-card {
