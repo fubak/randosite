@@ -371,13 +371,13 @@ body.view-list .stories-grid {
     gap: 0;
 }
 
-body.view-list .top-stories article.story-card,
-body.view-list .stories-grid article.story-card {
+/* Top Stories: plain list with no spacing */
+body.view-list .top-stories article.story-card {
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--color-border);
     border-radius: 0;
-    padding: 0.75rem 0;
+    padding: 0.35rem 0;
+    padding-left: 1.5rem;
     min-height: auto;
 }
 
@@ -386,7 +386,51 @@ body.view-list .top-stories article.story-card.featured {
     grid-row: auto;
 }
 
-body.view-list .top-stories .story-wrapper,
+body.view-list .top-stories .story-wrapper {
+    display: block;
+}
+
+/* Hide everything except title in Top Stories list view */
+body.view-list .top-stories .story-media,
+body.view-list .top-stories .story-image,
+body.view-list .top-stories .story-actions,
+body.view-list .top-stories .story-summary,
+body.view-list .top-stories .source-badge,
+body.view-list .top-stories .story-meta {
+    display: none !important;
+}
+
+body.view-list .top-stories .story-content {
+    padding: 0;
+}
+
+body.view-list .top-stories .story-title,
+body.view-list .top-stories article.story-card.featured .story-title {
+    font-size: 0.95rem;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.4;
+}
+
+body.view-list .top-stories .story-title a {
+    color: var(--color-text);
+}
+
+body.view-list .top-stories .story-title a:hover {
+    color: var(--color-accent);
+}
+
+/* Category sections: keep some info */
+body.view-list .stories-grid article.story-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    padding: 0.75rem 0;
+    padding-left: 1.5rem;
+    min-height: auto;
+}
+
 body.view-list .stories-grid .story-wrapper {
     display: flex;
     flex-direction: row;
@@ -394,17 +438,14 @@ body.view-list .stories-grid .story-wrapper {
     gap: 1rem;
 }
 
-/* Hide images and media in list view */
-body.view-list .top-stories .story-media,
+/* Hide images in category list view */
 body.view-list .stories-grid .story-media,
-body.view-list .top-stories .story-image,
 body.view-list .stories-grid .story-image,
 body.view-list .story-actions,
 body.view-list .story-summary {
     display: none !important;
 }
 
-body.view-list .top-stories .story-content,
 body.view-list .stories-grid .story-content {
     padding: 0;
     display: flex;
@@ -414,7 +455,6 @@ body.view-list .stories-grid .story-content {
     flex-wrap: wrap;
 }
 
-body.view-list .top-stories .story-title,
 body.view-list .stories-grid .story-title {
     font-size: 1rem;
     font-weight: 500;
@@ -423,18 +463,11 @@ body.view-list .stories-grid .story-title {
     min-width: 200px;
 }
 
-body.view-list .top-stories article.story-card.featured .story-title {
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-body.view-list .top-stories .source-badge,
 body.view-list .stories-grid .source-badge {
     margin: 0;
     order: -1;
 }
 
-body.view-list .top-stories .story-meta,
 body.view-list .stories-grid .story-meta {
     margin: 0;
     padding: 0;
