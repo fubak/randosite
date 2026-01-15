@@ -30,8 +30,11 @@ from typing import List
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import (
-    MIN_TRENDS, MIN_FRESH_RATIO, setup_logging,
-    MAX_IMAGE_KEYWORDS, IMAGES_PER_KEYWORD
+    MIN_TRENDS,
+    MIN_FRESH_RATIO,
+    setup_logging,
+    MAX_IMAGE_KEYWORDS,
+    IMAGES_PER_KEYWORD,
 )
 from collect_trends import TrendCollector
 from fetch_images import ImageFetcher
@@ -45,8 +48,19 @@ from pwa_generator import save_pwa_assets
 from sitemap_generator import save_sitemap
 from editorial_generator import EditorialGenerator
 from fetch_media_of_day import MediaOfDayFetcher
-from shared_components import build_header, build_footer, get_header_styles, get_footer_styles, get_theme_script
-from image_utils import validate_image_url, sanitize_image_url, get_image_quality_score, get_fallback_gradient_css
+from shared_components import (
+    build_header,
+    build_footer,
+    get_header_styles,
+    get_footer_styles,
+    get_theme_script,
+)
+from image_utils import (
+    validate_image_url,
+    sanitize_image_url,
+    get_image_quality_score,
+    get_fallback_gradient_css,
+)
 
 # Setup logging
 logger = setup_logging("pipeline")
@@ -107,7 +121,9 @@ class Pipeline:
     def _persist_daily_design(self, design) -> None:
         """Persist today's design spec for deterministic rebuilds."""
         design_file = self.data_dir / "design.json"
-        design_data = asdict(design) if hasattr(design, "__dataclass_fields__") else design
+        design_data = (
+            asdict(design) if hasattr(design, "__dataclass_fields__") else design
+        )
         with open(design_file, "w") as f:
             json.dump(design_data, f, indent=2)
 
@@ -121,8 +137,8 @@ class Pipeline:
         warnings = []
 
         # Check image API keys
-        pexels_key = os.getenv('PEXELS_API_KEY')
-        unsplash_key = os.getenv('UNSPLASH_ACCESS_KEY')
+        pexels_key = os.getenv("PEXELS_API_KEY")
+        unsplash_key = os.getenv("UNSPLASH_ACCESS_KEY")
         if not pexels_key and not unsplash_key:
             warnings.append(
                 "No image API keys configured (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY). "
@@ -130,9 +146,9 @@ class Pipeline:
             )
 
         # Check AI API keys for design generation
-        google_key = os.getenv('GOOGLE_AI_API_KEY')
-        groq_key = os.getenv('GROQ_API_KEY')
-        openrouter_key = os.getenv('OPENROUTER_API_KEY')
+        google_key = os.getenv("GOOGLE_AI_API_KEY")
+        groq_key = os.getenv("GROQ_API_KEY")
+        openrouter_key = os.getenv("OPENROUTER_API_KEY")
 
         # Log available LLM providers
         available_providers = []
@@ -253,7 +269,9 @@ class Pipeline:
 
             if not dry_run:
                 logger.info(f"Website generated at: {self.public_dir / 'index.html'}")
-                logger.info(f"Archive available at: {self.public_dir / 'archive' / 'index.html'}")
+                logger.info(
+                    f"Archive available at: {self.public_dir / 'archive' / 'index.html'}"
+                )
 
             return True
 
@@ -262,6 +280,7 @@ class Pipeline:
             logger.error(f"PIPELINE FAILED: {e}")
             logger.error("=" * 60)
             import traceback
+
             traceback.print_exc()
             return False
 
@@ -296,7 +315,9 @@ class Pipeline:
                     try:
                         with open(trends_file) as f:
                             self.yesterday_trends = json.load(f)
-                            logger.info(f"Loaded {len(self.yesterday_trends)} trends from previous build")
+                            logger.info(
+                                f"Loaded {len(self.yesterday_trends)} trends from previous build"
+                            )
                             break
                     except Exception:
                         pass
@@ -362,7 +383,9 @@ class Pipeline:
             # Use attribute access for Trend dataclass, not .get()
             top_title = top_story.title
             if top_title:
-                logger.info(f"Optimizing visual queries for top story: {top_title[:50]}...")
+                logger.info(
+                    f"Optimizing visual queries for top story: {top_title[:50]}..."
+                )
                 visual_queries = self.image_fetcher.optimize_query(top_title)
                 if visual_queries:
                     logger.info(f"  Generated visual queries: {visual_queries}")
@@ -370,14 +393,18 @@ class Pipeline:
 
         # Prioritize global keywords (meta-trends) for image search
         # These are words appearing in 3+ stories, more likely to be relevant
-        
+
         # Add global keywords first (up to half the slots)
         global_slots = MAX_IMAGE_KEYWORDS // 2
         if self.global_keywords:
             # Filter out duplicates
-            new_globals = [kw for kw in self.global_keywords if kw not in search_keywords]
+            new_globals = [
+                kw for kw in self.global_keywords if kw not in search_keywords
+            ]
             search_keywords.extend(new_globals[:global_slots])
-            logger.info(f"Using {len(new_globals[:global_slots])} global keywords for images")
+            logger.info(
+                f"Using {len(new_globals[:global_slots])} global keywords for images"
+            )
 
         # Extract keywords from top headlines of each topic category
         # This ensures we have images matching topic page hero sections
@@ -386,7 +413,9 @@ class Pipeline:
             if kw not in search_keywords and len(search_keywords) < MAX_IMAGE_KEYWORDS:
                 search_keywords.append(kw)
         if headline_keywords:
-            logger.info(f"Added {len(headline_keywords)} headline keywords for topic heroes")
+            logger.info(
+                f"Added {len(headline_keywords)} headline keywords for topic heroes"
+            )
 
         # Fill remaining slots with top regular keywords
         remaining_slots = MAX_IMAGE_KEYWORDS - len(search_keywords)
@@ -399,8 +428,7 @@ class Pipeline:
 
         if search_keywords:
             self.images = self.image_fetcher.fetch_for_keywords(
-                search_keywords,
-                images_per_keyword=IMAGES_PER_KEYWORD
+                search_keywords, images_per_keyword=IMAGES_PER_KEYWORD
             )
             logger.info(f"Fetched {len(self.images)} images")
         else:
@@ -413,27 +441,107 @@ class Pipeline:
         """
         # Topic source prefixes (same as in _step_generate_topic_pages)
         topic_sources = {
-            'tech': ['hackernews', 'lobsters', 'tech_', 'github_trending', 'product_hunt', 'devto', 'slashdot', 'ars_'],
-            'world': ['news_', 'wikipedia', 'google_trends'],
-            'science': ['science_'],
-            'politics': ['politics_'],
-            'finance': ['finance_'],
+            "tech": [
+                "hackernews",
+                "lobsters",
+                "tech_",
+                "github_trending",
+                "product_hunt",
+                "devto",
+                "slashdot",
+                "ars_",
+            ],
+            "world": ["news_", "wikipedia", "google_trends"],
+            "science": ["science_"],
+            "politics": ["politics_"],
+            "finance": ["finance_"],
         }
 
         # Stop words to filter out
-        stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-                      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-                      'should', 'may', 'might', 'must', 'shall', 'can', 'of', 'in', 'to',
-                      'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
-                      'and', 'or', 'but', 'if', 'then', 'than', 'so', 'that', 'this',
-                      'what', 'which', 'who', 'whom', 'how', 'when', 'where', 'why',
-                      'says', 'said', 'new', 'first', 'after', 'year', 'years', 'now',
-                      "today's", 'trends', 'trending', 'world', 'its', 'it', 'just',
-                      'about', 'over', 'out', 'top', 'all', 'more', 'not', 'your', 'you'}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "being",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "must",
+            "shall",
+            "can",
+            "of",
+            "in",
+            "to",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "from",
+            "as",
+            "into",
+            "through",
+            "and",
+            "or",
+            "but",
+            "if",
+            "then",
+            "than",
+            "so",
+            "that",
+            "this",
+            "what",
+            "which",
+            "who",
+            "whom",
+            "how",
+            "when",
+            "where",
+            "why",
+            "says",
+            "said",
+            "new",
+            "first",
+            "after",
+            "year",
+            "years",
+            "now",
+            "today's",
+            "trends",
+            "trending",
+            "world",
+            "its",
+            "it",
+            "just",
+            "about",
+            "over",
+            "out",
+            "top",
+            "all",
+            "more",
+            "not",
+            "your",
+            "you",
+        }
 
         def matches_prefix(source: str, prefixes: list) -> bool:
             for prefix in prefixes:
-                if prefix.endswith('_'):
+                if prefix.endswith("_"):
                     if source.startswith(prefix):
                         return True
                 else:
@@ -444,17 +552,21 @@ class Pipeline:
         headline_keywords = []
 
         # Convert trends to dict if needed
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+        trends_data = [
+            asdict(t) if hasattr(t, "__dataclass_fields__") else t for t in self.trends
+        ]
 
         # For each topic, find the top story and extract keywords
         for topic_name, prefixes in topic_sources.items():
             # Find stories for this topic
-            topic_stories = [t for t in trends_data if matches_prefix(t.get('source', ''), prefixes)]
+            topic_stories = [
+                t for t in trends_data if matches_prefix(t.get("source", ""), prefixes)
+            ]
 
             if topic_stories:
                 top_story = topic_stories[0]
-                top_title = top_story.get('title', '')
-                top_description = top_story.get('description', '') or ''
+                top_title = top_story.get("title", "")
+                top_description = top_story.get("description", "") or ""
 
                 # Extract words from title, preserving case for proper noun detection
                 title_words = top_title.split()
@@ -463,7 +575,7 @@ class Pipeline:
                 proper_nouns = []
                 regular_words = []
                 for w in title_words:
-                    cleaned = w.strip('.,!?()[]{}":;\'')
+                    cleaned = w.strip(".,!?()[]{}\":;'")
                     if len(cleaned) > 3 and cleaned.lower() not in stop_words:
                         # Check if it's a proper noun (capitalized, not at start of sentence)
                         if cleaned[0].isupper() and title_words.index(w) > 0:
@@ -476,8 +588,13 @@ class Pipeline:
 
                 # If title keywords are too generic (less than 2), use description too
                 if len(keywords) < 2 and top_description:
-                    desc_words = [w.strip('.,!?()[]{}":;\'').lower() for w in top_description.split()]
-                    desc_keywords = [w for w in desc_words if len(w) > 4 and w not in stop_words]
+                    desc_words = [
+                        w.strip(".,!?()[]{}\":;'").lower()
+                        for w in top_description.split()
+                    ]
+                    desc_keywords = [
+                        w for w in desc_words if len(w) > 4 and w not in stop_words
+                    ]
                     for kw in desc_keywords[:2]:
                         if kw not in keywords:
                             keywords.append(kw)
@@ -498,7 +615,9 @@ class Pipeline:
 
     def _apply_story_summaries(self, trends: List[dict]) -> None:
         """Attach AI summaries to trend items when available."""
-        if not self.enriched_content or not getattr(self.enriched_content, "story_summaries", None):
+        if not self.enriched_content or not getattr(
+            self.enriched_content, "story_summaries", None
+        ):
             return
 
         summary_map = {}
@@ -527,16 +646,22 @@ class Pipeline:
         logger.info("[5/16] Enriching content...")
 
         # Convert trends to dict format
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+        trends_data = [
+            asdict(t) if hasattr(t, "__dataclass_fields__") else t for t in self.trends
+        ]
 
         # Get enriched content
         self.enriched_content = self.content_enricher.enrich(trends_data, self.keywords)
 
         # Log results
         if self.enriched_content.word_of_the_day:
-            logger.info(f"  Word of the Day: {self.enriched_content.word_of_the_day.word}")
+            logger.info(
+                f"  Word of the Day: {self.enriched_content.word_of_the_day.word}"
+            )
         if self.enriched_content.grokipedia_article:
-            logger.info(f"  Grokipedia Article: {self.enriched_content.grokipedia_article.title}")
+            logger.info(
+                f"  Grokipedia Article: {self.enriched_content.grokipedia_article.title}"
+            )
         logger.info(f"  Story summaries: {len(self.enriched_content.story_summaries)}")
 
     def _step_generate_design(self):
@@ -549,7 +674,10 @@ class Pipeline:
             logger.info("Using persisted design for today")
         else:
             # Convert trends to dict format for the generator
-            trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+            trends_data = [
+                asdict(t) if hasattr(t, "__dataclass_fields__") else t
+                for t in self.trends
+            ]
 
             self.design = self.design_generator.generate(trends_data, self.keywords)
             self._persist_daily_design(self.design)
@@ -568,29 +696,36 @@ class Pipeline:
         logger.info("[7/16] Generating editorial content...")
 
         # Convert trends to dict format
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
-        design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
+        trends_data = [
+            asdict(t) if hasattr(t, "__dataclass_fields__") else t for t in self.trends
+        ]
+        design_data = (
+            asdict(self.design)
+            if hasattr(self.design, "__dataclass_fields__")
+            else self.design
+        )
 
         # Generate editorial article
         self.editorial_article = self.editorial_generator.generate_editorial(
-            trends_data,
-            self.keywords,
-            design_data
+            trends_data, self.keywords, design_data
         )
 
         if self.editorial_article:
-            logger.info(f"  Editorial: {self.editorial_article.title} ({self.editorial_article.word_count} words)")
+            logger.info(
+                f"  Editorial: {self.editorial_article.title} ({self.editorial_article.word_count} words)"
+            )
             logger.info(f"  URL: {self.editorial_article.url}")
 
         # Regenerate HTML for all existing articles (updates header/footer styling)
-        regenerated_count = self.editorial_generator.regenerate_all_article_pages(design_data)
+        regenerated_count = self.editorial_generator.regenerate_all_article_pages(
+            design_data
+        )
         if regenerated_count > 0:
             logger.info(f"  Regenerated {regenerated_count} existing article pages")
 
         # Generate Why This Matters for top 3 stories
         self.why_this_matters = self.editorial_generator.generate_why_this_matters(
-            trends_data,
-            count=3
+            trends_data, count=3
         )
         logger.info(f"  Why This Matters: {len(self.why_this_matters)} explanations")
 
@@ -601,47 +736,77 @@ class Pipeline:
     def _step_build_website(self):
         """Build the final HTML website."""
         logger.info("[8/16] Building website...")
-        logger.info(f"Building with {len(self.trends)} trends, {len(self.images)} images")
+        logger.info(
+            f"Building with {len(self.trends)} trends, {len(self.images)} images"
+        )
 
         # Convert data to proper format
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+        trends_data = [
+            asdict(t) if hasattr(t, "__dataclass_fields__") else t for t in self.trends
+        ]
         logger.info(f"Converted {len(trends_data)} trends to dict format")
 
         # Log sample trend for debugging
         if trends_data:
             sample = trends_data[0]
-            logger.info(f"Sample trend: title='{sample.get('title', '')[:50]}', source='{sample.get('source', '')}'")
+            logger.info(
+                f"Sample trend: title='{sample.get('title', '')[:50]}', source='{sample.get('source', '')}'"
+            )
 
         self._apply_story_summaries(trends_data)
 
-        images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
-        design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
+        images_data = [
+            asdict(i) if hasattr(i, "__dataclass_fields__") else i for i in self.images
+        ]
+        design_data = (
+            asdict(self.design)
+            if hasattr(self.design, "__dataclass_fields__")
+            else self.design
+        )
 
         # Convert enriched content to dict format
         enriched_data = None
         if self.enriched_content:
             enriched_data = {
-                'word_of_the_day': asdict(self.enriched_content.word_of_the_day) if self.enriched_content.word_of_the_day else None,
-                'grokipedia_article': asdict(self.enriched_content.grokipedia_article) if self.enriched_content.grokipedia_article else None,
-                'story_summaries': [asdict(s) for s in self.enriched_content.story_summaries] if self.enriched_content.story_summaries else []
+                "word_of_the_day": (
+                    asdict(self.enriched_content.word_of_the_day)
+                    if self.enriched_content.word_of_the_day
+                    else None
+                ),
+                "grokipedia_article": (
+                    asdict(self.enriched_content.grokipedia_article)
+                    if self.enriched_content.grokipedia_article
+                    else None
+                ),
+                "story_summaries": (
+                    [asdict(s) for s in self.enriched_content.story_summaries]
+                    if self.enriched_content.story_summaries
+                    else []
+                ),
             }
             # Log enriched content status
-            if enriched_data.get('grokipedia_article'):
-                article = enriched_data['grokipedia_article']
-                logger.info(f"Grokipedia article: '{article.get('title', '')}' ({len(article.get('summary', ''))} chars)")
+            if enriched_data.get("grokipedia_article"):
+                article = enriched_data["grokipedia_article"]
+                logger.info(
+                    f"Grokipedia article: '{article.get('title', '')}' ({len(article.get('summary', ''))} chars)"
+                )
 
         # Convert why_this_matters to dict format
         why_this_matters_data = None
         if self.why_this_matters:
             why_this_matters_data = [
-                asdict(wtm) if hasattr(wtm, '__dataclass_fields__') else wtm
+                asdict(wtm) if hasattr(wtm, "__dataclass_fields__") else wtm
                 for wtm in self.why_this_matters
             ]
 
         # Convert editorial article to dict format
         editorial_data = None
         if self.editorial_article:
-            editorial_data = asdict(self.editorial_article) if hasattr(self.editorial_article, '__dataclass_fields__') else self.editorial_article
+            editorial_data = (
+                asdict(self.editorial_article)
+                if hasattr(self.editorial_article, "__dataclass_fields__")
+                else self.editorial_article
+            )
 
         # Load keyword history for timeline
         keyword_history = None
@@ -663,7 +828,7 @@ class Pipeline:
             why_this_matters=why_this_matters_data,
             yesterday_trends=self.yesterday_trends,
             editorial_article=editorial_data,
-            keyword_history=keyword_history
+            keyword_history=keyword_history,
         )
 
         # Build and save
@@ -678,9 +843,17 @@ class Pipeline:
         logger.info("[9/16] Generating topic sub-pages...")
 
         # Convert data to proper format
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
-        design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
-        images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
+        trends_data = [
+            asdict(t) if hasattr(t, "__dataclass_fields__") else t for t in self.trends
+        ]
+        design_data = (
+            asdict(self.design)
+            if hasattr(self.design, "__dataclass_fields__")
+            else self.design
+        )
+        images_data = [
+            asdict(i) if hasattr(i, "__dataclass_fields__") else i for i in self.images
+        ]
 
         self._apply_story_summaries(trends_data)
 
@@ -689,65 +862,149 @@ class Pipeline:
         # hero_keywords used to find relevant hero images for each topic
         topic_configs = [
             {
-                'slug': 'tech',
-                'title': 'Technology',
-                'description': 'Latest technology news, startups, and developer trends',
-                'source_prefixes': ['hackernews', 'lobsters', 'tech_', 'github_trending', 'product_hunt', 'devto', 'slashdot', 'ars_'],
-                'hero_keywords': ['technology', 'computer', 'code', 'programming', 'software', 'digital', 'tech', 'innovation', 'startup'],
-                'image_index': 0  # Fallback index if no keyword match
+                "slug": "tech",
+                "title": "Technology",
+                "description": "Latest technology news, startups, and developer trends",
+                "source_prefixes": [
+                    "hackernews",
+                    "lobsters",
+                    "tech_",
+                    "github_trending",
+                    "product_hunt",
+                    "devto",
+                    "slashdot",
+                    "ars_",
+                ],
+                "hero_keywords": [
+                    "technology",
+                    "computer",
+                    "code",
+                    "programming",
+                    "software",
+                    "digital",
+                    "tech",
+                    "innovation",
+                    "startup",
+                ],
+                "image_index": 0,  # Fallback index if no keyword match
             },
             {
-                'slug': 'world',
-                'title': 'World News',
-                'description': 'Breaking news and current events from around the world',
-                'source_prefixes': ['news_', 'wikipedia', 'google_trends'],
-                'hero_keywords': ['world', 'globe', 'city', 'cityscape', 'urban', 'international', 'news', 'global', 'earth'],
-                'image_index': 1
+                "slug": "world",
+                "title": "World News",
+                "description": "Breaking news and current events from around the world",
+                "source_prefixes": ["news_", "wikipedia", "google_trends"],
+                "hero_keywords": [
+                    "world",
+                    "globe",
+                    "city",
+                    "cityscape",
+                    "urban",
+                    "international",
+                    "news",
+                    "global",
+                    "earth",
+                ],
+                "image_index": 1,
             },
             {
-                'slug': 'science',
-                'title': 'Science & Health',
-                'description': 'Latest discoveries in science, technology, medicine, and space',
-                'source_prefixes': ['science_'],
-                'hero_keywords': ['science', 'laboratory', 'research', 'space', 'medical', 'health', 'biology', 'chemistry', 'physics'],
-                'image_index': 2
+                "slug": "science",
+                "title": "Science & Health",
+                "description": "Latest discoveries in science, technology, medicine, and space",
+                "source_prefixes": ["science_"],
+                "hero_keywords": [
+                    "science",
+                    "laboratory",
+                    "research",
+                    "space",
+                    "medical",
+                    "health",
+                    "biology",
+                    "chemistry",
+                    "physics",
+                ],
+                "image_index": 2,
             },
             {
-                'slug': 'politics',
-                'title': 'Politics & Policy',
-                'description': 'Political news, policy analysis, and government updates',
-                'source_prefixes': ['politics_'],
-                'hero_keywords': ['politics', 'government', 'capitol', 'democracy', 'vote', 'election', 'law', 'justice', 'congress'],
-                'image_index': 3
+                "slug": "politics",
+                "title": "Politics & Policy",
+                "description": "Political news, policy analysis, and government updates",
+                "source_prefixes": ["politics_"],
+                "hero_keywords": [
+                    "politics",
+                    "government",
+                    "capitol",
+                    "democracy",
+                    "vote",
+                    "election",
+                    "law",
+                    "justice",
+                    "congress",
+                ],
+                "image_index": 3,
             },
             {
-                'slug': 'finance',
-                'title': 'Business & Finance',
-                'description': 'Market news, business trends, and economic analysis',
-                'source_prefixes': ['finance_'],
-                'hero_keywords': ['finance', 'business', 'money', 'stock', 'market', 'office', 'corporate', 'economy', 'trading'],
-                'image_index': 4
+                "slug": "finance",
+                "title": "Business & Finance",
+                "description": "Market news, business trends, and economic analysis",
+                "source_prefixes": ["finance_"],
+                "hero_keywords": [
+                    "finance",
+                    "business",
+                    "money",
+                    "stock",
+                    "market",
+                    "office",
+                    "corporate",
+                    "economy",
+                    "trading",
+                ],
+                "image_index": 4,
             },
             {
-                'slug': 'business',
-                'title': 'Business',
-                'description': 'Latest business news, entrepreneurship, and corporate trends',
-                'source_prefixes': ['finance_', 'business'],
-                'hero_keywords': ['business', 'entrepreneur', 'startup', 'corporate', 'office', 'meeting', 'professional', 'commerce', 'trade'],
-                'image_index': 5
+                "slug": "business",
+                "title": "Business",
+                "description": "Latest business news, entrepreneurship, and corporate trends",
+                "source_prefixes": ["finance_", "business"],
+                "hero_keywords": [
+                    "business",
+                    "entrepreneur",
+                    "startup",
+                    "corporate",
+                    "office",
+                    "meeting",
+                    "professional",
+                    "commerce",
+                    "trade",
+                ],
+                "image_index": 5,
             },
             {
-                'slug': 'sports',
-                'title': 'Sports',
-                'description': 'Latest sports news, scores, and athletic highlights',
-                'source_prefixes': ['sports_'],
-                'hero_keywords': ['sports', 'athlete', 'game', 'stadium', 'competition', 'fitness', 'team', 'basketball', 'football'],
-                'image_index': 6
-            }
+                "slug": "sports",
+                "title": "Sports",
+                "description": "Latest sports news, scores, and athletic highlights",
+                "source_prefixes": ["sports_"],
+                "hero_keywords": [
+                    "sports",
+                    "athlete",
+                    "game",
+                    "stadium",
+                    "competition",
+                    "fitness",
+                    "team",
+                    "basketball",
+                    "football",
+                ],
+                "image_index": 6,
+            },
         ]
 
-        def find_topic_image(images: list, headline: str, category_keywords: list,
-                             fallback_index: int, used_image_ids: set) -> dict:
+        def find_topic_image(
+            images: list,
+            headline: str,
+            category_keywords: list,
+            fallback_index: int,
+            used_image_ids: set,
+        ) -> dict:
             """Find an image matching headline content, excluding already-used images.
 
             Priority:
@@ -769,23 +1026,88 @@ class Pipeline:
                 return {}
 
             # Filter out already-used images to ensure each topic page gets a unique image
-            available_images = [img for img in images if img.get('id') not in used_image_ids]
+            available_images = [
+                img for img in images if img.get("id") not in used_image_ids
+            ]
             if not available_images:
                 # If all images used, reset and allow reuse (better than no image)
                 available_images = images
 
             # Extract keywords from headline (similar to _find_relevant_hero_image)
-            stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-                          'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-                          'should', 'may', 'might', 'must', 'shall', 'can', 'of', 'in', 'to',
-                          'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through',
-                          'and', 'or', 'but', 'if', 'then', 'than', 'so', 'that', 'this',
-                          'what', 'which', 'who', 'whom', 'how', 'when', 'where', 'why',
-                          'says', 'said', 'new', 'first', 'after', 'year', 'years', 'now',
-                          "today's", 'trends', 'trending', 'world', 'its', 'it', 'just'}
+            stop_words = {
+                "the",
+                "a",
+                "an",
+                "is",
+                "are",
+                "was",
+                "were",
+                "be",
+                "been",
+                "being",
+                "have",
+                "has",
+                "had",
+                "do",
+                "does",
+                "did",
+                "will",
+                "would",
+                "could",
+                "should",
+                "may",
+                "might",
+                "must",
+                "shall",
+                "can",
+                "of",
+                "in",
+                "to",
+                "for",
+                "on",
+                "with",
+                "at",
+                "by",
+                "from",
+                "as",
+                "into",
+                "through",
+                "and",
+                "or",
+                "but",
+                "if",
+                "then",
+                "than",
+                "so",
+                "that",
+                "this",
+                "what",
+                "which",
+                "who",
+                "whom",
+                "how",
+                "when",
+                "where",
+                "why",
+                "says",
+                "said",
+                "new",
+                "first",
+                "after",
+                "year",
+                "years",
+                "now",
+                "today's",
+                "trends",
+                "trending",
+                "world",
+                "its",
+                "it",
+                "just",
+            }
 
             headline_lower = headline.lower()
-            words = [w.strip('.,!?()[]{}":;\'') for w in headline_lower.split()]
+            words = [w.strip(".,!?()[]{}\":;'") for w in headline_lower.split()]
             headline_keywords = [w for w in words if len(w) > 2 and w not in stop_words]
 
             # Score images - prioritize headline keywords over category keywords
@@ -804,7 +1126,7 @@ class Pipeline:
                 total_score = headline_score + category_score
 
                 # Prefer larger images
-                if img.get('width', 0) >= 1200:
+                if img.get("width", 0) >= 1200:
                     total_score += 0.5
 
                 if total_score > best_score:
@@ -813,21 +1135,21 @@ class Pipeline:
 
             # If found a match, use it
             if best_image and best_score > 0:
-                if best_image.get('id'):
-                    used_image_ids.add(best_image['id'])
+                if best_image.get("id"):
+                    used_image_ids.add(best_image["id"])
                 return best_image
 
             # Otherwise use fallback index (cycling through available images)
             idx = fallback_index % len(available_images)
             selected = available_images[idx]
-            if selected.get('id'):
-                used_image_ids.add(selected['id'])
+            if selected.get("id"):
+                used_image_ids.add(selected["id"])
             return selected
 
         def matches_topic(source: str, prefixes: list) -> bool:
             """Check if a source matches any of the topic's prefixes."""
             for prefix in prefixes:
-                if prefix.endswith('_'):
+                if prefix.endswith("_"):
                     if source.startswith(prefix):
                         return True
                 else:
@@ -841,114 +1163,127 @@ class Pipeline:
         for config in topic_configs:
             # Filter trends for this topic using prefix matching
             topic_trends = [
-                t for t in trends_data
-                if matches_topic(t.get('source', ''), config['source_prefixes'])
+                t
+                for t in trends_data
+                if matches_topic(t.get("source", ""), config["source_prefixes"])
             ]
 
             if len(topic_trends) < 3:
-                logger.info(f"  Skipping /{config['slug']}/ - only {len(topic_trends)} stories")
+                logger.info(
+                    f"  Skipping /{config['slug']}/ - only {len(topic_trends)} stories"
+                )
                 continue
 
             # Get the top story for hero image matching
             top_story = topic_trends[0] if topic_trends else {}
-            top_story_title = top_story.get('title', '')
+            top_story_title = top_story.get("title", "")
 
             # Priority 1: Use article image from RSS feed if available
-            article_image_url = top_story.get('image_url')
+            article_image_url = top_story.get("image_url")
             if article_image_url:
                 # Create hero_image dict from article image
                 hero_image = {
-                    'url_large': article_image_url,
-                    'url_medium': article_image_url,
-                    'url_original': article_image_url,
-                    'photographer': 'Article Image',
-                    'source': 'article',
-                    'alt': top_story_title,
-                    'id': f"article_{hash(article_image_url) % 100000}"
+                    "url_large": article_image_url,
+                    "url_medium": article_image_url,
+                    "url_original": article_image_url,
+                    "photographer": "Article Image",
+                    "source": "article",
+                    "alt": top_story_title,
+                    "id": f"article_{hash(article_image_url) % 100000}",
                 }
-                logger.debug(f"  Using article image for {config['slug']}: {article_image_url[:60]}...")
+                logger.debug(
+                    f"  Using article image for {config['slug']}: {article_image_url[:60]}..."
+                )
             else:
                 # Priority 2: Fall back to stock photo search
                 hero_image = find_topic_image(
                     images_data,
                     top_story_title,
-                    config.get('hero_keywords', []),
-                    config.get('image_index', 0),
-                    used_image_ids
+                    config.get("hero_keywords", []),
+                    config.get("image_index", 0),
+                    used_image_ids,
                 )
 
             # Create topic directory
-            topic_dir = self.public_dir / config['slug']
+            topic_dir = self.public_dir / config["slug"]
             topic_dir.mkdir(parents=True, exist_ok=True)
 
             # Build topic page HTML
-            html = self._build_topic_page(
-                config, topic_trends, design_data, hero_image
-            )
+            html = self._build_topic_page(config, topic_trends, design_data, hero_image)
 
             # Save
-            (topic_dir / "index.html").write_text(html, encoding='utf-8')
+            (topic_dir / "index.html").write_text(html, encoding="utf-8")
             pages_created += 1
-            logger.info(f"  Created /{config['slug']}/ with {len(topic_trends)} stories")
+            logger.info(
+                f"  Created /{config['slug']}/ with {len(topic_trends)} stories"
+            )
 
         logger.info(f"Generated {pages_created} topic sub-pages")
 
     def _build_topic_page(
-        self,
-        config: dict,
-        trends: list,
-        design: dict,
-        hero_image: dict
+        self, config: dict, trends: list, design: dict, hero_image: dict
     ) -> str:
         """Build HTML for a topic sub-page with shared header/footer."""
         from datetime import datetime
         import html as html_module
 
         colors = {
-            'bg': design.get('color_bg', '#0a0a0a'),
-            'card_bg': design.get('color_card_bg', '#18181b'),
-            'text': design.get('color_text', '#ffffff'),
-            'muted': design.get('color_muted', '#a1a1aa'),
-            'border': design.get('color_border', '#27272a'),
-            'accent': design.get('color_accent', '#6366f1'),
-            'accent_secondary': design.get('color_accent_secondary', '#8b5cf6'),
+            "bg": design.get("color_bg", "#0a0a0a"),
+            "card_bg": design.get("color_card_bg", "#18181b"),
+            "text": design.get("color_text", "#ffffff"),
+            "muted": design.get("color_muted", "#a1a1aa"),
+            "border": design.get("color_border", "#27272a"),
+            "accent": design.get("color_accent", "#6366f1"),
+            "accent_secondary": design.get("color_accent_secondary", "#8b5cf6"),
         }
-        font_primary = design.get('font_primary', 'Space Grotesk')
-        font_secondary = design.get('font_secondary', 'Inter')
-        radius = design.get('card_radius', '1rem')
-        card_padding = design.get('card_padding', '1.5rem')
-        transition = design.get('transition_speed', '200ms')
-        base_mode = "dark-mode" if design.get('is_dark_mode', True) else "light-mode"
+        font_primary = design.get("font_primary", "Space Grotesk")
+        font_secondary = design.get("font_secondary", "Inter")
+        radius = design.get("card_radius", "1rem")
+        card_padding = design.get("card_padding", "1.5rem")
+        transition = design.get("transition_speed", "200ms")
+        base_mode = "dark-mode" if design.get("is_dark_mode", True) else "light-mode"
 
         # Get date info
         now = datetime.now()
-        date_str = now.strftime('%B %d, %Y')
+        date_str = now.strftime("%B %d, %Y")
         date_iso = now.isoformat()
 
         # Get hero image URL and alt text (topic-specific image passed in)
-        hero_image_url = ''
-        hero_image_alt = ''
+        hero_image_url = ""
+        hero_image_alt = ""
         if hero_image:
-            hero_image_url = hero_image.get('url_large', hero_image.get('url_medium', hero_image.get('url', '')))
-            hero_image_alt = hero_image.get('alt', hero_image.get('description', f'{config["title"]} hero image'))
+            hero_image_url = hero_image.get(
+                "url_large", hero_image.get("url_medium", hero_image.get("url", ""))
+            )
+            hero_image_alt = hero_image.get(
+                "alt", hero_image.get("description", f'{config["title"]} hero image')
+            )
 
         # Get featured story info (handle None values safely)
         featured_story = trends[0] if trends else {}
-        featured_title = html_module.escape((featured_story.get('title') or '')[:100])
-        featured_url = html_module.escape(featured_story.get('url') or '#')
-        featured_source = html_module.escape((featured_story.get('source') or '').replace('_', ' ').title())
-        featured_desc = html_module.escape((featured_story.get('summary') or featured_story.get('description') or '')[:200])
+        featured_title = html_module.escape((featured_story.get("title") or "")[:100])
+        featured_url = html_module.escape(featured_story.get("url") or "#")
+        featured_source = html_module.escape(
+            (featured_story.get("source") or "").replace("_", " ").title()
+        )
+        featured_desc = html_module.escape(
+            (featured_story.get("summary") or featured_story.get("description") or "")[
+                :200
+            ]
+        )
 
         # Placeholder image URL (gradient fallback from homepage)
-        placeholder_url = '/assets/nano-banana.png'
+        placeholder_url = "/assets/nano-banana.png"
 
         # Build story cards with enhanced design (skip first since it's in hero)
         cards = []
         for i, t in enumerate(trends[1:20]):  # Start from index 1, skip featured
-            title = html_module.escape((t.get('title') or '')[:100])
-            url = html_module.escape(t.get('url') or '#')
-            source = html_module.escape((t.get('source') or '').replace('_', ' ').title())
-            raw_image_url = t.get('image_url') or ''
+            title = html_module.escape((t.get("title") or "")[:100])
+            url = html_module.escape(t.get("url") or "#")
+            source = html_module.escape(
+                (t.get("source") or "").replace("_", " ").title()
+            )
+            raw_image_url = t.get("image_url") or ""
 
             # Validate and sanitize the image URL for reliability
             is_valid, validated_url = validate_image_url(raw_image_url)
@@ -967,7 +1302,8 @@ class Pipeline:
                 img_alt = f"{source} story placeholder"
                 img_data_attrs = 'data-is-placeholder="true"'
 
-            cards.append(f'''
+            cards.append(
+                f"""
             <article class="story-card">
                 <div class="story-wrapper">
                     <figure class="story-media">
@@ -988,9 +1324,10 @@ class Pipeline:
                         </h3>
                     </div>
                 </div>
-            </article>''')
+            </article>"""
+            )
 
-        return f'''<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1056,6 +1393,15 @@ class Pipeline:
             --color-text: #1a1a2e;
             --color-muted: #64748b;
             --color-border: #e2e8f0;
+            background: var(--color-bg);
+        }}
+
+        body.dark-mode {{
+            --color-bg: #0a0a0a;
+            --color-card-bg: #18181b;
+            --color-text: #ffffff;
+            --color-muted: #a1a1aa;
+            --color-border: #27272a;
             background: var(--color-bg);
         }}
 
@@ -1523,7 +1869,7 @@ class Pipeline:
 
     {get_theme_script()}
 </body>
-</html>'''
+</html>"""
 
     def _step_fetch_media_of_day(self):
         """Fetch image and video of the day from curated sources."""
@@ -1532,12 +1878,12 @@ class Pipeline:
         try:
             self.media_data = self.media_fetcher.fetch_all()
 
-            if self.media_data.get('image_of_day'):
+            if self.media_data.get("image_of_day"):
                 logger.info(f"  Image: {self.media_data['image_of_day']['title']}")
             else:
                 logger.warning("  No Image of the Day available")
 
-            if self.media_data.get('video_of_day'):
+            if self.media_data.get("video_of_day"):
                 logger.info(f"  Video: {self.media_data['video_of_day']['title']}")
             else:
                 logger.warning("  No Video of the Day available")
@@ -1555,7 +1901,11 @@ class Pipeline:
             return
 
         # Get design data for styling
-        design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
+        design_data = (
+            asdict(self.design)
+            if hasattr(self.design, "__dataclass_fields__")
+            else self.design
+        )
 
         # Create media directory
         media_dir = self.public_dir / "media"
@@ -1565,7 +1915,7 @@ class Pipeline:
         html = self._build_media_page(self.media_data, design_data)
 
         # Save
-        (media_dir / "index.html").write_text(html, encoding='utf-8')
+        (media_dir / "index.html").write_text(html, encoding="utf-8")
         logger.info(f"Media page saved to {media_dir / 'index.html'}")
 
     def _build_media_page(self, media_data: dict, design: dict) -> str:
@@ -1574,37 +1924,37 @@ class Pipeline:
         import html as html_module
 
         now = datetime.now()
-        date_str = now.strftime('%B %d, %Y')
+        date_str = now.strftime("%B %d, %Y")
         date_iso = now.isoformat()
 
         colors = {
-            'bg': design.get('color_bg', '#0a0a0a'),
-            'card_bg': design.get('color_card_bg', '#18181b'),
-            'text': design.get('color_text', '#ffffff'),
-            'muted': design.get('color_muted', '#a1a1aa'),
-            'border': design.get('color_border', '#27272a'),
-            'accent': design.get('color_accent', '#6366f1'),
-            'accent_secondary': design.get('color_accent_secondary', '#8b5cf6'),
+            "bg": design.get("color_bg", "#0a0a0a"),
+            "card_bg": design.get("color_card_bg", "#18181b"),
+            "text": design.get("color_text", "#ffffff"),
+            "muted": design.get("color_muted", "#a1a1aa"),
+            "border": design.get("color_border", "#27272a"),
+            "accent": design.get("color_accent", "#6366f1"),
+            "accent_secondary": design.get("color_accent_secondary", "#8b5cf6"),
         }
-        font_primary = design.get('font_primary', 'Space Grotesk')
-        font_secondary = design.get('font_secondary', 'Inter')
-        radius = design.get('card_radius', '1rem')
-        transition = design.get('transition_speed', '200ms')
-        base_mode = "dark-mode" if design.get('is_dark_mode', True) else "light-mode"
+        font_primary = design.get("font_primary", "Space Grotesk")
+        font_secondary = design.get("font_secondary", "Inter")
+        radius = design.get("card_radius", "1rem")
+        transition = design.get("transition_speed", "200ms")
+        base_mode = "dark-mode" if design.get("is_dark_mode", True) else "light-mode"
 
         # Get image data
-        image = media_data.get('image_of_day') or {}
-        image_title = html_module.escape(image.get('title', 'Image of the Day'))
-        image_url = html_module.escape(image.get('url', ''))
-        image_hd_url = html_module.escape(image.get('url_hd', ''))
-        image_explanation = html_module.escape(image.get('explanation', ''))
-        image_source = image.get('source', '')
-        image_source_url = html_module.escape(image.get('source_url', ''))
-        image_copyright = html_module.escape(image.get('copyright', ''))
-        image_date = image.get('date', '')
+        image = media_data.get("image_of_day") or {}
+        image_title = html_module.escape(image.get("title", "Image of the Day"))
+        image_url = html_module.escape(image.get("url", ""))
+        image_hd_url = html_module.escape(image.get("url_hd", ""))
+        image_explanation = html_module.escape(image.get("explanation", ""))
+        image_source = image.get("source", "")
+        image_source_url = html_module.escape(image.get("source_url", ""))
+        image_copyright = html_module.escape(image.get("copyright", ""))
+        image_date = image.get("date", "")
 
         # Helper to ensure value is a string before escaping
-        def safe_str(val, default=''):
+        def safe_str(val, default=""):
             if val is None:
                 return default
             if isinstance(val, list):
@@ -1612,63 +1962,73 @@ class Pipeline:
             return str(val)
 
         # Get video data
-        video = media_data.get('video_of_day') or {}
-        video_title = html_module.escape(safe_str(video.get('title'), 'Video of the Day'))
-        video_description = html_module.escape(safe_str(video.get('description')))
-        video_embed_url = html_module.escape(safe_str(video.get('embed_url')))
-        video_url = html_module.escape(safe_str(video.get('video_url')))
-        video_thumbnail = html_module.escape(safe_str(video.get('thumbnail_url')))
-        video_author = html_module.escape(safe_str(video.get('author')))
-        video_author_url = html_module.escape(safe_str(video.get('author_url')))
-        video_duration = safe_str(video.get('duration'))
+        video = media_data.get("video_of_day") or {}
+        video_title = html_module.escape(
+            safe_str(video.get("title"), "Video of the Day")
+        )
+        video_description = html_module.escape(safe_str(video.get("description")))
+        video_embed_url = html_module.escape(safe_str(video.get("embed_url")))
+        video_url = html_module.escape(safe_str(video.get("video_url")))
+        video_thumbnail = html_module.escape(safe_str(video.get("thumbnail_url")))
+        video_author = html_module.escape(safe_str(video.get("author")))
+        video_author_url = html_module.escape(safe_str(video.get("author_url")))
+        video_duration = safe_str(video.get("duration"))
 
         # Source display names
         source_names = {
-            'nasa_apod': 'NASA Astronomy Picture of the Day',
-            'bing': 'Bing Image of the Day',
-            'vimeo_staff_picks': 'Vimeo Staff Picks'
+            "nasa_apod": "NASA Astronomy Picture of the Day",
+            "bing": "Bing Image of the Day",
+            "vimeo_staff_picks": "Vimeo Staff Picks",
         }
 
         image_source_name = source_names.get(image_source, image_source)
-        video_source_name = source_names.get(video.get('source', ''), 'Vimeo Staff Picks')
+        video_source_name = source_names.get(
+            video.get("source", ""), "Vimeo Staff Picks"
+        )
 
         # Build conditional HTML parts to avoid nested f-string issues
         copyright_html = ""
         if image_copyright:
-            copyright_html = f'''<span class="meta-item">
+            copyright_html = f"""<span class="meta-item">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="10"/>
                                 <path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/>
                             </svg>
                             © {image_copyright}
-                        </span>'''
+                        </span>"""
 
         hd_link_html = ""
         if image_hd_url:
-            hd_link_html = f'''<a href="{image_hd_url}" target="_blank" rel="noopener" class="action-btn secondary">
+            hd_link_html = f"""<a href="{image_hd_url}" target="_blank" rel="noopener" class="action-btn secondary">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
                             HD Version
-                        </a>'''
+                        </a>"""
 
         author_html = ""
         if video_author:
             author_initial = video_author[0].upper() if video_author else "V"
-            author_html = f'''<div class="author-info">
+            author_html = f"""<div class="author-info">
                         <div class="author-avatar">{author_initial}</div>
                         <div>
                             <span class="author-name">{video_author}</span>
                         </div>
-                    </div>'''
+                    </div>"""
 
         # Build image section HTML
-        explanation_truncated = image_explanation[:800] + "..." if len(image_explanation) > 800 else image_explanation
-        image_source_short = image_source_name.split()[0] if image_source_name else "Source"
+        explanation_truncated = (
+            image_explanation[:800] + "..."
+            if len(image_explanation) > 800
+            else image_explanation
+        )
+        image_source_short = (
+            image_source_name.split()[0] if image_source_name else "Source"
+        )
         if image:
-            image_section = f'''<section class="media-section">
+            image_section = f"""<section class="media-section">
             <div class="section-header">
                 <h2 class="section-title">
                     <span class="section-icon">
@@ -1719,14 +2079,18 @@ class Pipeline:
                     </div>
                 </div>
             </div>
-        </section>'''
+        </section>"""
         else:
             image_section = '<p style="color: var(--color-muted); text-align: center; padding: 2rem;">Image of the Day is temporarily unavailable.</p>'
 
         # Build video section HTML
-        description_truncated = video_description[:500] + "..." if len(video_description) > 500 else video_description
+        description_truncated = (
+            video_description[:500] + "..."
+            if len(video_description) > 500
+            else video_description
+        )
         if video:
-            video_section = f'''<section class="media-section">
+            video_section = f"""<section class="media-section">
             <div class="section-header">
                 <h2 class="section-title">
                     <span class="section-icon">
@@ -1765,11 +2129,11 @@ class Pipeline:
                     </div>
                 </div>
             </div>
-        </section>'''
+        </section>"""
         else:
             video_section = '<p style="color: var(--color-muted); text-align: center; padding: 2rem;">Video of the Day is temporarily unavailable.</p>'
 
-        return f'''<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1821,6 +2185,15 @@ class Pipeline:
             --color-text: #1a1a2e;
             --color-muted: #64748b;
             --color-border: #e2e8f0;
+            background: var(--color-bg);
+        }}
+
+        body.dark-mode {{
+            --color-bg: #0a0a0a;
+            --color-card-bg: #18181b;
+            --color-text: #ffffff;
+            --color-muted: #a1a1aa;
+            --color-border: #27272a;
             background: var(--color-bg);
         }}
 
@@ -2157,14 +2530,16 @@ class Pipeline:
 
     {get_theme_script()}
 </body>
-</html>'''
+</html>"""
 
     def _step_generate_rss(self):
         """Generate RSS feed."""
         logger.info("[12/16] Generating RSS feed...")
 
         # Convert trends to dict format
-        trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+        trends_data = [
+            asdict(t) if hasattr(t, "__dataclass_fields__") else t for t in self.trends
+        ]
 
         # Generate RSS feed
         output_path = self.public_dir / "feed.xml"
@@ -2191,16 +2566,26 @@ class Pipeline:
                 try:
                     with open(metadata_file) as f:
                         article = json.load(f)
-                        article_urls.append(article.get('url', ''))
+                        article_urls.append(article.get("url", ""))
                 except Exception:
                     pass
 
         # Get topic page URLs (matching topic_configs in _step_generate_topic_pages)
-        topic_urls = ['/tech/', '/world/', '/science/', '/politics/', '/finance/', '/business/', '/sports/']
+        topic_urls = [
+            "/tech/",
+            "/world/",
+            "/science/",
+            "/politics/",
+            "/finance/",
+            "/business/",
+            "/sports/",
+        ]
 
         # Generate enhanced sitemap
         save_sitemap(self.public_dir, extra_urls=article_urls + topic_urls)
-        logger.info(f"Sitemap generated with {len(article_urls)} articles, {len(topic_urls)} topic pages")
+        logger.info(
+            f"Sitemap generated with {len(article_urls)} articles, {len(topic_urls)} topic pages"
+        )
 
     def _step_cleanup(self):
         """Clean up old archives (NOT articles - those are permanent)."""
@@ -2217,7 +2602,10 @@ class Pipeline:
         # Save trends
         try:
             with open(self.data_dir / "trends.json", "w") as f:
-                trends_data = [asdict(t) if hasattr(t, '__dataclass_fields__') else t for t in self.trends]
+                trends_data = [
+                    asdict(t) if hasattr(t, "__dataclass_fields__") else t
+                    for t in self.trends
+                ]
                 json.dump(trends_data, f, indent=2, default=str)
             saved_files.append("trends.json")
         except (IOError, OSError) as e:
@@ -2226,7 +2614,10 @@ class Pipeline:
         # Save images
         try:
             with open(self.data_dir / "images.json", "w") as f:
-                images_data = [asdict(i) if hasattr(i, '__dataclass_fields__') else i for i in self.images]
+                images_data = [
+                    asdict(i) if hasattr(i, "__dataclass_fields__") else i
+                    for i in self.images
+                ]
                 json.dump(images_data, f, indent=2, default=str)
             saved_files.append("images.json")
         except (IOError, OSError) as e:
@@ -2235,7 +2626,11 @@ class Pipeline:
         # Save design
         try:
             with open(self.data_dir / "design.json", "w") as f:
-                design_data = asdict(self.design) if hasattr(self.design, '__dataclass_fields__') else self.design
+                design_data = (
+                    asdict(self.design)
+                    if hasattr(self.design, "__dataclass_fields__")
+                    else self.design
+                )
                 json.dump(design_data, f, indent=2, default=str)
             saved_files.append("design.json")
         except (IOError, OSError) as e:
@@ -2254,9 +2649,21 @@ class Pipeline:
             try:
                 with open(self.data_dir / "enriched.json", "w") as f:
                     enriched_data = {
-                        'word_of_the_day': asdict(self.enriched_content.word_of_the_day) if self.enriched_content.word_of_the_day else None,
-                        'grokipedia_article': asdict(self.enriched_content.grokipedia_article) if self.enriched_content.grokipedia_article else None,
-                        'story_summaries': [asdict(s) for s in self.enriched_content.story_summaries] if self.enriched_content.story_summaries else []
+                        "word_of_the_day": (
+                            asdict(self.enriched_content.word_of_the_day)
+                            if self.enriched_content.word_of_the_day
+                            else None
+                        ),
+                        "grokipedia_article": (
+                            asdict(self.enriched_content.grokipedia_article)
+                            if self.enriched_content.grokipedia_article
+                            else None
+                        ),
+                        "story_summaries": (
+                            [asdict(s) for s in self.enriched_content.story_summaries]
+                            if self.enriched_content.story_summaries
+                            else []
+                        ),
                     }
                     json.dump(enriched_data, f, indent=2, default=str)
                 saved_files.append("enriched.json")
@@ -2264,7 +2671,9 @@ class Pipeline:
                 errors.append(f"enriched.json: {e}")
 
         if saved_files:
-            logger.info(f"Pipeline data saved to {self.data_dir}: {', '.join(saved_files)}")
+            logger.info(
+                f"Pipeline data saved to {self.data_dir}: {', '.join(saved_files)}"
+            )
         if errors:
             for error in errors:
                 logger.error(f"Failed to save: {error}")
@@ -2286,25 +2695,23 @@ Environment variables:
     OPENROUTER_API_KEY  - OpenRouter API key (backup AI)
     PEXELS_API_KEY      - Pexels API key for images
     UNSPLASH_ACCESS_KEY - Unsplash API key (backup images)
-        """
+        """,
     )
 
     parser.add_argument(
-        "--no-archive",
-        action="store_true",
-        help="Skip archiving the previous website"
+        "--no-archive", action="store_true", help="Skip archiving the previous website"
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Collect trends and generate design, but don't build website"
+        help="Collect trends and generate design, but don't build website",
     )
 
     parser.add_argument(
         "--project-root",
         type=str,
-        help="Project root directory (default: parent of scripts/)"
+        help="Project root directory (default: parent of scripts/)",
     )
 
     args = parser.parse_args()
@@ -2312,6 +2719,7 @@ Environment variables:
     # Load environment variables from .env if available
     try:
         from dotenv import load_dotenv
+
         env_path = Path(__file__).parent.parent / ".env"
         if env_path.exists():
             load_dotenv(env_path)
@@ -2323,10 +2731,7 @@ Environment variables:
     project_root = Path(args.project_root) if args.project_root else None
     pipeline = Pipeline(project_root=project_root)
 
-    success = pipeline.run(
-        archive=not args.no_archive,
-        dry_run=args.dry_run
-    )
+    success = pipeline.run(archive=not args.no_archive, dry_run=args.dry_run)
 
     sys.exit(0 if success else 1)
 

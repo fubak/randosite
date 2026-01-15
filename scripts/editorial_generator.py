@@ -20,11 +20,33 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 try:
-    from rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
-    from shared_components import build_header, build_footer, get_header_styles, get_footer_styles, get_theme_script
+    from rate_limiter import (
+        get_rate_limiter,
+        check_before_call,
+        mark_provider_exhausted,
+        is_provider_exhausted,
+    )
+    from shared_components import (
+        build_header,
+        build_footer,
+        get_header_styles,
+        get_footer_styles,
+        get_theme_script,
+    )
 except ImportError:
-    from scripts.rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
-    from scripts.shared_components import build_header, build_footer, get_header_styles, get_footer_styles, get_theme_script
+    from scripts.rate_limiter import (
+        get_rate_limiter,
+        check_before_call,
+        mark_provider_exhausted,
+        is_provider_exhausted,
+    )
+    from scripts.shared_components import (
+        build_header,
+        build_footer,
+        get_header_styles,
+        get_footer_styles,
+        get_theme_script,
+    )
 
 logger = logging.getLogger("pipeline")
 
@@ -34,13 +56,30 @@ EDITORIAL_SCHEMA = {
     "properties": {
         "title": {"type": "string", "description": "Compelling headline (6-12 words)"},
         "slug": {"type": "string", "description": "URL-friendly slug with dashes"},
-        "summary": {"type": "string", "description": "1-2 sentence meta description for SEO"},
-        "mood": {"type": "string", "description": "One word describing tone (hopeful, concerned, transformative, etc.)"},
-        "content": {"type": "string", "description": "Full article content with HTML formatting"},
-        "key_themes": {"type": "array", "items": {"type": "string"}, "description": "3-5 key themes"},
-        "predictions": {"type": "array", "items": {"type": "string"}, "description": "2-3 specific predictions"}
+        "summary": {
+            "type": "string",
+            "description": "1-2 sentence meta description for SEO",
+        },
+        "mood": {
+            "type": "string",
+            "description": "One word describing tone (hopeful, concerned, transformative, etc.)",
+        },
+        "content": {
+            "type": "string",
+            "description": "Full article content with HTML formatting",
+        },
+        "key_themes": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "3-5 key themes",
+        },
+        "predictions": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "2-3 specific predictions",
+        },
     },
-    "required": ["title", "slug", "summary", "mood", "content", "key_themes"]
+    "required": ["title", "slug", "summary", "mood", "content", "key_themes"],
 }
 
 STORY_SUMMARIES_SCHEMA = {
@@ -51,20 +90,28 @@ STORY_SUMMARIES_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "explanation": {"type": "string", "description": "2-3 sentence explanation of why this matters"},
-                    "impact_areas": {"type": "array", "items": {"type": "string"}, "description": "Areas of impact"}
+                    "explanation": {
+                        "type": "string",
+                        "description": "2-3 sentence explanation of why this matters",
+                    },
+                    "impact_areas": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Areas of impact",
+                    },
                 },
-                "required": ["explanation"]
-            }
+                "required": ["explanation"],
+            },
         }
     },
-    "required": ["stories"]
+    "required": ["stories"],
 }
 
 
 @dataclass
 class EditorialArticle:
     """Represents a generated editorial article."""
+
     title: str
     slug: str
     date: str  # YYYY-MM-DD
@@ -80,6 +127,7 @@ class EditorialArticle:
 @dataclass
 class WhyThisMatters:
     """Context explanation for a top story."""
+
     story_title: str
     story_url: str
     explanation: str  # 2-3 sentence explanation
@@ -97,60 +145,71 @@ class EditorialGenerator:
     MIN_CALL_INTERVAL = 3.0
     MAX_RETRY_WAIT = 10  # Cap retry waits to prevent long delays
 
-    def __init__(self, groq_key: Optional[str] = None, openrouter_key: Optional[str] = None, google_key: Optional[str] = None, public_dir: Optional[Path] = None):
-        self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
-        self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
-        self.google_key = google_key or os.getenv('GOOGLE_AI_API_KEY')
+    def __init__(
+        self,
+        groq_key: Optional[str] = None,
+        openrouter_key: Optional[str] = None,
+        google_key: Optional[str] = None,
+        public_dir: Optional[Path] = None,
+    ):
+        self.groq_key = groq_key or os.getenv("GROQ_API_KEY")
+        self.openrouter_key = openrouter_key or os.getenv("OPENROUTER_API_KEY")
+        self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
         self.public_dir = public_dir or Path(__file__).parent.parent / "public"
         self.articles_dir = self.public_dir / "articles"
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'DailyTrending.info/1.0 (Editorial Generator)'
-        })
+        self.session.headers.update(
+            {"User-Agent": "DailyTrending.info/1.0 (Editorial Generator)"}
+        )
         self._last_call_time = 0.0  # Track last API call for rate limiting
 
     def _get_design_tokens(self, design: Optional[Dict]) -> Dict:
         """Normalize design tokens for editorial templates."""
         tokens = {
-            'primary_color': '#667eea',
-            'accent_color': '#4facfe',
-            'bg_color': '#0f0f23',
-            'text_color': '#ffffff',
-            'muted_color': '#a1a1aa',
-            'border_color': '#27272a',
-            'card_bg': 'rgba(255,255,255,0.03)',
-            'font_primary': 'Playfair Display',
-            'font_secondary': 'Inter',
-            'radius': '1rem',
-            'transition': '200ms',
-            'base_mode': 'dark-mode',
+            "primary_color": "#667eea",
+            "accent_color": "#4facfe",
+            "bg_color": "#0f0f23",
+            "text_color": "#ffffff",
+            "muted_color": "#a1a1aa",
+            "border_color": "#27272a",
+            "card_bg": "rgba(255,255,255,0.03)",
+            "font_primary": "Playfair Display",
+            "font_secondary": "Inter",
+            "radius": "1rem",
+            "transition": "200ms",
+            "base_mode": "dark-mode",
         }
 
         if not design:
             return tokens
 
-        tokens.update({
-            'primary_color': design.get('color_accent', tokens['primary_color']),
-            'accent_color': design.get('color_accent_secondary', tokens['accent_color']),
-            'bg_color': design.get('color_bg', tokens['bg_color']),
-            'text_color': design.get('color_text', tokens['text_color']),
-            'muted_color': design.get('color_muted', tokens['muted_color']),
-            'border_color': design.get('color_border', tokens['border_color']),
-            'card_bg': design.get('color_card_bg', tokens['card_bg']),
-            'font_primary': design.get('font_primary', tokens['font_primary']),
-            'font_secondary': design.get('font_secondary', tokens['font_secondary']),
-            'radius': design.get('card_radius', tokens['radius']),
-            'transition': design.get('transition_speed', tokens['transition']),
-            'base_mode': 'dark-mode' if design.get('is_dark_mode', True) else 'light-mode',
-        })
+        tokens.update(
+            {
+                "primary_color": design.get("color_accent", tokens["primary_color"]),
+                "accent_color": design.get(
+                    "color_accent_secondary", tokens["accent_color"]
+                ),
+                "bg_color": design.get("color_bg", tokens["bg_color"]),
+                "text_color": design.get("color_text", tokens["text_color"]),
+                "muted_color": design.get("color_muted", tokens["muted_color"]),
+                "border_color": design.get("color_border", tokens["border_color"]),
+                "card_bg": design.get("color_card_bg", tokens["card_bg"]),
+                "font_primary": design.get("font_primary", tokens["font_primary"]),
+                "font_secondary": design.get(
+                    "font_secondary", tokens["font_secondary"]
+                ),
+                "radius": design.get("card_radius", tokens["radius"]),
+                "transition": design.get("transition_speed", tokens["transition"]),
+                "base_mode": (
+                    "dark-mode" if design.get("is_dark_mode", True) else "light-mode"
+                ),
+            }
+        )
 
         return tokens
 
     def generate_editorial(
-        self,
-        trends: List[Dict],
-        keywords: List[str],
-        design: Optional[Dict] = None
+        self, trends: List[Dict], keywords: List[str], design: Optional[Dict] = None
     ) -> Optional[EditorialArticle]:
         """
         Generate a daily editorial article synthesizing top stories.
@@ -173,7 +232,7 @@ class EditorialGenerator:
 
         # Check if an article for today already exists (prevent duplicates)
         today = datetime.now().strftime("%Y-%m-%d")
-        today_parts = today.split('-')
+        today_parts = today.split("-")
         today_dir = self.articles_dir / today_parts[0] / today_parts[1] / today_parts[2]
         if today_dir.exists() and any(today_dir.iterdir()):
             existing_articles = list(today_dir.glob("*/metadata.json"))
@@ -183,18 +242,20 @@ class EditorialGenerator:
                     metadata_path = existing_articles[0]
                     with open(metadata_path) as f:
                         metadata = json.load(f)
-                    logger.info(f"Loading existing editorial for {today}: {metadata.get('title', 'Unknown')}")
+                    logger.info(
+                        f"Loading existing editorial for {today}: {metadata.get('title', 'Unknown')}"
+                    )
                     return EditorialArticle(
-                        title=metadata.get('title', ''),
-                        slug=metadata.get('slug', ''),
-                        date=metadata.get('date', today),
-                        summary=metadata.get('summary', ''),
-                        content='',  # Content not needed for display card
-                        word_count=metadata.get('word_count', 0),
-                        top_stories=metadata.get('top_stories', []),
-                        keywords=metadata.get('keywords', []),
-                        mood=metadata.get('mood', 'informative'),
-                        url=metadata.get('url', '')
+                        title=metadata.get("title", ""),
+                        slug=metadata.get("slug", ""),
+                        date=metadata.get("date", today),
+                        summary=metadata.get("summary", ""),
+                        content="",  # Content not needed for display card
+                        word_count=metadata.get("word_count", 0),
+                        top_stories=metadata.get("top_stories", []),
+                        keywords=metadata.get("keywords", []),
+                        mood=metadata.get("mood", "informative"),
+                        url=metadata.get("url", ""),
                     )
                 except Exception as e:
                     logger.warning(f"Failed to load existing article: {e}")
@@ -307,40 +368,46 @@ Respond with ONLY a valid JSON object:
 
         try:
             # Try structured output first (guaranteed valid JSON from Gemini)
-            data = self._call_google_ai_structured(prompt, EDITORIAL_SCHEMA, max_tokens=2000)
+            data = self._call_google_ai_structured(
+                prompt, EDITORIAL_SCHEMA, max_tokens=2000
+            )
 
             # Fall back to regular LLM call + JSON parsing if structured output fails
             if not data:
-                logger.info("Structured output unavailable, falling back to regular LLM call")
+                logger.info(
+                    "Structured output unavailable, falling back to regular LLM call"
+                )
                 response = self._call_groq(prompt, max_tokens=2000)
                 data = self._parse_json_response(response)
 
-            if not data or not data.get('content'):
+            if not data or not data.get("content"):
                 logger.warning("Failed to parse editorial response")
                 return None
 
             # Build article object
             today = datetime.now().strftime("%Y-%m-%d")
-            slug = self._sanitize_slug(data.get('slug', 'daily-editorial'))
-            content = data.get('content', '')
+            slug = self._sanitize_slug(data.get("slug", "daily-editorial"))
+            content = data.get("content", "")
 
             article = EditorialArticle(
-                title=data.get('title', 'Today\'s Analysis'),
+                title=data.get("title", "Today's Analysis"),
                 slug=slug,
                 date=today,
-                summary=data.get('summary', ''),
+                summary=data.get("summary", ""),
                 content=content,
                 word_count=len(content.split()),
-                top_stories=[t.get('title', '') for t in top_stories[:5]],
-                keywords=data.get('key_themes', keywords[:5]),
-                mood=data.get('mood', 'informative'),
-                url=f"/articles/{today.replace('-', '/')}/{slug}/"
+                top_stories=[t.get("title", "") for t in top_stories[:5]],
+                keywords=data.get("key_themes", keywords[:5]),
+                mood=data.get("mood", "informative"),
+                url=f"/articles/{today.replace('-', '/')}/{slug}/",
             )
 
             # Save the article
             self._save_article(article, design)
 
-            logger.info(f"Generated editorial: {article.title} ({article.word_count} words)")
+            logger.info(
+                f"Generated editorial: {article.title} ({article.word_count} words)"
+            )
             return article
 
         except Exception as e:
@@ -348,9 +415,7 @@ Respond with ONLY a valid JSON object:
             return None
 
     def generate_why_this_matters(
-        self,
-        trends: List[Dict],
-        count: int = 3
+        self, trends: List[Dict], count: int = 3
     ) -> List[WhyThisMatters]:
         """
         Generate 'Why This Matters' context for top stories (batched into single API call).
@@ -372,8 +437,8 @@ Respond with ONLY a valid JSON object:
         # Build batched prompt for all stories
         stories_data = []
         for i, story in enumerate(top_stories):
-            title = story.get('title', '') or ''
-            desc = (story.get('description') or '')[:200]
+            title = story.get("title", "") or ""
+            desc = (story.get("description") or "")[:200]
             stories_data.append(f"{i+1}. TITLE: {title}\n   CONTEXT: {desc}")
 
         stories_text = "\n\n".join(stories_data)
@@ -411,25 +476,31 @@ Respond with ONLY a valid JSON object:
 
         try:
             # Try structured output first (guaranteed valid JSON from Gemini)
-            data = self._call_google_ai_structured(prompt, STORY_SUMMARIES_SCHEMA, max_tokens=600)
+            data = self._call_google_ai_structured(
+                prompt, STORY_SUMMARIES_SCHEMA, max_tokens=600
+            )
 
             # Fall back to regular LLM call + JSON parsing if structured output fails
             if not data:
-                logger.info("Structured output unavailable for story summaries, falling back")
+                logger.info(
+                    "Structured output unavailable for story summaries, falling back"
+                )
                 response = self._call_groq(prompt, max_tokens=600)
                 data = self._parse_json_response(response)
 
             results = []
-            if data and data.get('stories'):
-                for i, item in enumerate(data['stories']):
-                    if i < len(top_stories) and item.get('explanation'):
+            if data and data.get("stories"):
+                for i, item in enumerate(data["stories"]):
+                    if i < len(top_stories) and item.get("explanation"):
                         story = top_stories[i]
-                        results.append(WhyThisMatters(
-                            story_title=story.get('title', '') or '',
-                            story_url=story.get('url', '') or '',
-                            explanation=item.get('explanation', ''),
-                            impact_areas=item.get('impact_areas', [])
-                        ))
+                        results.append(
+                            WhyThisMatters(
+                                story_title=story.get("title", "") or "",
+                                story_url=story.get("url", "") or "",
+                                explanation=item.get("explanation", ""),
+                                impact_areas=item.get("impact_areas", []),
+                            )
+                        )
             return results
         except Exception as e:
             logger.warning(f"Why This Matters batch generation failed: {e}")
@@ -439,9 +510,9 @@ Respond with ONLY a valid JSON object:
         """Build rich context for editorial generation."""
         story_lines = []
         for i, s in enumerate(stories):
-            title = s.get('title') or ''
-            source = (s.get('source') or 'unknown').replace('_', ' ').title()
-            desc = (s.get('description') or '')[:200]
+            title = s.get("title") or ""
+            source = (s.get("source") or "unknown").replace("_", " ").title()
+            desc = (s.get("description") or "")[:200]
             story_lines.append(f"{i+1}. [{source}] {title}")
             if desc:
                 story_lines.append(f"   Summary: {desc}")
@@ -449,15 +520,15 @@ Respond with ONLY a valid JSON object:
         # Categorize stories
         categories = {}
         for s in stories:
-            src = s.get('source', 'other')
-            if src in ['hackernews', 'lobsters', 'tech_rss', 'github_trending']:
-                cat = 'Technology'
-            elif src in ['news_rss', 'wikipedia']:
-                cat = 'World News'
-            elif src == 'reddit':
-                cat = 'Social/Viral'
+            src = s.get("source", "other")
+            if src in ["hackernews", "lobsters", "tech_rss", "github_trending"]:
+                cat = "Technology"
+            elif src in ["news_rss", "wikipedia"]:
+                cat = "World News"
+            elif src == "reddit":
+                cat = "Social/Viral"
             else:
-                cat = 'General'
+                cat = "General"
             categories[cat] = categories.get(cat, 0) + 1
 
         cat_summary = ", ".join(f"{v} {k}" for k, v in categories.items())
@@ -468,7 +539,9 @@ Respond with ONLY a valid JSON object:
 TRENDING KEYWORDS: {', '.join(keywords[:20])}
 DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
-    def _identify_central_themes(self, stories: List[Dict], keywords: List[str]) -> Dict:
+    def _identify_central_themes(
+        self, stories: List[Dict], keywords: List[str]
+    ) -> Dict:
         """
         Identify central themes and generate a thesis question from stories.
 
@@ -481,18 +554,42 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         science_count = 0
 
         for story in stories:
-            source = (story.get('source') or '').lower()
-            title = (story.get('title') or '').lower()
+            source = (story.get("source") or "").lower()
+            title = (story.get("title") or "").lower()
 
-            if source in ['hackernews', 'lobsters', 'github_trending'] or any(
-                kw in title for kw in ['ai', 'tech', 'software', 'code', 'app', 'google', 'apple', 'microsoft']
+            if source in ["hackernews", "lobsters", "github_trending"] or any(
+                kw in title
+                for kw in [
+                    "ai",
+                    "tech",
+                    "software",
+                    "code",
+                    "app",
+                    "google",
+                    "apple",
+                    "microsoft",
+                ]
             ):
                 tech_count += 1
-            if source == 'reddit' or 'viral' in title or 'trend' in title:
+            if source == "reddit" or "viral" in title or "trend" in title:
                 social_count += 1
-            if any(kw in title for kw in ['market', 'stock', 'company', 'ceo', 'billion', 'deal', 'startup']):
+            if any(
+                kw in title
+                for kw in [
+                    "market",
+                    "stock",
+                    "company",
+                    "ceo",
+                    "billion",
+                    "deal",
+                    "startup",
+                ]
+            ):
                 business_count += 1
-            if any(kw in title for kw in ['study', 'research', 'science', 'space', 'health', 'climate']):
+            if any(
+                kw in title
+                for kw in ["study", "research", "science", "space", "health", "climate"]
+            ):
                 science_count += 1
 
         # Detect recurring keywords
@@ -500,19 +597,22 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         for kw in keywords[:30]:
             kw_lower = kw.lower()
             for story in stories:
-                if kw_lower in (story.get('title') or '').lower() or kw_lower in (story.get('description') or '').lower():
+                if (
+                    kw_lower in (story.get("title") or "").lower()
+                    or kw_lower in (story.get("description") or "").lower()
+                ):
                     keyword_freq[kw] = keyword_freq.get(kw, 0) + 1
 
         # Find most connected keywords (appear in multiple stories)
         connected_keywords = sorted(
             [(k, v) for k, v in keyword_freq.items() if v >= 2],
             key=lambda x: x[1],
-            reverse=True
+            reverse=True,
         )[:5]
 
         # Generate central question based on dominant theme
         if tech_count >= 4:
-            if any('ai' in kw.lower() for kw, _ in connected_keywords):
+            if any("ai" in kw.lower() for kw, _ in connected_keywords):
                 question = "How is AI reshaping the technology landscape, and who stands to win or lose?"
             else:
                 question = "What do today's tech stories reveal about where innovation is heading?"
@@ -526,41 +626,54 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             top_keyword = connected_keywords[0][0]
             question = f"What does the prominence of '{top_keyword}' in today's news reveal about current priorities?"
         else:
-            question = "What common thread connects today's seemingly disparate top stories?"
+            question = (
+                "What common thread connects today's seemingly disparate top stories?"
+            )
 
         return {
-            'question': question,
-            'dominant_category': max(
-                [('technology', tech_count), ('business', business_count),
-                 ('science', science_count), ('social', social_count)],
-                key=lambda x: x[1]
+            "question": question,
+            "dominant_category": max(
+                [
+                    ("technology", tech_count),
+                    ("business", business_count),
+                    ("science", science_count),
+                    ("social", social_count),
+                ],
+                key=lambda x: x[1],
             )[0],
-            'connected_keywords': [kw for kw, _ in connected_keywords]
+            "connected_keywords": [kw for kw, _ in connected_keywords],
         }
 
     def _save_article(self, article: EditorialArticle, design: Optional[Dict] = None):
         """Save editorial article to permanent storage."""
         # Create directory structure: /articles/YYYY/MM/DD/slug/
-        date_parts = article.date.split('-')
-        article_dir = self.articles_dir / date_parts[0] / date_parts[1] / date_parts[2] / article.slug
+        date_parts = article.date.split("-")
+        article_dir = (
+            self.articles_dir
+            / date_parts[0]
+            / date_parts[1]
+            / date_parts[2]
+            / article.slug
+        )
         article_dir.mkdir(parents=True, exist_ok=True)
 
         tokens = self._get_design_tokens(design)
 
         # Get related articles for internal linking
-        related_articles = self._get_related_articles(article.date, article.slug, limit=3)
+        related_articles = self._get_related_articles(
+            article.date, article.slug, limit=3
+        )
 
         # Generate HTML
         html = self._generate_article_html(article, tokens, related_articles)
 
         # Save index.html
-        (article_dir / "index.html").write_text(html, encoding='utf-8')
+        (article_dir / "index.html").write_text(html, encoding="utf-8")
 
         # Save metadata JSON for sitemap/index generation
         metadata = asdict(article)
         (article_dir / "metadata.json").write_text(
-            json.dumps(metadata, indent=2),
-            encoding='utf-8'
+            json.dumps(metadata, indent=2), encoding="utf-8"
         )
 
         logger.info(f"Saved article to {article_dir}")
@@ -569,40 +682,48 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         self,
         article: EditorialArticle,
         tokens: Dict,
-        related_articles: Optional[List[Dict]] = None
+        related_articles: Optional[List[Dict]] = None,
     ) -> str:
         """Generate full HTML page for an editorial article."""
-        date_formatted = datetime.strptime(article.date, "%Y-%m-%d").strftime("%B %d, %Y")
+        date_formatted = datetime.strptime(article.date, "%Y-%m-%d").strftime(
+            "%B %d, %Y"
+        )
 
         # Escape for HTML attributes
-        title_escaped = article.title.replace('"', '&quot;')
-        summary_escaped = article.summary.replace('"', '&quot;')
+        title_escaped = article.title.replace('"', "&quot;")
+        summary_escaped = article.summary.replace('"', "&quot;")
 
         # Build related articles HTML
         related_html = ""
         if related_articles:
             related_cards = []
             for rel in related_articles:
-                rel_date = datetime.strptime(rel['date'], "%Y-%m-%d").strftime("%B %d, %Y")
-                rel_title = rel.get('title', '').replace('<', '&lt;').replace('>', '&gt;')
-                rel_summary = (rel.get('summary', '') or '')[:100]
-                if len(rel.get('summary', '')) > 100:
-                    rel_summary += '...'
-                related_cards.append(f'''
+                rel_date = datetime.strptime(rel["date"], "%Y-%m-%d").strftime(
+                    "%B %d, %Y"
+                )
+                rel_title = (
+                    rel.get("title", "").replace("<", "&lt;").replace(">", "&gt;")
+                )
+                rel_summary = (rel.get("summary", "") or "")[:100]
+                if len(rel.get("summary", "")) > 100:
+                    rel_summary += "..."
+                related_cards.append(
+                    f"""
                 <a href="{rel.get('url', '')}" class="related-card">
                     <time datetime="{rel['date']}">{rel_date}</time>
                     <h4>{rel_title}</h4>
                     <p>{rel_summary}</p>
-                </a>''')
-            related_html = f'''
+                </a>"""
+                )
+            related_html = f"""
             <div class="related-articles">
                 <h3>More Analysis</h3>
                 <div class="related-grid">
                     {''.join(related_cards)}
                 </div>
-            </div>'''
+            </div>"""
 
-        return f'''<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -721,6 +842,19 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             --text-muted: #64748b;
             --border: #e2e8f0;
             --card-bg: #f8fafc;
+            --color-text: var(--text);
+            --color-muted: var(--text-muted);
+            --color-bg: var(--bg);
+            --color-border: var(--border);
+            --color-card-bg: var(--card-bg);
+        }}
+
+        body.dark-mode {{
+            --bg: #0a0a0a;
+            --text: #ffffff;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --card-bg: #18181b;
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
@@ -1070,9 +1204,15 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
     {get_theme_script()}
 </body>
-</html>'''
+</html>"""
 
-    def _call_groq(self, prompt: str, max_tokens: int = 800, max_retries: int = 1, task_complexity: str = 'complex') -> Optional[str]:
+    def _call_groq(
+        self,
+        prompt: str,
+        max_tokens: int = 800,
+        max_retries: int = 1,
+        task_complexity: str = "complex",
+    ) -> Optional[str]:
         """
         Call LLM API with smart provider routing based on task complexity.
 
@@ -1081,7 +1221,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         Note: Editorial defaults to 'complex' as it requires high-quality writing.
         """
-        if task_complexity == 'simple':
+        if task_complexity == "simple":
             # For simple tasks, prioritize free models to save quota
             result = self._call_opencode(prompt, max_tokens, max_retries)
             if result:
@@ -1128,7 +1268,9 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
             return self._call_groq_direct(prompt, max_tokens, max_retries)
 
-    def _call_google_ai(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+    def _call_google_ai(
+        self, prompt: str, max_tokens: int = 800, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
         if not self.google_key:
             logger.info("No Google AI API key available, skipping to next provider")
@@ -1136,14 +1278,16 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('google')
+        status = check_before_call("google")
 
         if not status.is_available:
             logger.warning(f"Google AI not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Use Gemini 2.5 Flash Lite - highest RPM (10) among free models
@@ -1152,35 +1296,37 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         for attempt in range(max_retries):
             try:
-                logger.info(f"Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
+                logger.info(
+                    f"Trying Google AI {model} (attempt {attempt + 1}/{max_retries})"
+                )
                 response = self.session.post(
                     url,
                     headers={
                         "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
                         "generationConfig": {
                             "maxOutputTokens": max_tokens,
-                            "temperature": 0.7
-                        }
+                            "temperature": 0.7,
+                        },
                     },
-                    timeout=60
+                    timeout=60,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter tracking
-                rate_limiter._last_call_time['google'] = time.time()
+                rate_limiter._last_call_time["google"] = time.time()
 
                 # Parse response
                 data = response.json()
-                candidates = data.get('candidates', [])
+                candidates = data.get("candidates", [])
                 if candidates:
-                    content = candidates[0].get('content', {})
-                    parts = content.get('parts', [])
+                    content = candidates[0].get("content", {})
+                    parts = content.get("parts", [])
                     if parts:
-                        text = parts[0].get('text', '')
+                        text = parts[0].get("text", "")
                         if text:
                             logger.info(f"Google AI success with {model}")
                             return text
@@ -1191,20 +1337,26 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     try:
                         error_data = response.json()
                         error_msg = str(error_data).lower()
-                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                        if (
+                            "quota" in error_msg
+                            or "exhausted" in error_msg
+                            or "daily" in error_msg
+                        ):
                             # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            mark_provider_exhausted("google", "daily quota exceeded")
                             return None
                     except Exception:
                         pass
 
                     # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 logger.error(f"Google AI failed: {e}")
@@ -1217,11 +1369,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         return None
 
     def _call_google_ai_structured(
-        self,
-        prompt: str,
-        schema: dict,
-        max_tokens: int = 2000,
-        max_retries: int = 1
+        self, prompt: str, schema: dict, max_tokens: int = 2000, max_retries: int = 1
     ) -> Optional[Dict]:
         """
         Call Google AI with structured output (guaranteed valid JSON).
@@ -1235,14 +1383,16 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('google')
+        status = check_before_call("google")
 
         if not status.is_available:
             logger.warning(f"Google AI not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Use Gemini 2.5 Flash Lite with structured output
@@ -1251,12 +1401,14 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         for attempt in range(max_retries):
             try:
-                logger.info(f"Trying Google AI {model} with structured output (attempt {attempt + 1}/{max_retries})")
+                logger.info(
+                    f"Trying Google AI {model} with structured output (attempt {attempt + 1}/{max_retries})"
+                )
                 response = self.session.post(
                     url,
                     headers={
                         "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
@@ -1264,32 +1416,36 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                             "maxOutputTokens": max_tokens,
                             "temperature": 0.7,
                             "response_mime_type": "application/json",
-                            "response_schema": schema
-                        }
+                            "response_schema": schema,
+                        },
                     },
-                    timeout=90  # Longer timeout for structured output
+                    timeout=90,  # Longer timeout for structured output
                 )
                 response.raise_for_status()
 
                 # Update rate limiter tracking
-                rate_limiter._last_call_time['google'] = time.time()
+                rate_limiter._last_call_time["google"] = time.time()
 
                 # Parse response - should be valid JSON
                 data = response.json()
-                candidates = data.get('candidates', [])
+                candidates = data.get("candidates", [])
                 if candidates:
-                    content = candidates[0].get('content', {})
-                    parts = content.get('parts', [])
+                    content = candidates[0].get("content", {})
+                    parts = content.get("parts", [])
                     if parts:
-                        text = parts[0].get('text', '')
+                        text = parts[0].get("text", "")
                         if text:
                             try:
                                 result = json.loads(text)
-                                logger.info(f"Google AI structured output success with {model}")
+                                logger.info(
+                                    f"Google AI structured output success with {model}"
+                                )
                                 return result
                             except json.JSONDecodeError as e:
                                 # Shouldn't happen with structured output, but fallback to repair
-                                logger.warning(f"Structured output JSON parse error (unexpected): {e}")
+                                logger.warning(
+                                    f"Structured output JSON parse error (unexpected): {e}"
+                                )
                                 repaired = self._repair_json(text)
                                 return json.loads(repaired)
 
@@ -1299,20 +1455,26 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     try:
                         error_data = response.json()
                         error_msg = str(error_data).lower()
-                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                        if (
+                            "quota" in error_msg
+                            or "exhausted" in error_msg
+                            or "daily" in error_msg
+                        ):
                             # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            mark_provider_exhausted("google", "daily quota exceeded")
                             return None
                     except Exception:
                         pass
 
                     # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 logger.error(f"Google AI structured output failed: {e}")
@@ -1324,7 +1486,9 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("Google AI structured output: Max retries exceeded")
         return None
 
-    def _call_openrouter(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+    def _call_openrouter(
+        self, prompt: str, max_tokens: int = 800, max_retries: int = 1
+    ) -> Optional[str]:
         """Call OpenRouter API with free models (primary)."""
         if not self.openrouter_key:
             logger.warning("No OpenRouter API key available")
@@ -1332,14 +1496,16 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('openrouter')
+        status = check_before_call("openrouter")
 
         if not status.is_available:
             logger.warning(f"OpenRouter not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Free models to try in order of preference
@@ -1352,41 +1518,52 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         for model in free_models:
             for attempt in range(max_retries):
                 try:
-                    logger.info(f"Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://openrouter.ai/api/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {self.openrouter_key}",
                             "Content-Type": "application/json",
                             "HTTP-Referer": "https://dailytrending.info",
-                            "X-Title": "DailyTrending.info"
+                            "X-Title": "DailyTrending.info",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('openrouter', dict(response.headers))
+                    rate_limiter.update_from_response_headers(
+                        "openrouter", dict(response.headers)
+                    )
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         logger.info(f"OpenRouter success with {model}")
                         return result
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
                         # Parse retry-after header if available
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     logger.warning(f"OpenRouter {model} failed: {e}")
@@ -1398,14 +1575,16 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("All OpenRouter models failed")
         return None
 
-    def _call_groq_direct(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+    def _call_groq_direct(
+        self, prompt: str, max_tokens: int = 800, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Groq API directly (fallback)."""
         if not self.groq_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('groq')
+        status = check_before_call("groq")
 
         if not status.is_available:
             logger.warning(f"Groq not available: {status.error}")
@@ -1427,31 +1606,40 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.groq_key}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "model": "llama-3.3-70b-versatile",
                         "messages": [{"role": "user", "content": prompt}],
                         "max_tokens": max_tokens,
-                        "temperature": 0.7
+                        "temperature": 0.7,
                     },
-                    timeout=60
+                    timeout=60,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter from response headers
-                rate_limiter.update_from_response_headers('groq', dict(response.headers))
+                rate_limiter.update_from_response_headers(
+                    "groq", dict(response.headers)
+                )
 
-                return response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                return (
+                    response.json()
+                    .get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content")
+                )
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
                     # Parse retry-after header if available
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 logger.error(f"Groq API error: {e}")
@@ -1463,22 +1651,26 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("Groq API: Max retries exceeded")
         return None
 
-    def _call_opencode(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+    def _call_opencode(
+        self, prompt: str, max_tokens: int = 800, max_retries: int = 1
+    ) -> Optional[str]:
         """Call OpenCode API with free models (glm-4.7-free, minimax-m2.1-free)."""
-        opencode_key = os.getenv('OPENCODE_API_KEY')
+        opencode_key = os.getenv("OPENCODE_API_KEY")
         if not opencode_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('opencode')
+        status = check_before_call("opencode")
 
         if not status.is_available:
             logger.warning(f"OpenCode not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenCode rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for OpenCode rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -1493,40 +1685,51 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    logger.info(f"Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://opencode.ai/zen/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {opencode_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('opencode', dict(response.headers))
-                    rate_limiter._last_call_time['opencode'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "opencode", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["opencode"] = time.time()
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         logger.info(f"OpenCode success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     logger.warning(f"OpenCode API error with {model}: {e}")
@@ -1538,22 +1741,26 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("All OpenCode models failed")
         return None
 
-    def _call_huggingface(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+    def _call_huggingface(
+        self, prompt: str, max_tokens: int = 800, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Hugging Face Inference API with free models."""
-        huggingface_key = os.getenv('HUGGINGFACE_API_KEY')
+        huggingface_key = os.getenv("HUGGINGFACE_API_KEY")
         if not huggingface_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('huggingface')
+        status = check_before_call("huggingface")
 
         if not status.is_available:
             logger.warning(f"Hugging Face not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -1572,49 +1779,57 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    logger.info(f"Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         f"https://api-inference.huggingface.co/models/{model}",
                         headers={
                             "Authorization": f"Bearer {huggingface_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "inputs": prompt,
                             "parameters": {
                                 "max_new_tokens": max_tokens,
                                 "temperature": 0.7,
-                                "return_full_text": False
-                            }
+                                "return_full_text": False,
+                            },
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('huggingface', dict(response.headers))
-                    rate_limiter._last_call_time['huggingface'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "huggingface", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["huggingface"] = time.time()
 
                     result = response.json()
                     if isinstance(result, list) and len(result) > 0:
-                        text = result[0].get('generated_text', '')
+                        text = result[0].get("generated_text", "")
                         if text:
                             logger.info(f"Hugging Face success with {model}")
                             return text
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     elif response.status_code == 503:
                         # Model is loading, wait and retry
-                        logger.warning(f"Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s...")
+                        logger.warning(
+                            f"Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s..."
+                        )
                         time.sleep(self.MAX_RETRY_WAIT)
                         continue
                     logger.warning(f"Hugging Face API error with {model}: {e}")
@@ -1626,15 +1841,17 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.warning("All Hugging Face models failed")
         return None
 
-    def _call_mistral(self, prompt: str, max_tokens: int = 800, max_retries: int = 1) -> Optional[str]:
+    def _call_mistral(
+        self, prompt: str, max_tokens: int = 800, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Mistral AI API - high quality free tier models."""
-        mistral_key = os.getenv('MISTRAL_API_KEY')
+        mistral_key = os.getenv("MISTRAL_API_KEY")
         if not mistral_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('mistral')
+        status = check_before_call("mistral")
 
         if not status.is_available:
             logger.warning(f"Mistral not available: {status.error}")
@@ -1659,40 +1876,51 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    logger.info(f"Trying Mistral {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying Mistral {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://api.mistral.ai/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {mistral_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('mistral', dict(response.headers))
-                    rate_limiter._last_call_time['mistral'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "mistral", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["mistral"] = time.time()
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         logger.info(f"Mistral success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     logger.warning(f"Mistral API error with {model}: {e}")
@@ -1709,8 +1937,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         # Fix missing commas between elements (common LLM error)
         # Pattern: }" followed by whitespace and then "{ or "[
         json_str = re.sub(r'"\s*\n\s*"', '",\n"', json_str)
-        json_str = re.sub(r'}\s*\n\s*{', '},\n{', json_str)
-        json_str = re.sub(r']\s*\n\s*\[', '],\n[', json_str)
+        json_str = re.sub(r"}\s*\n\s*{", "},\n{", json_str)
+        json_str = re.sub(r"]\s*\n\s*\[", "],\n[", json_str)
         json_str = re.sub(r'"\s*\n\s*{', '",\n{', json_str)
         json_str = re.sub(r'}\s*\n\s*"', '},\n"', json_str)
         json_str = re.sub(r'"\s*\n\s*\[', '",\n[', json_str)
@@ -1721,8 +1949,8 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         json_str = re.sub(r'"\s+("[\w]+"\s*:)', r'", \1', json_str)
 
         # Fix trailing commas before closing brackets
-        json_str = re.sub(r',\s*}', '}', json_str)
-        json_str = re.sub(r',\s*]', ']', json_str)
+        json_str = re.sub(r",\s*}", "}", json_str)
+        json_str = re.sub(r",\s*]", "]", json_str)
 
         return json_str
 
@@ -1733,7 +1961,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         try:
             # Try to find JSON in response
-            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            json_match = re.search(r"\{.*\}", response, re.DOTALL)
             if json_match:
                 json_str = json_match.group()
                 # First, try parsing as-is
@@ -1755,16 +1983,22 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                     s = match.group(0)
                     inner = s[1:-1]  # Remove quotes
                     # Only escape raw control characters, not already-escaped sequences
-                    inner = inner.replace('\n', '\\n')
-                    inner = inner.replace('\r', '\\r')
-                    inner = inner.replace('\t', '\\t')
+                    inner = inner.replace("\n", "\\n")
+                    inner = inner.replace("\r", "\\r")
+                    inner = inner.replace("\t", "\\t")
                     # Escape other control characters (except those already handled)
-                    inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                    inner = re.sub(
+                        r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
+                        lambda m: f"\\u{ord(m.group()):04x}",
+                        inner,
+                    )
                     return f'"{inner}"'
 
                 # Match quoted strings (handles escaped quotes inside)
                 try:
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
+                    sanitized = re.sub(
+                        r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str
+                    )
                     return json.loads(sanitized)
                 except (json.JSONDecodeError, Exception):
                     pass
@@ -1772,14 +2006,16 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 # Try repair + escape combination
                 try:
                     repaired = self._repair_json(json_str)
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired)
+                    sanitized = re.sub(
+                        r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired
+                    )
                     return json.loads(sanitized)
                 except (json.JSONDecodeError, Exception):
                     pass
 
                 # Last resort: strip all control chars except structural whitespace
                 try:
-                    stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', json_str)
+                    stripped = re.sub(r"[\x00-\x09\x0b\x0c\x0e-\x1f]", " ", json_str)
                     repaired = self._repair_json(stripped)
                     return json.loads(repaired)
                 except (json.JSONDecodeError, Exception):
@@ -1794,10 +2030,10 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         """Sanitize slug for URL usage."""
         # Convert to lowercase, replace spaces with dashes
         slug = slug.lower().strip()
-        slug = re.sub(r'[^a-z0-9\-]', '-', slug)
-        slug = re.sub(r'-+', '-', slug)  # Remove duplicate dashes
-        slug = slug.strip('-')
-        return slug[:60] or 'daily-editorial'  # Max 60 chars
+        slug = re.sub(r"[^a-z0-9\-]", "-", slug)
+        slug = re.sub(r"-+", "-", slug)  # Remove duplicate dashes
+        slug = slug.strip("-")
+        return slug[:60] or "daily-editorial"  # Max 60 chars
 
     def get_all_articles(self) -> List[Dict]:
         """Get metadata for all saved articles (for sitemap/index)."""
@@ -1815,7 +2051,7 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
                 logger.warning(f"Failed to load {metadata_file}: {e}")
 
         # Sort by date descending
-        articles.sort(key=lambda x: x.get('date', ''), reverse=True)
+        articles.sort(key=lambda x: x.get("date", ""), reverse=True)
         return articles
 
     def regenerate_all_article_pages(self, design: Optional[Dict] = None) -> int:
@@ -1845,27 +2081,29 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
                 # Reconstruct EditorialArticle from metadata
                 article = EditorialArticle(
-                    title=metadata.get('title', ''),
-                    slug=metadata.get('slug', ''),
-                    date=metadata.get('date', ''),
-                    summary=metadata.get('summary', ''),
-                    content=metadata.get('content', ''),
-                    word_count=metadata.get('word_count', 0),
-                    top_stories=metadata.get('top_stories', []),
-                    keywords=metadata.get('keywords', []),
-                    mood=metadata.get('mood', 'informative'),
-                    url=metadata.get('url', '')
+                    title=metadata.get("title", ""),
+                    slug=metadata.get("slug", ""),
+                    date=metadata.get("date", ""),
+                    summary=metadata.get("summary", ""),
+                    content=metadata.get("content", ""),
+                    word_count=metadata.get("word_count", 0),
+                    top_stories=metadata.get("top_stories", []),
+                    keywords=metadata.get("keywords", []),
+                    mood=metadata.get("mood", "informative"),
+                    url=metadata.get("url", ""),
                 )
 
                 # Get related articles for internal linking
-                related_articles = self._get_related_articles(article.date, article.slug, limit=3)
+                related_articles = self._get_related_articles(
+                    article.date, article.slug, limit=3
+                )
 
                 # Generate new HTML
                 html = self._generate_article_html(article, tokens, related_articles)
 
                 # Save to index.html in same directory as metadata.json
                 article_dir = metadata_file.parent
-                (article_dir / "index.html").write_text(html, encoding='utf-8')
+                (article_dir / "index.html").write_text(html, encoding="utf-8")
 
                 logger.info(f"Regenerated: {article.title}")
                 count += 1
@@ -1876,14 +2114,19 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
         logger.info(f"Regenerated {count} article pages")
         return count
 
-    def _get_related_articles(self, current_date: str, current_slug: str, limit: int = 3) -> List[Dict]:
+    def _get_related_articles(
+        self, current_date: str, current_slug: str, limit: int = 3
+    ) -> List[Dict]:
         """Get related articles for internal linking (excludes current article)."""
         all_articles = self.get_all_articles()
         related = []
 
         for article in all_articles:
             # Skip current article
-            if article.get('date') == current_date and article.get('slug') == current_slug:
+            if (
+                article.get("date") == current_date
+                and article.get("slug") == current_slug
+            ):
                 continue
             related.append(article)
             if len(related) >= limit:
@@ -1912,25 +2155,34 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
         # Calculate stats
         total_articles = len(articles)
-        total_words = sum(a.get('word_count', 0) for a in articles)
+        total_words = sum(a.get("word_count", 0) for a in articles)
         reading_hours = round(total_words / 200 / 60, 1)  # 200 wpm
 
         # Get unique moods for filter
-        moods = sorted(set(a.get('mood', 'informative') for a in articles))
+        moods = sorted(set(a.get("mood", "informative") for a in articles))
 
         # Escape article data for JSON embedding
         # The data comes from our own metadata files (trusted), but we still escape for HTML safety
-        articles_json = json.dumps([{
-            'title': a.get('title', '').replace('<', '&lt;').replace('>', '&gt;'),
-            'date': a.get('date', ''),
-            'url': a.get('url', ''),
-            'summary': (a.get('summary', '') or '').replace('<', '&lt;').replace('>', '&gt;'),
-            'mood': a.get('mood', 'informative'),
-            'word_count': a.get('word_count', 0),
-            'keywords': a.get('keywords', [])
-        } for a in articles])
+        articles_json = json.dumps(
+            [
+                {
+                    "title": a.get("title", "")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;"),
+                    "date": a.get("date", ""),
+                    "url": a.get("url", ""),
+                    "summary": (a.get("summary", "") or "")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;"),
+                    "mood": a.get("mood", "informative"),
+                    "word_count": a.get("word_count", 0),
+                    "keywords": a.get("keywords", []),
+                }
+                for a in articles
+            ]
+        )
 
-        html = f'''<!DOCTYPE html>
+        html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1982,6 +2234,19 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
             --text-muted: #64748b;
             --border: #e2e8f0;
             --card-bg: #f8fafc;
+            --color-text: var(--text);
+            --color-muted: var(--text-muted);
+            --color-bg: var(--bg);
+            --color-border: var(--border);
+            --color-card-bg: var(--card-bg);
+        }}
+
+        body.dark-mode {{
+            --bg: #0a0a0a;
+            --text: #ffffff;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --card-bg: #18181b;
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
@@ -2947,11 +3212,11 @@ DATE: {datetime.now().strftime('%B %d, %Y')}"""
 
     {get_theme_script()}
 </body>
-</html>'''
+</html>"""
 
         # Save index
         self.articles_dir.mkdir(parents=True, exist_ok=True)
-        (self.articles_dir / "index.html").write_text(html, encoding='utf-8')
+        (self.articles_dir / "index.html").write_text(html, encoding="utf-8")
 
         logger.info(f"Generated enhanced articles index with {total_articles} articles")
         return html
@@ -2964,12 +3229,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--regenerate-html",
         action="store_true",
-        help="Regenerate HTML for all existing articles (updates header/footer without re-running AI)"
+        help="Regenerate HTML for all existing articles (updates header/footer without re-running AI)",
     )
     parser.add_argument(
         "--regenerate-index",
         action="store_true",
-        help="Regenerate the articles index page"
+        help="Regenerate the articles index page",
     )
 
     args = parser.parse_args()

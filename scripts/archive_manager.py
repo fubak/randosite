@@ -19,7 +19,7 @@ from shared_components import (
     build_footer,
     get_header_styles,
     get_footer_styles,
-    get_theme_script
+    get_theme_script,
 )
 
 
@@ -56,7 +56,7 @@ class ArchiveManager:
         archive_path.mkdir(parents=True, exist_ok=True)
 
         # Copy the current index.html and add canonical URL
-        with open(current_index, 'r', encoding='utf-8') as f:
+        with open(current_index, "r", encoding="utf-8") as f:
             html_content = f.read()
 
         # Add canonical URL for the archive page
@@ -66,20 +66,16 @@ class ArchiveManager:
         # Replace existing canonical or add new one
         if '<link rel="canonical"' in html_content:
             html_content = re.sub(
-                r'<link rel="canonical"[^>]*>',
-                canonical_tag,
-                html_content
+                r'<link rel="canonical"[^>]*>', canonical_tag, html_content
             )
         else:
             # Insert after <head>
             html_content = html_content.replace(
-                '<head>',
-                f'<head>\n    {canonical_tag}',
-                1
+                "<head>", f"<head>\n    {canonical_tag}", 1
             )
 
         # Write the modified HTML
-        with open(archive_path / "index.html", 'w', encoding='utf-8') as f:
+        with open(archive_path / "index.html", "w", encoding="utf-8") as f:
             f.write(html_content)
 
         # Save metadata
@@ -115,12 +111,14 @@ class ArchiveManager:
                     except json.JSONDecodeError:
                         pass
 
-                archives.append({
-                    "path": str(item),
-                    "folder": item.name,
-                    "url": f"./{item.name}/",
-                    **metadata
-                })
+                archives.append(
+                    {
+                        "path": str(item),
+                        "folder": item.name,
+                        "url": f"./{item.name}/",
+                        **metadata,
+                    }
+                )
 
         return archives
 
@@ -155,17 +153,17 @@ class ArchiveManager:
     def generate_index(self) -> str:
         """Generate the archive index page with consistent header/footer."""
         archives = self.list_archives()
-        date_str = datetime.now().strftime('%B %d, %Y')
+        date_str = datetime.now().strftime("%B %d, %Y")
 
         # Build archive cards
         cards_html = []
         for archive in archives:
-            date = archive.get('date', 'Unknown')
-            design = archive.get('design', {})
-            theme = design.get('theme_name', 'Auto-generated')
-            headline = design.get('headline', 'Trending')
-            accent = design.get('color_accent', '#6366f1')
-            url = archive.get('url', '#')
+            date = archive.get("date", "Unknown")
+            design = archive.get("design", {})
+            theme = design.get("theme_name", "Auto-generated")
+            headline = design.get("headline", "Trending")
+            accent = design.get("color_accent", "#6366f1")
+            url = archive.get("url", "#")
 
             # Parse date for display
             try:
@@ -228,6 +226,15 @@ class ArchiveManager:
             --color-muted: #71717a;
             --color-card-bg: #ffffff;
             --color-border: #e4e4e7;
+        }}
+
+        /* Dark mode */
+        body.dark-mode {{
+            --color-bg: #0a0a0a;
+            --color-text: #ffffff;
+            --color-muted: #a1a1aa;
+            --color-card-bg: #18181b;
+            --color-border: #27272a;
         }}
 
         * {{
@@ -469,7 +476,9 @@ def main():
             archives = manager.list_archives()
             print(f"\nFound {len(archives)} archives:")
             for arch in archives:
-                print(f"  {arch['folder']}: {arch.get('design', {}).get('theme_name', 'Unknown')}")
+                print(
+                    f"  {arch['folder']}: {arch.get('design', {}).get('theme_name', 'Unknown')}"
+                )
         elif command == "cleanup":
             days = int(sys.argv[2]) if len(sys.argv) > 2 else 30
             manager.cleanup_old(keep_days=days)
@@ -487,7 +496,9 @@ def main():
 
         if archives:
             print(f"  Latest: {archives[0]['folder']}")
-            oldest = archives[-1]['folder'] if len(archives) > 1 else archives[0]['folder']
+            oldest = (
+                archives[-1]["folder"] if len(archives) > 1 else archives[0]["folder"]
+            )
             print(f"  Oldest: {oldest}")
 
 

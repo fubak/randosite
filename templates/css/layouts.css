@@ -4,7 +4,7 @@
 .top-stories {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
+    gap: var(--card-gap, 1.25rem);
 }
 
 body.layout-split .top-stories {
@@ -82,7 +82,7 @@ body.layout-split .top-stories {
 }
 
 .top-stories .story-content {
-    padding: 0.75rem;
+    padding: var(--card-padding, 0.75rem);
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -363,9 +363,48 @@ body.layout-split .top-stories {
     gap: var(--card-gap);
 }
 
-/* View list mode - already in list format for top stories */
+/* View list mode */
+body.view-list .top-stories,
 body.view-list .stories-grid {
     grid-template-columns: 1fr;
+}
+
+body.view-list .top-stories article.story-card.featured {
+    grid-column: 1;
+    grid-row: auto;
+}
+
+body.view-list .top-stories .story-wrapper,
+body.view-list .stories-grid .story-wrapper {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+body.view-list .top-stories .story-media,
+body.view-list .stories-grid .story-media {
+    min-height: 120px;
+    height: 120px;
+}
+
+body.view-list .top-stories .story-image,
+body.view-list .stories-grid .story-image {
+    height: 120px;
+    min-height: 120px;
+}
+
+body.view-list .top-stories article.story-card.featured .story-media,
+body.view-list .top-stories article.story-card.featured .story-image {
+    min-height: 120px;
+    height: 120px;
+}
+
+@media (max-width: 640px) {
+    body.view-list .top-stories .story-wrapper,
+    body.view-list .stories-grid .story-wrapper {
+        grid-template-columns: 1fr;
+    }
 }
 
 .stories-grid article.story-card {
