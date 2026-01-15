@@ -356,7 +356,7 @@ body.layout-split .top-stories {
 /* Grid Layouts */
 .stories-grid {
     display: grid;
-    grid-template-columns: repeat(var(--category-columns, 4), minmax(220px, 1fr));
+    grid-template-columns: repeat(var(--category-columns, 4), minmax(0, 1fr));
     gap: var(--card-gap);
 }
 
