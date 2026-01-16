@@ -42,6 +42,7 @@ from config import (
     DEDUP_SIMILARITY_THRESHOLD,
     DEDUP_SEMANTIC_THRESHOLD,
     CMMC_KEYWORDS,
+    CMMC_LINKEDIN_PROFILES,
     setup_logging,
 )
 
@@ -1433,6 +1434,57 @@ class TrendCollector:
             time.sleep(0.2)
 
         logger.info(f"CMMC collector: {len(trends)} total ({reddit_count} from Reddit)")
+
+        # Collect from LinkedIn influencers (if configured)
+        linkedin_count = 0
+        if CMMC_LINKEDIN_PROFILES:
+            linkedin_trends = self._collect_cmmc_linkedin()
+            trends.extend(linkedin_trends)
+            linkedin_count = len(linkedin_trends)
+            logger.info(f"CMMC LinkedIn: {linkedin_count} posts from influencers")
+
+        logger.info(
+            f"CMMC total: {len(trends)} "
+            f"(RSS: {len(trends) - reddit_count - linkedin_count}, "
+            f"Reddit: {reddit_count}, LinkedIn: {linkedin_count})"
+        )
+        return trends
+
+    def _collect_cmmc_linkedin(self) -> List[Trend]:
+        """Collect posts from key CMMC influencers on LinkedIn via Apify."""
+        trends = []
+
+        try:
+            from fetch_linkedin_posts import (
+                fetch_linkedin_posts,
+                linkedin_posts_to_trends,
+            )
+
+            # Fetch LinkedIn posts
+            posts = fetch_linkedin_posts(CMMC_LINKEDIN_PROFILES)
+
+            # Convert to trend format
+            trend_dicts = linkedin_posts_to_trends(posts)
+
+            # Convert to Trend objects
+            for td in trend_dicts:
+                trend = Trend(
+                    title=td["title"],
+                    source=td["source"],
+                    url=td.get("url"),
+                    description=td.get("description"),
+                    category=td.get("category"),
+                    score=td.get("score", 1.5),
+                    keywords=td.get("keywords"),
+                    image_url=td.get("image_url"),
+                )
+                trends.append(trend)
+
+        except ImportError:
+            logger.debug("LinkedIn scraping not available (apify-client not installed)")
+        except Exception as e:
+            logger.warning(f"CMMC LinkedIn collection error: {e}")
+
         return trends
 
     def _clean_html(self, text: str) -> str:

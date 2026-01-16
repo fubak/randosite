@@ -66,6 +66,42 @@ LIMITS = {
 # CMMC WATCH KEYWORDS
 # ============================================================================
 
+# ============================================================================
+# CMMC LINKEDIN INFLUENCERS
+# ============================================================================
+
+# Key CMMC influencers to track on LinkedIn
+# Stay within free tier: max 10 profiles, checked once daily
+CMMC_LINKEDIN_PROFILES = [
+    # === Government Officials ===
+    # Katie Arrington - DoD CIO (former CISO, original CMMC architect)
+    "https://www.linkedin.com/in/katie-arrington-a6949425/",
+    # Stacy Bostjanick - DoD CIO Chief DIB Cybersecurity (CMMC implementation lead)
+    "https://www.linkedin.com/in/stacy-bostjanick-a3b67173/",
+    # Matthew Travis - Cyber-AB CEO (former CISA Deputy Director)
+    "https://www.linkedin.com/in/matthewtravisdc/",
+    # === Summit 7 Personnel ===
+    # Scott Edwards - Summit 7 CEO & President
+    "https://www.linkedin.com/in/mscottedwards/",
+    # Jacob Horne - Summit 7 Chief Security Evangelist (former NSA analyst)
+    "https://www.linkedin.com/in/jacob-evan-horne/",
+    # Daniel Akridge - Summit 7 Director of Engagement, hosts "That CMMC Show"
+    "https://www.linkedin.com/in/danielakridge/",
+    # Jacob Hill - Summit 7 Director of Cybersecurity, GRC Academy founder
+    "https://www.linkedin.com/in/jacobrhill/",
+    # === Industry Experts ===
+    # Amira Armond - Kieri Solutions (C3PAO), cmmcaudit.org editor, C3PAO Forum vice chair
+    "https://www.linkedin.com/in/amira-armond/",
+]
+
+# LinkedIn scraper limits (to stay within Apify free tier)
+LINKEDIN_MAX_PROFILES = 10  # Max profiles per run
+LINKEDIN_MAX_POSTS_PER_PROFILE = 5  # Max posts per profile
+
+# ============================================================================
+# CMMC WATCH KEYWORDS
+# ============================================================================
+
 # Keywords for filtering CMMC-relevant content from RSS feeds
 # Broader keywords to capture more defense/federal cybersecurity content
 CMMC_KEYWORDS = [
