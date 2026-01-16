@@ -551,6 +551,19 @@ def get_cmmc_styles(colors: Dict, fonts: Dict) -> str:
         text-transform: uppercase;
     }}
 
+    .story-date {{
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        background: rgba(0, 0, 0, 0.6);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.2rem;
+        font-family: var(--font-secondary);
+    }}
+
     .story-content {{
         padding: var(--card-padding, 1rem);
     }}
@@ -799,6 +812,24 @@ def build_cmmc_page(trends: List[Dict], images: List[Dict], design: Dict) -> str
             (trend.get("summary") or trend.get("description") or "")[:150]
         )
 
+        # Format publication date as MM/YYYY
+        pub_date = ""
+        timestamp = trend.get("timestamp")
+        if timestamp:
+            try:
+                if isinstance(timestamp, datetime):
+                    # Already a datetime object (from asdict())
+                    pub_date = timestamp.strftime("%m/%Y")
+                elif isinstance(timestamp, str):
+                    # Try ISO format (handles both 'T' and space separators)
+                    dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                    pub_date = dt.strftime("%m/%Y")
+                elif isinstance(timestamp, (int, float)):
+                    dt = datetime.fromtimestamp(timestamp)
+                    pub_date = dt.strftime("%m/%Y")
+            except (ValueError, TypeError, OSError):
+                pass
+
         # Get image for story
         story_image = trend.get("image_url", "")
         if not story_image and images:
@@ -809,11 +840,15 @@ def build_cmmc_page(trends: List[Dict], images: List[Dict], design: Dict) -> str
                 if img.get("id"):
                     used_image_ids.add(img["id"])
 
+        # Build date element if we have a date
+        date_html = f'<span class="story-date">{pub_date}</span>' if pub_date else ""
+
         card = f"""
         <article class="story-card">
             <div class="story-media">
                 {"<img class='story-image' src='" + html_module.escape(story_image) + "' alt='' loading='lazy'>" if story_image else "<div class='story-image' style='background: linear-gradient(135deg, #1e3a5f, #0d1b2a);'></div>"}
                 <span class="source-badge">{source}</span>
+                {date_html}
             </div>
             <div class="story-content">
                 <h3 class="story-title"><a href="{url}" target="_blank" rel="noopener">{title}</a></h3>

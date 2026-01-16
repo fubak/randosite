@@ -1367,7 +1367,72 @@ class TrendCollector:
 
             time.sleep(0.15)
 
-        logger.info(f"CMMC collector found {len(trends)} relevant stories")
+        logger.info(f"CMMC collector found {len(trends)} stories from RSS feeds")
+
+        # Collect from CMMC-related Reddit communities
+        cmmc_subreddits = [
+            ("CMMC", "https://www.reddit.com/r/CMMC/.rss"),
+            ("NISTControls", "https://www.reddit.com/r/NISTControls/.rss"),
+            ("FederalEmployees", "https://www.reddit.com/r/FederalEmployees/.rss"),
+        ]
+
+        reddit_count = 0
+        for name, url in cmmc_subreddits:
+            try:
+                response = self.session.get(
+                    url,
+                    timeout=15,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (compatible; DailyTrending/1.0)"
+                    },
+                )
+                response.raise_for_status()
+
+                feed = feedparser.parse(response.content)
+
+                for entry in feed.entries[:15]:  # Get top 15 posts per subreddit
+                    title = entry.get("title", "").strip()
+                    description = entry.get("summary", "")
+
+                    # Clean up title
+                    title = re.sub(r"\s+", " ", title)
+
+                    if not title or len(title) < 10:
+                        continue
+
+                    # For CMMC and NISTControls subreddits, include all posts
+                    # For others, apply keyword filter
+                    include_post = False
+                    if name in ["CMMC", "NISTControls"]:
+                        include_post = True  # These are highly relevant by default
+                    else:
+                        # Check if content matches CMMC keywords
+                        content_lower = (title + " " + description).lower()
+                        include_post = any(
+                            keyword.lower() in content_lower
+                            for keyword in CMMC_KEYWORDS
+                        )
+
+                    if include_post:
+                        trend = Trend(
+                            title=title,
+                            source=f"cmmc_reddit_{name.lower()}",
+                            url=entry.get("link"),
+                            description=self._clean_html(description),
+                            category="cmmc",
+                            score=1.4,  # Reddit community content
+                            image_url=self._extract_image_from_entry(entry),
+                        )
+                        trends.append(trend)
+                        reddit_count += 1
+
+            except Exception as e:
+                logger.warning(f"CMMC Reddit r/{name} error: {e}")
+                continue
+
+            time.sleep(0.2)
+
+        logger.info(f"CMMC collector: {len(trends)} total ({reddit_count} from Reddit)")
         return trends
 
     def _clean_html(self, text: str) -> str:
