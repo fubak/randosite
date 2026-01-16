@@ -1247,10 +1247,16 @@ class Pipeline:
             else self.design or {}
         )
 
+        # Convert images to dict format
+        images_data = [
+            asdict(img) if hasattr(img, "__dataclass_fields__") else img
+            for img in self.images
+        ]
+
         # Generate the page
         result = generate_cmmc_page(
             trends=trends_data,
-            images=self.images,
+            images=images_data,
             design=design_data,
             output_dir=self.public_dir,
         )
