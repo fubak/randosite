@@ -1,4 +1,4 @@
-# CMMC Watch - Architecture Documentation
+# DailyTrending.info - Architecture Documentation
 
 **Version:** 1.0.0
 **Last Updated:** January 7, 2026
@@ -22,7 +22,7 @@
 
 ## System Overview
 
-CMMC Watch is a **fully autonomous trend aggregation system** that regenerates daily at 6 AM EST via GitHub Actions. It collects CMMC compliance and Defense Industrial Base news from trusted federal and cybersecurity sources, generates unique AI-driven designs, and deploys to GitHub Pages at zero cost.
+DailyTrending.info is a **fully autonomous trend aggregation system** that regenerates daily at 6 AM EST via GitHub Actions. It collects trending tech, science, and world news from 15+ sources, generates unique AI-driven designs, and deploys to GitHub Pages at zero cost.
 
 ### Key Characteristics
 

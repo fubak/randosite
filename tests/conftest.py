@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pytest configuration and fixtures for CMMC Watch tests.
+Pytest configuration and fixtures for DailyTrending.info tests.
 """
 
 import sys

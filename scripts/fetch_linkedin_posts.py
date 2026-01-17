@@ -344,7 +344,7 @@ def test_connection() -> bool:
 
 if __name__ == "__main__":
     # Test mode
-    print("LinkedIn Post Scraper for CMMC Watch")
+    print("LinkedIn Post Scraper for DailyTrending.info")
     print("=" * 40)
 
     if test_connection():

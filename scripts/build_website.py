@@ -522,7 +522,7 @@ class WebsiteBuilder:
 
     def _build_page_title(self) -> str:
         """Build SEO-optimized page title - static for homepage to build domain authority."""
-        return "CMMC Watch | CMMC & Compliance News Aggregator"
+        return "DailyTrending.info | AI-Curated Tech & World News Aggregator"
 
     def _build_meta_description(self) -> str:
         """Build SEO-optimized meta description with consistent keywords."""
@@ -540,13 +540,13 @@ class WebsiteBuilder:
         website_schema = {
             "@context": "https://schema.org",
             "@type": "WebSite",
-            "name": "CMMC Watch",
-            "alternateName": "CMMC Watch",
-            "url": "https://cmmcwatch.com/",
-            "description": "CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator, updated daily",
+            "name": "DailyTrending.info",
+            "alternateName": "Daily Trending",
+            "url": "https://dailytrending.info/",
+            "description": "AI-curated tech, science, and world news aggregator, updated daily",
             "potentialAction": {
                 "@type": "SearchAction",
-                "target": "https://cmmcwatch.com/?q={search_term_string}",
+                "target": "https://dailytrending.info/?q={search_term_string}",
                 "query-input": "required name=search_term_string",
             },
             "sameAs": ["https://twitter.com/bradshannon"],
@@ -597,7 +597,7 @@ class WebsiteBuilder:
             "@type": "CollectionPage",
             "name": f"Daily Trending Topics - {self.ctx.generated_at}",
             "description": self._build_meta_description(),
-            "url": "https://cmmcwatch.com/",
+            "url": "https://dailytrending.info/",
             "datePublished": datetime.now().isoformat(),
             "mainEntity": {
                 "@type": "ItemList",
@@ -613,26 +613,26 @@ class WebsiteBuilder:
             "mainEntity": [
                 {
                     "@type": "Question",
-                    "name": "How often is CMMC Watch updated?",
+                    "name": "How often is DailyTrending.info updated?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "CMMC Watch regenerates automatically every day at 6 AM EST via GitHub Actions, aggregating the latest CMMC and compliance news from trusted federal and cybersecurity sources.",
+                        "text": "DailyTrending.info regenerates automatically every day at 6 AM EST via GitHub Actions, aggregating the latest trending stories from 12+ sources including Hacker News, NPR, BBC, Reddit, and GitHub.",
                     },
                 },
                 {
                     "@type": "Question",
-                    "name": "What sources does CMMC Watch aggregate?",
+                    "name": "What sources does DailyTrending.info aggregate?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "We aggregate from trusted federal and cybersecurity sources including FedScoop, DefenseScoop, Federal News Network, Nextgov, Breaking Defense, Defense One, Defense News, ExecutiveGov, SecurityWeek, Cyberscoop, and GovCon Wire.",
+                        "text": "We aggregate from Hacker News, Reddit, NPR, BBC, GitHub Trending, Lobsters, Product Hunt, ArXiv, Wikipedia, and various tech and news RSS feeds.",
                     },
                 },
                 {
                     "@type": "Question",
-                    "name": "Is CMMC Watch content AI-generated?",
+                    "name": "Is DailyTrending.info content AI-generated?",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "Headlines and summaries are sourced from original publishers. Our AI curates, ranks, and categorizes CMMC-relevant content by topic priority.",
+                        "text": "Headlines and summaries come from original sources. Our AI curates, ranks, and categorizes content. Daily editorial articles provide AI-generated analysis.",
                     },
                 },
             ],
@@ -753,7 +753,7 @@ class WebsiteBuilder:
             "page_title": self._build_page_title(),
             "meta_description": self._build_meta_description(),
             "keywords_str": ", ".join(self.ctx.keywords[:15]),
-            "canonical_url": "https://cmmcwatch.com/",
+            "canonical_url": "https://dailytrending.info/",
             "date_str": self.ctx.generated_at,
             "date_iso": datetime.now().strftime("%Y-%m-%d"),
             "last_modified": datetime.now().isoformat(),
@@ -794,8 +794,8 @@ class WebsiteBuilder:
             "word_cloud": self.keyword_freq,
             "categories": categories,
             # SEO - Static branded OG image for consistent social sharing
-            "og_image_tags": '<meta property="og:image" content="https://cmmcwatch.com/og-image.png">\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n    <meta property="og:image:type" content="image/png">',
-            "twitter_image_tags": '<meta name="twitter:image" content="https://cmmcwatch.com/twitter-image.png">\n    <meta name="twitter:card" content="summary_large_image">',
+            "og_image_tags": '<meta property="og:image" content="https://dailytrending.info/og-image.png">\n    <meta property="og:image:width" content="1200">\n    <meta property="og:image:height" content="630">\n    <meta property="og:image:type" content="image/png">',
+            "twitter_image_tags": '<meta name="twitter:image" content="https://dailytrending.info/twitter-image.png">\n    <meta name="twitter:card" content="summary_large_image">',
             "structured_data": self._build_structured_data(),
         }
 

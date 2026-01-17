@@ -109,7 +109,7 @@ def generate_rss_feed(
     ET.SubElement(channel, "pubDate").text = build_date
 
     # Generator
-    ET.SubElement(channel, "generator").text = "CMMC Watch Pipeline"
+    ET.SubElement(channel, "generator").text = "DailyTrending.info Pipeline"
 
     # Atom self-link for feed validation
     atom_link = ET.SubElement(channel, "{http://www.w3.org/2005/Atom}link")
@@ -189,7 +189,7 @@ def generate_rss_feed(
 
         # Dublin Core creator
         ET.SubElement(item, "{http://purl.org/dc/elements/1.1/}creator").text = (
-            "CMMC Watch"
+            "DailyTrending.info"
         )
 
         # Full content (content:encoded) with rich HTML

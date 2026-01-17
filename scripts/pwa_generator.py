@@ -21,9 +21,9 @@ def generate_manifest() -> str:
         JSON string for manifest.json
     """
     manifest = {
-        "name": "CMMC Watch",
-        "short_name": "CMMCWatch",
-        "description": "Daily CMMC, NIST 800-171, and federal cybersecurity compliance news aggregator",
+        "name": "DailyTrending.info",
+        "short_name": "DailyTrend",
+        "description": "AI-curated tech, science, and world news aggregated daily from 12+ sources",
         "start_url": "/",
         "display": "standalone",
         "background_color": "#0a0a0a",
@@ -77,10 +77,10 @@ def generate_service_worker() -> str:
     """
     cache_version = datetime.now().strftime("%Y%m%d")
 
-    return f"""// CMMC Watch Service Worker
+    return f"""// DailyTrending.info Service Worker
 // Cache version: {cache_version}
 
-const CACHE_NAME = 'cmmcwatch-v{cache_version}';
+const CACHE_NAME = 'dailytrending-v{cache_version}';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache immediately
@@ -176,7 +176,7 @@ def generate_offline_page() -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - CMMC Watch</title>
+    <title>Offline - DailyTrending.info</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -226,7 +226,7 @@ def generate_offline_page() -> str:
         <h1>You're Offline</h1>
         <p>
             It looks like you've lost your internet connection.
-            CMMC Watch needs a connection to show you the latest news.
+            DailyTrending.info needs a connection to show you the latest news.
         </p>
         <button class="retry-btn" onclick="location.reload()">
             Try Again

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Configuration settings for CMMC Watch pipeline.
+Configuration settings for DailyTrending.info pipeline.
 
 Centralizes all magic numbers, timeouts, and environment-specific settings.
 """
@@ -298,11 +298,11 @@ ARCHIVE_SUBDIR = "archive"
 # RSS FEED SETTINGS
 # ============================================================================
 
-RSS_FEED_TITLE = "CMMC Watch"
+RSS_FEED_TITLE = "DailyTrending.info"
 RSS_FEED_DESCRIPTION = (
-    "CMMC compliance, certification, and Defense Industrial Base news aggregated daily"
+    "AI-curated tech, science, and world news aggregated daily from 12+ sources"
 )
-RSS_FEED_LINK = "https://cmmcwatch.com"
+RSS_FEED_LINK = "https://dailytrending.info"
 RSS_FEED_MAX_ITEMS = 50
 
 # ============================================================================
@@ -313,7 +313,7 @@ KEYWORD_HISTORY_FILE = DATA_DIR / "keyword_history.json"
 KEYWORD_HISTORY_DAYS = 30  # How many days to keep keyword history
 
 
-def setup_logging(name: str = "cmmcwatch") -> logging.Logger:
+def setup_logging(name: str = "dailytrending") -> logging.Logger:
     """Configure and return a logger instance."""
     logger = logging.getLogger(name)
 

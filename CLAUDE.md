@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-Claude Code guidance for CMMC Watch - CMMC compliance and Defense Industrial Base news aggregator regenerating daily at 6 AM EST via GitHub Actions.
+Claude Code guidance for DailyTrending.info - AI-curated tech, science, and world news aggregator regenerating daily at 6 AM EST via GitHub Actions.
 
-**Live:** https://cmmcwatch.com
+**Live:** https://dailytrending.info
 
 ## Commands
 
@@ -55,7 +55,7 @@ Required in `.env` or GitHub Secrets:
 
 ## User Features
 
-**Saved Stories:** localStorage key `cmmcwatch_saved` | Client-side only | Bookmark buttons
+**Saved Stories:** localStorage key `dailytrending_saved` | Client-side only | Bookmark buttons
 
 **Topics:** `/tech/` (HackerNews, Lobsters, GitHub, tech RSS) | `/world/` (news RSS, Wikipedia) | `/social/` (Reddit, viral)
 

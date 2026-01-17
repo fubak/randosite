@@ -24,6 +24,7 @@ logger = setup_logging("media_of_day")
 @dataclass
 class ImageOfTheDay:
     """Represents the daily featured image."""
+
     title: str
     url: str
     url_hd: Optional[str]
@@ -37,6 +38,7 @@ class ImageOfTheDay:
 @dataclass
 class VideoOfTheDay:
     """Represents the daily featured video."""
+
     title: str
     description: str
     thumbnail_url: str
@@ -54,9 +56,9 @@ class MediaOfDayFetcher:
 
     def __init__(self):
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'DailyTrending.info/1.0 (https://dailytrending.info)'
-        })
+        self.session.headers.update(
+            {"User-Agent": "DailyTrending/1.0 (https://dailytrending.info)"}
+        )
         self.image_of_day: Optional[ImageOfTheDay] = None
         self.video_of_day: Optional[VideoOfTheDay] = None
 
@@ -94,29 +96,31 @@ class MediaOfDayFetcher:
         """
         try:
             # Use demo key or environment variable
-            api_key = os.getenv('NASA_API_KEY', 'DEMO_KEY')
+            api_key = os.getenv("NASA_API_KEY", "DEMO_KEY")
             url = f"https://api.nasa.gov/planetary/apod?api_key={api_key}"
 
-            response = self.session.get(url, timeout=TIMEOUTS.get('default', 15))
+            response = self.session.get(url, timeout=TIMEOUTS.get("default", 15))
             response.raise_for_status()
 
             data = response.json()
 
             # APOD sometimes returns videos instead of images
-            media_type = data.get('media_type', 'image')
-            if media_type != 'image':
-                logger.info(f"NASA APOD is a {media_type} today, skipping for image section")
+            media_type = data.get("media_type", "image")
+            if media_type != "image":
+                logger.info(
+                    f"NASA APOD is a {media_type} today, skipping for image section"
+                )
                 return None
 
             return ImageOfTheDay(
-                title=data.get('title', 'Astronomy Picture of the Day'),
-                url=data.get('url', ''),
-                url_hd=data.get('hdurl'),
-                explanation=data.get('explanation', ''),
-                date=data.get('date', datetime.now().strftime('%Y-%m-%d')),
-                copyright=data.get('copyright'),
-                source='nasa_apod',
-                source_url='https://apod.nasa.gov/apod/astropix.html'
+                title=data.get("title", "Astronomy Picture of the Day"),
+                url=data.get("url", ""),
+                url_hd=data.get("hdurl"),
+                explanation=data.get("explanation", ""),
+                date=data.get("date", datetime.now().strftime("%Y-%m-%d")),
+                copyright=data.get("copyright"),
+                source="nasa_apod",
+                source_url="https://apod.nasa.gov/apod/astropix.html",
             )
 
         except Exception as e:
@@ -130,12 +134,14 @@ class MediaOfDayFetcher:
         No API key required.
         """
         try:
-            url = "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
-            response = self.session.get(url, timeout=TIMEOUTS.get('default', 15))
+            url = (
+                "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
+            )
+            response = self.session.get(url, timeout=TIMEOUTS.get("default", 15))
             response.raise_for_status()
 
             data = response.json()
-            images = data.get('images', [])
+            images = data.get("images", [])
 
             if not images:
                 return None
@@ -144,23 +150,23 @@ class MediaOfDayFetcher:
             base_url = "https://www.bing.com"
 
             # Extract title and copyright from the combined string
-            title = img.get('title', 'Bing Image of the Day')
-            copyright_text = img.get('copyright', '')
+            title = img.get("title", "Bing Image of the Day")
+            copyright_text = img.get("copyright", "")
 
             # Bing provides various resolutions
-            url_path = img.get('url', '')
+            url_path = img.get("url", "")
             # Get higher resolution version
-            hd_url = url_path.replace('1920x1080', 'UHD') if url_path else None
+            hd_url = url_path.replace("1920x1080", "UHD") if url_path else None
 
             return ImageOfTheDay(
                 title=title,
-                url=f"{base_url}{url_path}" if url_path else '',
+                url=f"{base_url}{url_path}" if url_path else "",
                 url_hd=f"{base_url}{hd_url}" if hd_url else None,
                 explanation=copyright_text,  # Bing doesn't have explanations
-                date=img.get('startdate', datetime.now().strftime('%Y%m%d')),
+                date=img.get("startdate", datetime.now().strftime("%Y%m%d")),
                 copyright=copyright_text,
-                source='bing',
-                source_url=img.get('copyrightlink', 'https://www.bing.com')
+                source="bing",
+                source_url=img.get("copyrightlink", "https://www.bing.com"),
             )
 
         except Exception as e:
@@ -175,7 +181,7 @@ class MediaOfDayFetcher:
         """
         try:
             url = "https://vimeo.com/channels/staffpicks/videos/rss"
-            response = self.session.get(url, timeout=TIMEOUTS.get('default', 15))
+            response = self.session.get(url, timeout=TIMEOUTS.get("default", 15))
             response.raise_for_status()
 
             feed = feedparser.parse(response.content)
@@ -188,30 +194,33 @@ class MediaOfDayFetcher:
             entry = feed.entries[0]
 
             # Extract video ID from link for embed URL
-            video_url = entry.get('link', '')
+            video_url = entry.get("link", "")
             video_id = self._extract_vimeo_id(video_url)
-            embed_url = f"https://player.vimeo.com/video/{video_id}" if video_id else ''
+            embed_url = f"https://player.vimeo.com/video/{video_id}" if video_id else ""
 
             # Extract thumbnail from media:content or description
-            thumbnail_url = ''
-            if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail:
-                thumbnail_url = entry.media_thumbnail[0].get('url', '')
-            elif hasattr(entry, 'media_content') and entry.media_content:
+            thumbnail_url = ""
+            if hasattr(entry, "media_thumbnail") and entry.media_thumbnail:
+                thumbnail_url = entry.media_thumbnail[0].get("url", "")
+            elif hasattr(entry, "media_content") and entry.media_content:
                 for media in entry.media_content:
-                    if 'image' in media.get('type', '') or media.get('medium') == 'image':
-                        thumbnail_url = media.get('url', '')
+                    if (
+                        "image" in media.get("type", "")
+                        or media.get("medium") == "image"
+                    ):
+                        thumbnail_url = media.get("url", "")
                         break
 
             # If still no thumbnail, try to extract from description
             if not thumbnail_url:
-                desc = entry.get('description', '')
+                desc = entry.get("description", "")
                 img_match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', desc)
                 if img_match:
                     thumbnail_url = img_match.group(1)
 
             # Extract author info
-            author = entry.get('author', '')
-            if hasattr(entry, 'media_credit'):
+            author = entry.get("author", "")
+            if hasattr(entry, "media_credit"):
                 credit = entry.media_credit
                 # media_credit can be a list or string
                 if isinstance(credit, list):
@@ -220,24 +229,24 @@ class MediaOfDayFetcher:
                     author = credit
             # Ensure author is a string
             if not isinstance(author, str):
-                author = str(author) if author else ''
-            author_url = ''
+                author = str(author) if author else ""
+            author_url = ""
 
             # Parse duration if available
             duration = None
-            if hasattr(entry, 'itunes_duration'):
+            if hasattr(entry, "itunes_duration"):
                 duration = entry.itunes_duration
 
             # Clean description (remove HTML)
-            description = entry.get('description', '')
-            description = re.sub(r'<[^>]+>', '', description)
-            description = re.sub(r'\s+', ' ', description).strip()
+            description = entry.get("description", "")
+            description = re.sub(r"<[^>]+>", "", description)
+            description = re.sub(r"\s+", " ", description).strip()
             # Truncate if too long
             if len(description) > 500:
-                description = description[:497] + '...'
+                description = description[:497] + "..."
 
             return VideoOfTheDay(
-                title=entry.get('title', 'Vimeo Staff Pick'),
+                title=entry.get("title", "Vimeo Staff Pick"),
                 description=description,
                 thumbnail_url=thumbnail_url,
                 video_url=video_url,
@@ -245,8 +254,8 @@ class MediaOfDayFetcher:
                 duration=duration,
                 author=author,
                 author_url=author_url,
-                date=entry.get('published', datetime.now().strftime('%Y-%m-%d')),
-                source='vimeo_staff_picks'
+                date=entry.get("published", datetime.now().strftime("%Y-%m-%d")),
+                source="vimeo_staff_picks",
             )
 
         except Exception as e:
@@ -258,15 +267,15 @@ class MediaOfDayFetcher:
         if not url:
             return None
         # Match patterns like vimeo.com/123456 or vimeo.com/channels/xxx/123456
-        match = re.search(r'vimeo\.com/(?:channels/[^/]+/)?(\d+)', url)
+        match = re.search(r"vimeo\.com/(?:channels/[^/]+/)?(\d+)", url)
         return match.group(1) if match else None
 
     def to_dict(self) -> Dict:
         """Convert media data to dictionary format."""
         return {
-            'image_of_day': asdict(self.image_of_day) if self.image_of_day else None,
-            'video_of_day': asdict(self.video_of_day) if self.video_of_day else None,
-            'fetched_at': datetime.now().isoformat()
+            "image_of_day": asdict(self.image_of_day) if self.image_of_day else None,
+            "video_of_day": asdict(self.video_of_day) if self.video_of_day else None,
+            "fetched_at": datetime.now().isoformat(),
         }
 
 
@@ -277,16 +286,16 @@ def main():
 
     print("\n=== Media of the Day ===\n")
 
-    if data['image_of_day']:
-        img = data['image_of_day']
+    if data["image_of_day"]:
+        img = data["image_of_day"]
         print(f"IMAGE: {img['title']}")
         print(f"  Source: {img['source']}")
         print(f"  URL: {img['url'][:80]}...")
         print(f"  Explanation: {img['explanation'][:100]}...")
         print()
 
-    if data['video_of_day']:
-        vid = data['video_of_day']
+    if data["video_of_day"]:
+        vid = data["video_of_day"]
         print(f"VIDEO: {vid['title']}")
         print(f"  Author: {vid['author']}")
         print(f"  URL: {vid['video_url']}")

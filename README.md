@@ -1,8 +1,8 @@
-# CMMC Watch
+# DailyTrending.info
 
-A CMMC compliance and Defense Industrial Base news aggregator that regenerates daily at 6 AM EST via GitHub Actions, delivering curated news from trusted federal and cybersecurity sources.
+An AI-curated tech, science, and world news aggregator that regenerates daily at 6 AM EST via GitHub Actions, delivering trending stories from 15+ trusted sources.
 
-**Live:** https://cmmcwatch.com
+**Live:** https://dailytrending.info
 
 ## Features
 

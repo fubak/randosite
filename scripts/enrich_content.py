@@ -17,9 +17,19 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional
 
 try:
-    from rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
+    from rate_limiter import (
+        get_rate_limiter,
+        check_before_call,
+        mark_provider_exhausted,
+        is_provider_exhausted,
+    )
 except ImportError:
-    from scripts.rate_limiter import get_rate_limiter, check_before_call, mark_provider_exhausted, is_provider_exhausted
+    from scripts.rate_limiter import (
+        get_rate_limiter,
+        check_before_call,
+        mark_provider_exhausted,
+        is_provider_exhausted,
+    )
 
 logger = logging.getLogger("pipeline")
 
@@ -31,14 +41,32 @@ WORD_OF_DAY_SCHEMA = {
     "type": "object",
     "properties": {
         "word": {"type": "string", "description": "The selected word"},
-        "part_of_speech": {"type": "string", "description": "Part of speech (noun/verb/adjective/adverb/etc)"},
-        "definition": {"type": "string", "description": "Clear, concise definition in 1-2 sentences"},
-        "example_usage": {"type": "string", "description": "Example sentence using the word"},
-        "origin": {"type": "string", "description": "Brief etymology or origin (1 sentence)"},
-        "why_chosen": {"type": "string", "description": "1 sentence explaining why this word is interesting today"},
-        "related_trend": {"type": "string", "description": "The headline this word relates to"}
+        "part_of_speech": {
+            "type": "string",
+            "description": "Part of speech (noun/verb/adjective/adverb/etc)",
+        },
+        "definition": {
+            "type": "string",
+            "description": "Clear, concise definition in 1-2 sentences",
+        },
+        "example_usage": {
+            "type": "string",
+            "description": "Example sentence using the word",
+        },
+        "origin": {
+            "type": "string",
+            "description": "Brief etymology or origin (1 sentence)",
+        },
+        "why_chosen": {
+            "type": "string",
+            "description": "1 sentence explaining why this word is interesting today",
+        },
+        "related_trend": {
+            "type": "string",
+            "description": "The headline this word relates to",
+        },
     },
-    "required": ["word", "part_of_speech", "definition", "example_usage"]
+    "required": ["word", "part_of_speech", "definition", "example_usage"],
 }
 
 GROKIPEDIA_TOPIC_SCHEMA = {
@@ -46,10 +74,16 @@ GROKIPEDIA_TOPIC_SCHEMA = {
     "properties": {
         "topic": {"type": "string", "description": "Article Title in Title Case"},
         "slug": {"type": "string", "description": "article_title_with_underscores"},
-        "reason": {"type": "string", "description": "1 sentence explaining why this topic is relevant today"},
-        "related_trend": {"type": "string", "description": "The headline this relates to"}
+        "reason": {
+            "type": "string",
+            "description": "1 sentence explaining why this topic is relevant today",
+        },
+        "related_trend": {
+            "type": "string",
+            "description": "The headline this relates to",
+        },
     },
-    "required": ["topic", "slug"]
+    "required": ["topic", "slug"],
 }
 
 STORY_SUMMARIES_SCHEMA = {
@@ -62,19 +96,20 @@ STORY_SUMMARIES_SCHEMA = {
                 "properties": {
                     "title": {"type": "string", "description": "Original title"},
                     "summary": {"type": "string", "description": "15-25 word summary"},
-                    "source": {"type": "string", "description": "Source name"}
+                    "source": {"type": "string", "description": "Source name"},
                 },
-                "required": ["title", "summary"]
-            }
+                "required": ["title", "summary"],
+            },
         }
     },
-    "required": ["summaries"]
+    "required": ["summaries"],
 }
 
 
 @dataclass
 class WordOfTheDay:
     """Represents the Word of the Day with definition and context."""
+
     word: str
     part_of_speech: str
     definition: str
@@ -87,6 +122,7 @@ class WordOfTheDay:
 @dataclass
 class GrokipediaArticle:
     """Represents a Grokipedia article summary."""
+
     title: str
     slug: str
     url: str
@@ -98,6 +134,7 @@ class GrokipediaArticle:
 @dataclass
 class StorySummary:
     """Represents an AI-generated story summary."""
+
     title: str
     summary: str
     source: str
@@ -106,6 +143,7 @@ class StorySummary:
 @dataclass
 class EnrichedContent:
     """Container for all enriched content."""
+
     word_of_the_day: Optional[WordOfTheDay] = None
     grokipedia_article: Optional[GrokipediaArticle] = None
     story_summaries: List[StorySummary] = field(default_factory=list)
@@ -123,14 +161,19 @@ class ContentEnricher:
     MIN_CALL_INTERVAL = 3.0
     MAX_RETRY_WAIT = 10  # Cap retry waits to prevent long delays
 
-    def __init__(self, groq_key: Optional[str] = None, openrouter_key: Optional[str] = None, google_key: Optional[str] = None):
-        self.groq_key = groq_key or os.getenv('GROQ_API_KEY')
-        self.openrouter_key = openrouter_key or os.getenv('OPENROUTER_API_KEY')
-        self.google_key = google_key or os.getenv('GOOGLE_AI_API_KEY')
+    def __init__(
+        self,
+        groq_key: Optional[str] = None,
+        openrouter_key: Optional[str] = None,
+        google_key: Optional[str] = None,
+    ):
+        self.groq_key = groq_key or os.getenv("GROQ_API_KEY")
+        self.openrouter_key = openrouter_key or os.getenv("OPENROUTER_API_KEY")
+        self.google_key = google_key or os.getenv("GOOGLE_AI_API_KEY")
         self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'DailyTrending.info/1.0 (Content Enrichment)'
-        })
+        self.session.headers.update(
+            {"User-Agent": "CMMCWatch/1.0 (Content Enrichment)"}
+        )
         self._last_call_time = 0.0  # Track last API call for rate limiting
 
     def enrich(self, trends: List[Dict], keywords: List[str]) -> EnrichedContent:
@@ -165,14 +208,20 @@ class ContentEnricher:
 
         return enriched
 
-    def _call_groq(self, prompt: str, max_tokens: int = 500, max_retries: int = 1, task_complexity: str = 'simple') -> Optional[str]:
+    def _call_groq(
+        self,
+        prompt: str,
+        max_tokens: int = 500,
+        max_retries: int = 1,
+        task_complexity: str = "simple",
+    ) -> Optional[str]:
         """
         Call LLM API with smart provider routing based on task complexity.
 
         For simple tasks: OpenCode (free) > Mistral (free) > Hugging Face (free) > Groq > OpenRouter > Google AI
         For complex tasks: Mistral > Google AI > OpenRouter > OpenCode > Hugging Face > Groq
         """
-        if task_complexity == 'simple':
+        if task_complexity == "simple":
             # For simple tasks, prioritize free models to save quota
             result = self._call_opencode(prompt, max_tokens, max_retries)
             if result:
@@ -219,7 +268,9 @@ class ContentEnricher:
 
             return self._call_groq_direct(prompt, max_tokens, max_retries)
 
-    def _call_google_ai(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+    def _call_google_ai(
+        self, prompt: str, max_tokens: int = 500, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Google AI (Gemini) API - primary provider with generous free tier."""
         if not self.google_key:
             logger.info("No Google AI API key available, skipping to next provider")
@@ -227,14 +278,16 @@ class ContentEnricher:
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('google')
+        status = check_before_call("google")
 
         if not status.is_available:
             logger.warning(f"Google AI not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Use Gemini 2.5 Flash Lite - highest RPM (10) among free models
@@ -243,35 +296,37 @@ class ContentEnricher:
 
         for attempt in range(max_retries):
             try:
-                logger.info(f"Trying Google AI {model} (attempt {attempt + 1}/{max_retries})")
+                logger.info(
+                    f"Trying Google AI {model} (attempt {attempt + 1}/{max_retries})"
+                )
                 response = self.session.post(
                     url,
                     headers={
                         "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
                         "generationConfig": {
                             "maxOutputTokens": max_tokens,
-                            "temperature": 0.7
-                        }
+                            "temperature": 0.7,
+                        },
                     },
-                    timeout=60
+                    timeout=60,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter tracking
-                rate_limiter._last_call_time['google'] = time.time()
+                rate_limiter._last_call_time["google"] = time.time()
 
                 # Parse response
                 data = response.json()
-                candidates = data.get('candidates', [])
+                candidates = data.get("candidates", [])
                 if candidates:
-                    content = candidates[0].get('content', {})
-                    parts = content.get('parts', [])
+                    content = candidates[0].get("content", {})
+                    parts = content.get("parts", [])
                     if parts:
-                        text = parts[0].get('text', '')
+                        text = parts[0].get("text", "")
                         if text:
                             logger.info(f"Google AI success with {model}")
                             return text
@@ -282,20 +337,26 @@ class ContentEnricher:
                     try:
                         error_data = response.json()
                         error_msg = str(error_data).lower()
-                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                        if (
+                            "quota" in error_msg
+                            or "exhausted" in error_msg
+                            or "daily" in error_msg
+                        ):
                             # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            mark_provider_exhausted("google", "daily quota exceeded")
                             return None
                     except Exception:
                         pass
 
                     # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 logger.warning(f"Google AI failed: {e}")
@@ -308,11 +369,7 @@ class ContentEnricher:
         return None
 
     def _call_google_ai_structured(
-        self,
-        prompt: str,
-        schema: Dict,
-        max_tokens: int = 500,
-        max_retries: int = 1
+        self, prompt: str, schema: Dict, max_tokens: int = 500, max_retries: int = 1
     ) -> Optional[Dict]:
         """
         Call Google AI with structured output (guaranteed valid JSON).
@@ -326,14 +383,18 @@ class ContentEnricher:
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('google')
+        status = check_before_call("google")
 
         if not status.is_available:
-            logger.warning(f"Google AI not available for structured output: {status.error}")
+            logger.warning(
+                f"Google AI not available for structured output: {status.error}"
+            )
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for Google AI rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         model = "gemini-2.5-flash-lite"
@@ -341,12 +402,14 @@ class ContentEnricher:
 
         for attempt in range(max_retries):
             try:
-                logger.info(f"Trying Google AI structured output (attempt {attempt + 1}/{max_retries})")
+                logger.info(
+                    f"Trying Google AI structured output (attempt {attempt + 1}/{max_retries})"
+                )
                 response = self.session.post(
                     url,
                     headers={
                         "x-goog-api-key": self.google_key,
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
@@ -354,24 +417,24 @@ class ContentEnricher:
                             "maxOutputTokens": max_tokens,
                             "temperature": 0.7,
                             "responseMimeType": "application/json",
-                            "responseSchema": schema
-                        }
+                            "responseSchema": schema,
+                        },
                     },
-                    timeout=60
+                    timeout=60,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter tracking
-                rate_limiter._last_call_time['google'] = time.time()
+                rate_limiter._last_call_time["google"] = time.time()
 
                 # Parse response
                 data = response.json()
-                candidates = data.get('candidates', [])
+                candidates = data.get("candidates", [])
                 if candidates:
-                    content = candidates[0].get('content', {})
-                    parts = content.get('parts', [])
+                    content = candidates[0].get("content", {})
+                    parts = content.get("parts", [])
                     if parts:
-                        text = parts[0].get('text', '')
+                        text = parts[0].get("text", "")
                         if text:
                             # Parse the JSON - should be valid due to structured output
                             try:
@@ -379,7 +442,9 @@ class ContentEnricher:
                                 logger.info("Google AI structured output success")
                                 return result
                             except json.JSONDecodeError as je:
-                                logger.warning(f"Google AI structured output JSON parse error: {je}")
+                                logger.warning(
+                                    f"Google AI structured output JSON parse error: {je}"
+                                )
                                 # Retry with higher token limit if this was a truncation issue
                                 if attempt < max_retries - 1:
                                     logger.info("Retrying with more tokens...")
@@ -392,20 +457,26 @@ class ContentEnricher:
                     try:
                         error_data = response.json()
                         error_msg = str(error_data).lower()
-                        if 'quota' in error_msg or 'exhausted' in error_msg or 'daily' in error_msg:
+                        if (
+                            "quota" in error_msg
+                            or "exhausted" in error_msg
+                            or "daily" in error_msg
+                        ):
                             # This is a quota exhaustion - mark provider as exhausted
-                            mark_provider_exhausted('google', 'daily quota exceeded')
+                            mark_provider_exhausted("google", "daily quota exceeded")
                             return None
                     except Exception:
                         pass
 
                     # Temporary rate limit - wait and retry
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"Google AI rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 logger.warning(f"Google AI structured output failed: {e}")
@@ -417,7 +488,9 @@ class ContentEnricher:
         logger.warning("Google AI structured output: Max retries exceeded")
         return None
 
-    def _call_openrouter(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+    def _call_openrouter(
+        self, prompt: str, max_tokens: int = 500, max_retries: int = 1
+    ) -> Optional[str]:
         """Call OpenRouter API with free models (primary)."""
         if not self.openrouter_key:
             logger.warning("No OpenRouter API key available")
@@ -425,14 +498,16 @@ class ContentEnricher:
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('openrouter')
+        status = check_before_call("openrouter")
 
         if not status.is_available:
             logger.warning(f"OpenRouter not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for OpenRouter rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Free models to try in order of preference
@@ -445,41 +520,52 @@ class ContentEnricher:
         for model in free_models:
             for attempt in range(max_retries):
                 try:
-                    logger.info(f"Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying OpenRouter {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://openrouter.ai/api/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {self.openrouter_key}",
                             "Content-Type": "application/json",
                             "HTTP-Referer": "https://dailytrending.info",
-                            "X-Title": "DailyTrending.info"
+                            "X-Title": "DailyTrending.info",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('openrouter', dict(response.headers))
+                    rate_limiter.update_from_response_headers(
+                        "openrouter", dict(response.headers)
+                    )
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         logger.info(f"OpenRouter success with {model}")
                         return result
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
                         # Parse retry-after header if available
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"OpenRouter {model} rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     logger.warning(f"OpenRouter {model} failed: {e}")
@@ -491,14 +577,16 @@ class ContentEnricher:
         logger.warning("All OpenRouter models failed")
         return None
 
-    def _call_groq_direct(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+    def _call_groq_direct(
+        self, prompt: str, max_tokens: int = 500, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Groq API directly (fallback)."""
         if not self.groq_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('groq')
+        status = check_before_call("groq")
 
         if not status.is_available:
             logger.warning(f"Groq not available: {status.error}")
@@ -520,31 +608,40 @@ class ContentEnricher:
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.groq_key}",
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
                     },
                     json={
                         "model": "llama-3.3-70b-versatile",
                         "messages": [{"role": "user", "content": prompt}],
                         "max_tokens": max_tokens,
-                        "temperature": 0.7
+                        "temperature": 0.7,
                     },
-                    timeout=45
+                    timeout=45,
                 )
                 response.raise_for_status()
 
                 # Update rate limiter from response headers
-                rate_limiter.update_from_response_headers('groq', dict(response.headers))
+                rate_limiter.update_from_response_headers(
+                    "groq", dict(response.headers)
+                )
 
-                return response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                return (
+                    response.json()
+                    .get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content")
+                )
             except requests.exceptions.HTTPError as e:
                 if response.status_code == 429:
                     # Parse retry-after header if available
-                    retry_after = response.headers.get('Retry-After', '10')
+                    retry_after = response.headers.get("Retry-After", "10")
                     try:
                         wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                     except ValueError:
                         wait_time = self.MAX_RETRY_WAIT
-                    logger.warning(f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                    logger.warning(
+                        f"Groq rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                    )
                     time.sleep(wait_time)
                     continue
                 logger.warning(f"Groq API error: {e}")
@@ -556,22 +653,26 @@ class ContentEnricher:
         logger.warning("Groq API: Max retries exceeded")
         return None
 
-    def _call_opencode(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+    def _call_opencode(
+        self, prompt: str, max_tokens: int = 500, max_retries: int = 1
+    ) -> Optional[str]:
         """Call OpenCode API with free models (glm-4.7-free, minimax-m2.1-free)."""
-        opencode_key = os.getenv('OPENCODE_API_KEY')
+        opencode_key = os.getenv("OPENCODE_API_KEY")
         if not opencode_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('opencode')
+        status = check_before_call("opencode")
 
         if not status.is_available:
             logger.warning(f"OpenCode not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for OpenCode rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for OpenCode rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -586,40 +687,51 @@ class ContentEnricher:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    logger.info(f"Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying OpenCode {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://opencode.ai/zen/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {opencode_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('opencode', dict(response.headers))
-                    rate_limiter._last_call_time['opencode'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "opencode", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["opencode"] = time.time()
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         logger.info(f"OpenCode success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"OpenCode rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     logger.warning(f"OpenCode API error with {model}: {e}")
@@ -631,22 +743,26 @@ class ContentEnricher:
         logger.warning("All OpenCode models failed")
         return None
 
-    def _call_huggingface(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+    def _call_huggingface(
+        self, prompt: str, max_tokens: int = 500, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Hugging Face Inference API with free models."""
-        huggingface_key = os.getenv('HUGGINGFACE_API_KEY')
+        huggingface_key = os.getenv("HUGGINGFACE_API_KEY")
         if not huggingface_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('huggingface')
+        status = check_before_call("huggingface")
 
         if not status.is_available:
             logger.warning(f"Hugging Face not available: {status.error}")
             return None
 
         if status.wait_seconds > 0:
-            logger.info(f"Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit...")
+            logger.info(
+                f"Waiting {status.wait_seconds:.1f}s for Hugging Face rate limit..."
+            )
             time.sleep(status.wait_seconds)
 
         # Proactive rate limiting
@@ -665,49 +781,57 @@ class ContentEnricher:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    logger.info(f"Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying Hugging Face {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         f"https://api-inference.huggingface.co/models/{model}",
                         headers={
                             "Authorization": f"Bearer {huggingface_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "inputs": prompt,
                             "parameters": {
                                 "max_new_tokens": max_tokens,
                                 "temperature": 0.7,
-                                "return_full_text": False
-                            }
+                                "return_full_text": False,
+                            },
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('huggingface', dict(response.headers))
-                    rate_limiter._last_call_time['huggingface'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "huggingface", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["huggingface"] = time.time()
 
                     result = response.json()
                     if isinstance(result, list) and len(result) > 0:
-                        text = result[0].get('generated_text', '')
+                        text = result[0].get("generated_text", "")
                         if text:
                             logger.info(f"Hugging Face success with {model}")
                             return text
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"Hugging Face rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     elif response.status_code == 503:
                         # Model is loading, wait and retry
-                        logger.warning(f"Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s...")
+                        logger.warning(
+                            f"Hugging Face model {model} is loading, waiting {self.MAX_RETRY_WAIT}s..."
+                        )
                         time.sleep(self.MAX_RETRY_WAIT)
                         continue
                     logger.warning(f"Hugging Face API error with {model}: {e}")
@@ -719,15 +843,17 @@ class ContentEnricher:
         logger.warning("All Hugging Face models failed")
         return None
 
-    def _call_mistral(self, prompt: str, max_tokens: int = 500, max_retries: int = 1) -> Optional[str]:
+    def _call_mistral(
+        self, prompt: str, max_tokens: int = 500, max_retries: int = 1
+    ) -> Optional[str]:
         """Call Mistral AI API - high quality free tier models."""
-        mistral_key = os.getenv('MISTRAL_API_KEY')
+        mistral_key = os.getenv("MISTRAL_API_KEY")
         if not mistral_key:
             return None
 
         # Check rate limits before calling
         rate_limiter = get_rate_limiter()
-        status = check_before_call('mistral')
+        status = check_before_call("mistral")
 
         if not status.is_available:
             logger.warning(f"Mistral not available: {status.error}")
@@ -752,40 +878,51 @@ class ContentEnricher:
             for attempt in range(max_retries):
                 try:
                     self._last_call_time = time.time()
-                    logger.info(f"Trying Mistral {model} (attempt {attempt + 1}/{max_retries})")
+                    logger.info(
+                        f"Trying Mistral {model} (attempt {attempt + 1}/{max_retries})"
+                    )
                     response = self.session.post(
                         "https://api.mistral.ai/v1/chat/completions",
                         headers={
                             "Authorization": f"Bearer {mistral_key}",
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
                         },
                         json={
                             "model": model,
                             "messages": [{"role": "user", "content": prompt}],
                             "max_tokens": max_tokens,
-                            "temperature": 0.7
+                            "temperature": 0.7,
                         },
-                        timeout=60
+                        timeout=60,
                     )
                     response.raise_for_status()
 
                     # Update rate limiter from response headers
-                    rate_limiter.update_from_response_headers('mistral', dict(response.headers))
-                    rate_limiter._last_call_time['mistral'] = time.time()
+                    rate_limiter.update_from_response_headers(
+                        "mistral", dict(response.headers)
+                    )
+                    rate_limiter._last_call_time["mistral"] = time.time()
 
-                    result = response.json().get('choices', [{}])[0].get('message', {}).get('content')
+                    result = (
+                        response.json()
+                        .get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content")
+                    )
                     if result:
                         logger.info(f"Mistral success with {model}")
                         return result
 
                 except requests.exceptions.HTTPError as e:
                     if response.status_code == 429:
-                        retry_after = response.headers.get('Retry-After', '10')
+                        retry_after = response.headers.get("Retry-After", "10")
                         try:
                             wait_time = min(float(retry_after), self.MAX_RETRY_WAIT)
                         except ValueError:
                             wait_time = self.MAX_RETRY_WAIT
-                        logger.warning(f"Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})")
+                        logger.warning(
+                            f"Mistral rate limited, waiting {wait_time}s (attempt {attempt + 1}/{max_retries})"
+                        )
                         time.sleep(wait_time)
                         continue
                     logger.warning(f"Mistral API error with {model}: {e}")
@@ -801,8 +938,8 @@ class ContentEnricher:
         """Attempt to repair common JSON formatting issues from LLM output."""
         # Fix missing commas between elements (common LLM error)
         json_str = re.sub(r'"\s*\n\s*"', '",\n"', json_str)
-        json_str = re.sub(r'}\s*\n\s*{', '},\n{', json_str)
-        json_str = re.sub(r']\s*\n\s*\[', '],\n[', json_str)
+        json_str = re.sub(r"}\s*\n\s*{", "},\n{", json_str)
+        json_str = re.sub(r"]\s*\n\s*\[", "],\n[", json_str)
         json_str = re.sub(r'"\s*\n\s*{', '",\n{', json_str)
         json_str = re.sub(r'}\s*\n\s*"', '},\n"', json_str)
         json_str = re.sub(r'"\s*\n\s*\[', '",\n[', json_str)
@@ -812,8 +949,8 @@ class ContentEnricher:
         json_str = re.sub(r'"\s+("[\w]+"\s*:)', r'", \1', json_str)
 
         # Fix trailing commas before closing brackets
-        json_str = re.sub(r',\s*}', '}', json_str)
-        json_str = re.sub(r',\s*]', ']', json_str)
+        json_str = re.sub(r",\s*}", "}", json_str)
+        json_str = re.sub(r",\s*]", "]", json_str)
 
         return json_str
 
@@ -824,11 +961,11 @@ class ContentEnricher:
 
         try:
             # Remove markdown code blocks if present
-            clean = re.sub(r'^```(?:json)?\s*', '', response.strip())
-            clean = re.sub(r'\s*```$', '', clean)
+            clean = re.sub(r"^```(?:json)?\s*", "", response.strip())
+            clean = re.sub(r"\s*```$", "", clean)
 
             # Find JSON object
-            json_match = re.search(r'\{.*\}', clean, re.DOTALL)
+            json_match = re.search(r"\{.*\}", clean, re.DOTALL)
             if json_match:
                 json_str = json_match.group()
                 # Try parsing as-is first
@@ -849,14 +986,20 @@ class ContentEnricher:
                     s = match.group(0)
                     inner = s[1:-1]  # Remove quotes
                     # Only escape raw control characters
-                    inner = inner.replace('\n', '\\n')
-                    inner = inner.replace('\r', '\\r')
-                    inner = inner.replace('\t', '\\t')
-                    inner = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', lambda m: f'\\u{ord(m.group()):04x}', inner)
+                    inner = inner.replace("\n", "\\n")
+                    inner = inner.replace("\r", "\\r")
+                    inner = inner.replace("\t", "\\t")
+                    inner = re.sub(
+                        r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
+                        lambda m: f"\\u{ord(m.group()):04x}",
+                        inner,
+                    )
                     return f'"{inner}"'
 
                 try:
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str)
+                    sanitized = re.sub(
+                        r'"(?:[^"\\]|\\.)*"', escape_string_contents, json_str
+                    )
                     return json.loads(sanitized)
                 except (json.JSONDecodeError, Exception):
                     pass
@@ -864,14 +1007,16 @@ class ContentEnricher:
                 # Try repair + escape combination
                 try:
                     repaired = self._repair_json(json_str)
-                    sanitized = re.sub(r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired)
+                    sanitized = re.sub(
+                        r'"(?:[^"\\]|\\.)*"', escape_string_contents, repaired
+                    )
                     return json.loads(sanitized)
                 except (json.JSONDecodeError, Exception):
                     pass
 
                 # Last resort: strip all control chars except structural whitespace
                 try:
-                    stripped = re.sub(r'[\x00-\x09\x0b\x0c\x0e-\x1f]', ' ', json_str)
+                    stripped = re.sub(r"[\x00-\x09\x0b\x0c\x0e-\x1f]", " ", json_str)
                     repaired = self._repair_json(stripped)
                     return json.loads(repaired)
                 except (json.JSONDecodeError, Exception):
@@ -886,7 +1031,9 @@ class ContentEnricher:
     # PHASE 2: Word of the Day
     # =========================================================================
 
-    def _build_rich_context(self, trends: List[Dict], keywords: List[str], max_trends: int = 20) -> str:
+    def _build_rich_context(
+        self, trends: List[Dict], keywords: List[str], max_trends: int = 20
+    ) -> str:
         """
         Build rich context for AI content generation.
 
@@ -894,9 +1041,9 @@ class ContentEnricher:
         """
         trend_lines = []
         for i, t in enumerate(trends[:max_trends]):
-            source = t.get('source', 'unknown').replace('_', ' ').title()
-            title = t.get('title', '')[:100]
-            desc = (t.get('description', '') or '')[:150]
+            source = t.get("source", "unknown").replace("_", " ").title()
+            title = t.get("title", "")[:100]
+            desc = (t.get("description", "") or "")[:150]
 
             trend_lines.append(f"{i+1}. [{source}] {title}")
             if desc and len(desc) > 30:
@@ -905,20 +1052,25 @@ class ContentEnricher:
         # Calculate theme categories
         categories = {}
         category_map = {
-            'hackernews': 'Technology', 'lobsters': 'Technology',
-            'github_trending': 'Technology', 'tech_rss': 'Technology',
-            'news_rss': 'World News', 'reddit': 'Social/Viral',
-            'product_hunt': 'Startups', 'devto': 'Development',
-            'wikipedia': 'Current Events', 'google_trends': 'Popular Search'
+            "hackernews": "Technology",
+            "lobsters": "Technology",
+            "github_trending": "Technology",
+            "tech_rss": "Technology",
+            "news_rss": "World News",
+            "reddit": "Social/Viral",
+            "product_hunt": "Startups",
+            "devto": "Development",
+            "wikipedia": "Current Events",
+            "google_trends": "Popular Search",
         }
         for t in trends:
-            src = t.get('source', 'other')
-            cat = category_map.get(src, 'General')
+            src = t.get("source", "other")
+            cat = category_map.get(src, "General")
             categories[cat] = categories.get(cat, 0) + 1
 
         category_summary = ", ".join(
-            f"{count} {cat}" for cat, count in
-            sorted(categories.items(), key=lambda x: -x[1])[:4]
+            f"{count} {cat}"
+            for cat, count in sorted(categories.items(), key=lambda x: -x[1])[:4]
         )
 
         return f"""TODAY'S STORIES ({len(trends)} total, {category_summary}):
@@ -927,9 +1079,7 @@ class ContentEnricher:
 TOP KEYWORDS: {', '.join(keywords[:40])}"""
 
     def _get_word_of_the_day(
-        self,
-        keywords: List[str],
-        trends: List[Dict]
+        self, keywords: List[str], trends: List[Dict]
     ) -> Optional[WordOfTheDay]:
         """
         Select and define a Word of the Day from trending keywords.
@@ -959,11 +1109,15 @@ SELECTION CRITERIA:
 Return a JSON object with word, part_of_speech, definition, example_usage, origin, why_chosen, and related_trend."""
 
         # Try structured output first (guaranteed valid JSON)
-        data = self._call_google_ai_structured(prompt, WORD_OF_DAY_SCHEMA, max_tokens=400)
+        data = self._call_google_ai_structured(
+            prompt, WORD_OF_DAY_SCHEMA, max_tokens=400
+        )
 
         # Fallback to regular LLM call with JSON parsing
         if not data:
-            prompt_with_json = prompt + """
+            prompt_with_json = (
+                prompt
+                + """
 
 Respond with ONLY a valid JSON object:
 {
@@ -975,18 +1129,19 @@ Respond with ONLY a valid JSON object:
   "why_chosen": "1 sentence explaining why this word is interesting today",
   "related_trend": "The headline this word relates to"
 }"""
+            )
             response = self._call_groq(prompt_with_json, max_tokens=400)
             data = self._parse_json_response(response)
 
-        if data and data.get('word'):
+        if data and data.get("word"):
             return WordOfTheDay(
-                word=data.get('word', ''),
-                part_of_speech=data.get('part_of_speech', ''),
-                definition=data.get('definition', ''),
-                example_usage=data.get('example_usage', ''),
-                origin=data.get('origin'),
-                why_chosen=data.get('why_chosen'),
-                related_trend=data.get('related_trend')
+                word=data.get("word", ""),
+                part_of_speech=data.get("part_of_speech", ""),
+                definition=data.get("definition", ""),
+                example_usage=data.get("example_usage", ""),
+                origin=data.get("origin"),
+                why_chosen=data.get("why_chosen"),
+                related_trend=data.get("related_trend"),
             )
 
         return None
@@ -996,9 +1151,7 @@ Respond with ONLY a valid JSON object:
     # =========================================================================
 
     def _get_grokipedia_article(
-        self,
-        trends: List[Dict],
-        keywords: List[str]
+        self, trends: List[Dict], keywords: List[str]
     ) -> Optional[GrokipediaArticle]:
         """
         Fetch a relevant Grokipedia article based on trending topics.
@@ -1031,9 +1184,7 @@ Respond with ONLY a valid JSON object:
         return article
 
     def _select_grokipedia_topic(
-        self,
-        trends: List[Dict],
-        keywords: List[str]
+        self, trends: List[Dict], keywords: List[str]
     ) -> Optional[str]:
         """Use LLM to select the best topic for Grokipedia lookup."""
         # Build rich context for better topic selection
@@ -1054,11 +1205,15 @@ SELECTION CRITERIA:
 Return a JSON object with topic, slug, reason, and related_trend."""
 
         # Try structured output first (guaranteed valid JSON)
-        data = self._call_google_ai_structured(prompt, GROKIPEDIA_TOPIC_SCHEMA, max_tokens=200)
+        data = self._call_google_ai_structured(
+            prompt, GROKIPEDIA_TOPIC_SCHEMA, max_tokens=200
+        )
 
         # Fallback to regular LLM call with JSON parsing
         if not data:
-            prompt_with_json = prompt + """
+            prompt_with_json = (
+                prompt
+                + """
 
 Respond with ONLY a valid JSON object:
 {
@@ -1067,19 +1222,17 @@ Respond with ONLY a valid JSON object:
   "reason": "1 sentence explaining why this topic is relevant today",
   "related_trend": "The headline this relates to"
 }"""
+            )
             response = self._call_groq(prompt_with_json, max_tokens=200)
             data = self._parse_json_response(response)
 
-        if data and data.get('topic'):
-            return data.get('topic')
+        if data and data.get("topic"):
+            return data.get("topic")
 
         return None
 
     def _get_alternate_topics(
-        self,
-        trends: List[Dict],
-        keywords: List[str],
-        failed_topic: str
+        self, trends: List[Dict], keywords: List[str], failed_topic: str
     ) -> List[str]:
         """Get alternate topics if the first one fails."""
         # Simple fallback: use top keywords as topics
@@ -1097,7 +1250,7 @@ Respond with ONLY a valid JSON object:
         Uses the unofficial API at grokipedia-api.com
         """
         # Convert topic to slug format
-        slug = topic.replace(' ', '_')
+        slug = topic.replace(" ", "_")
         url = f"{GROKIPEDIA_API_URL}/{slug}"
 
         try:
@@ -1111,7 +1264,7 @@ Respond with ONLY a valid JSON object:
             data = response.json()
 
             # Extract content
-            content = data.get('content_text', '')
+            content = data.get("content_text", "")
 
             # Create summary from first ~500 chars, ending at sentence
             summary = self._create_summary(content, max_chars=500)
@@ -1120,12 +1273,12 @@ Respond with ONLY a valid JSON object:
                 return None
 
             return GrokipediaArticle(
-                title=data.get('title', topic),
-                slug=data.get('slug', slug),
-                url=data.get('url', f"https://grokipedia.com/page/{slug}"),
+                title=data.get("title", topic),
+                slug=data.get("slug", slug),
+                url=data.get("url", f"https://grokipedia.com/page/{slug}"),
                 summary=summary,
-                word_count=data.get('word_count', 0),
-                related_trend=topic
+                word_count=data.get("word_count", 0),
+                related_trend=topic,
             )
 
         except requests.exceptions.RequestException as e:
@@ -1151,17 +1304,17 @@ Respond with ONLY a valid JSON object:
             summary = content[:max_chars]
 
             # Find last sentence ending
-            last_period = summary.rfind('. ')
-            last_question = summary.rfind('? ')
-            last_exclaim = summary.rfind('! ')
+            last_period = summary.rfind(". ")
+            last_question = summary.rfind("? ")
+            last_exclaim = summary.rfind("! ")
 
             last_sentence = max(last_period, last_question, last_exclaim)
 
             if last_sentence > max_chars * 0.5:  # At least half the content
-                summary = summary[:last_sentence + 1]
+                summary = summary[: last_sentence + 1]
             else:
                 # Just add ellipsis
-                summary = summary.rsplit(' ', 1)[0] + '...'
+                summary = summary.rsplit(" ", 1)[0] + "..."
 
         return summary
 
@@ -1169,10 +1322,7 @@ Respond with ONLY a valid JSON object:
     # PHASE 4: Story Summaries
     # =========================================================================
 
-    def _generate_story_summaries(
-        self,
-        trends: List[Dict]
-    ) -> List[StorySummary]:
+    def _generate_story_summaries(self, trends: List[Dict]) -> List[StorySummary]:
         """
         Generate concise summaries for top trending stories.
 
@@ -1184,14 +1334,10 @@ Respond with ONLY a valid JSON object:
         # Prepare story data
         stories = []
         for t in trends[:10]:
-            title = t.get('title', '')
-            source = t.get('source', '').replace('_', ' ').title()
-            desc = t.get('description', '')[:200] if t.get('description') else ''
-            stories.append({
-                'title': title,
-                'source': source,
-                'description': desc
-            })
+            title = t.get("title", "")
+            source = t.get("source", "").replace("_", " ").title()
+            desc = t.get("description", "")[:200] if t.get("description") else ""
+            stories.append({"title": title, "source": source, "description": desc})
 
         prompt = f"""You are a news editor writing brief, engaging summaries for trending stories.
 
@@ -1207,11 +1353,15 @@ For each story, write a concise 15-25 word summary that:
 Return a JSON object with a summaries array containing objects with title, summary, and source fields."""
 
         # Try structured output first (guaranteed valid JSON)
-        data = self._call_google_ai_structured(prompt, STORY_SUMMARIES_SCHEMA, max_tokens=1200, max_retries=2)
+        data = self._call_google_ai_structured(
+            prompt, STORY_SUMMARIES_SCHEMA, max_tokens=1200, max_retries=2
+        )
 
         # Fallback to regular LLM call with JSON parsing
         if not data:
-            prompt_with_json = prompt + """
+            prompt_with_json = (
+                prompt
+                + """
 
 Respond with ONLY a valid JSON object:
 {
@@ -1220,26 +1370,27 @@ Respond with ONLY a valid JSON object:
     ...
   ]
 }"""
+            )
             response = self._call_groq(prompt_with_json, max_tokens=800)
             data = self._parse_json_response(response)
 
         summaries = []
-        if data and data.get('summaries'):
-            for item in data['summaries']:
-                if item.get('title') and item.get('summary'):
-                    summaries.append(StorySummary(
-                        title=item.get('title', ''),
-                        summary=item.get('summary', ''),
-                        source=item.get('source', '')
-                    ))
+        if data and data.get("summaries"):
+            for item in data["summaries"]:
+                if item.get("title") and item.get("summary"):
+                    summaries.append(
+                        StorySummary(
+                            title=item.get("title", ""),
+                            summary=item.get("summary", ""),
+                            source=item.get("source", ""),
+                        )
+                    )
 
         return summaries
 
 
 def enrich_content(
-    trends: List[Dict],
-    keywords: List[str],
-    groq_key: Optional[str] = None
+    trends: List[Dict], keywords: List[str], groq_key: Optional[str] = None
 ) -> EnrichedContent:
     """
     Convenience function to enrich content.

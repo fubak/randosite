@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate static OG image for CMMC Watch"""
+"""Generate static OG image for DailyTrending.info"""
 
 from PIL import Image, ImageDraw, ImageFont
 import os
@@ -87,14 +87,14 @@ def create_og_image():
         font_small = ImageFont.load_default()
 
     # Draw site name
-    site_name = "CMMC Watch"
+    site_name = "DailyTrending.info"
     draw.text((80, 200), site_name, font=font_large, fill=text_white)
 
     # Draw accent underline under site name
-    draw.rectangle([80, 290, 480, 296], fill=accent_primary)
+    draw.rectangle([80, 290, 580, 296], fill=accent_primary)
 
     # Draw tagline
-    tagline = "CMMC & DIB Compliance News"
+    tagline = "AI-Curated Tech & World News"
     draw.text((80, 320), tagline, font=font_medium, fill=text_muted)
 
     # Draw description

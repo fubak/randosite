@@ -48,8 +48,8 @@ def build_header(active_page: str = "", date_str: str = None) -> str:
 
     return f"""
     <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
-        <a href="/" class="nav-logo" aria-label="CMMC Watch Home">
-            <span>CMMC Watch</span>
+        <a href="/" class="nav-logo" aria-label="DailyTrending.info Home">
+            <span>DailyTrending.info</span>
         </a>
         <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
             <span class="hamburger-line"></span>
@@ -102,10 +102,10 @@ def build_footer(date_str: str = None, style_info: str = "") -> str:
     <footer class="footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-main">
-                <div class="footer-brand">CMMC Watch</div>
+                <div class="footer-brand">DailyTrending.info</div>
                 <p class="footer-description">
-                    CMMC compliance, certification, and Defense Industrial Base news
-                    aggregated daily from trusted federal and cybersecurity sources.
+                    AI-curated tech, science, and world news aggregated daily
+                    from Hacker News, Reddit, NPR, BBC, and 12+ other sources.
                 </p>
                 {style_line}
                 <a href="https://github.com/fubak/daily-trending-info" class="footer-github" target="_blank" rel="noopener noreferrer">

@@ -60,7 +60,7 @@ class ArchiveManager:
             html_content = f.read()
 
         # Add canonical URL for the archive page
-        canonical_url = f"https://cmmcwatch.com/archive/{today}/"
+        canonical_url = f"https://dailytrending.info/archive/{today}/"
         canonical_tag = f'<link rel="canonical" href="{canonical_url}">'
 
         # Replace existing canonical or add new one
@@ -195,13 +195,13 @@ class ArchiveManager:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive | CMMC Watch</title>
+    <title>Archive | DailyTrending.info</title>
     <meta name="description" content="Browse the archive of daily CMMC and compliance news. Each day features curated content from trusted federal and cybersecurity sources.">
-    <link rel="canonical" href="https://cmmcwatch.com/archive/">
-    <meta property="og:title" content="Archive | CMMC Watch">
-    <meta property="og:description" content="Browse previous daily CMMC Watch snapshots with curated compliance news.">
-    <meta property="og:image" content="https://cmmcwatch.com/og-image.png">
-    <meta property="og:url" content="https://cmmcwatch.com/archive/">
+    <link rel="canonical" href="https://dailytrending.info/archive/">
+    <meta property="og:title" content="Archive | DailyTrending.info">
+    <meta property="og:description" content="Browse previous daily DailyTrending.info snapshots with curated compliance news.">
+    <meta property="og:image" content="https://dailytrending.info/og-image.png">
+    <meta property="og:url" content="https://dailytrending.info/archive/">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

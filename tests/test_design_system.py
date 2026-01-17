@@ -423,7 +423,7 @@ class TestPWAGenerator:
         result = generate_manifest()
         manifest = json.loads(result)
 
-        assert manifest["name"] == "CMMC Watch"
+        assert manifest["name"] == "DailyTrending.info"
         assert manifest["display"] == "standalone"
         assert len(manifest["icons"]) > 0
         assert manifest["start_url"] == "/"
@@ -461,7 +461,7 @@ class TestSitemapGenerator:
 
         assert '<?xml version="1.0"' in result
         assert "urlset" in result
-        assert "https://cmmcwatch.com/" in result
+        assert "https://dailytrending.info/" in result
 
     def test_generate_sitemap_with_archives(self):
         """Test sitemap with archive dates."""
