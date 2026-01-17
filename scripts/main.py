@@ -2027,17 +2027,6 @@ class Pipeline:
         transition = design.get("transition_speed", "200ms")
         base_mode = "dark-mode" if design.get("is_dark_mode", True) else "light-mode"
 
-        # Get image data
-        image = media_data.get("image_of_day") or {}
-        image_title = html_module.escape(image.get("title", "Image of the Day"))
-        image_url = html_module.escape(image.get("url", ""))
-        image_hd_url = html_module.escape(image.get("url_hd", ""))
-        image_explanation = html_module.escape(image.get("explanation", ""))
-        image_source = image.get("source", "")
-        image_source_url = html_module.escape(image.get("source_url", ""))
-        image_copyright = html_module.escape(image.get("copyright", ""))
-        image_date = image.get("date", "")
-
         # Helper to ensure value is a string before escaping
         def safe_str(val, default=""):
             if val is None:
@@ -2045,6 +2034,19 @@ class Pipeline:
             if isinstance(val, list):
                 return val[0] if val else default
             return str(val)
+
+        # Get image data
+        image = media_data.get("image_of_day") or {}
+        image_title = html_module.escape(
+            safe_str(image.get("title"), "Image of the Day")
+        )
+        image_url = html_module.escape(safe_str(image.get("url")))
+        image_hd_url = html_module.escape(safe_str(image.get("url_hd")))
+        image_explanation = html_module.escape(safe_str(image.get("explanation")))
+        image_source = safe_str(image.get("source"))
+        image_source_url = html_module.escape(safe_str(image.get("source_url")))
+        image_copyright = html_module.escape(safe_str(image.get("copyright")))
+        image_date = safe_str(image.get("date"))
 
         # Get video data
         video = media_data.get("video_of_day") or {}
