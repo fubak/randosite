@@ -135,6 +135,7 @@ body.density-spacious {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    scroll-margin-top: 100px; /* Offset for fixed header when navigating via anchor links */
 }
 
 .section-title::before {
