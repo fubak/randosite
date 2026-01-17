@@ -3,38 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editorial Articles | DailyTrending.info</title>
-    <meta name="description" content="Browse 0 daily editorial articles analyzing trending news and technology stories. Search, filter by mood, and explore our archive.">
-    <link rel="canonical" href="https://dailytrending.info/articles/">
+    <title>Editorial Articles | CMMC Watch</title>
+    <meta name="description" content="Browse 0 daily editorial articles analyzing CMMC and compliance news stories. Search, filter by mood, and explore our archive.">
+    <link rel="canonical" href="https://cmmcwatch.com/articles/">
 
-    <meta property="og:title" content="Editorial Articles | DailyTrending.info">
+    <meta property="og:title" content="Editorial Articles | CMMC Watch">
     <meta property="og:description" content="Browse 0 daily editorial articles analyzing trending news and technology stories.">
     <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Zilla+Slab:wght@600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #667eea;
-            --accent: #4facfe;
-            --bg: #0f0f23;
-            --text: #ffffff;
-            --text-muted: rgba(255,255,255,0.7);
-            --border: rgba(255,255,255,0.1);
+            --primary: #569cd6;
+            --accent: #4ec9b0;
+            --bg: #1e1e1e;
+            --text: #d4d4d4;
+            --text-muted: #808080;
+            --border: #3c3c3c;
+            --card-bg: #252526;
+            --font-primary: 'Zilla Slab', system-ui, sans-serif;
+            --font-secondary: 'Inter', system-ui, sans-serif;
             /* Shared component color mappings */
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
             --color-accent: var(--accent);
             --color-border: var(--border);
-            --color-card-bg: rgba(255,255,255,0.03);
+            --color-card-bg: var(--card-bg);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: var(--font-secondary);
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
@@ -44,13 +47,44 @@
         body.light-mode {
             --bg: #ffffff;
             --text: #1a1a2e;
-            --text-muted: rgba(0,0,0,0.6);
-            --border: rgba(0,0,0,0.1);
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --card-bg: #f8fafc;
             --color-text: var(--text);
             --color-muted: var(--text-muted);
             --color-bg: var(--bg);
             --color-border: var(--border);
-            --color-card-bg: rgba(0,0,0,0.03);
+            --color-card-bg: var(--card-bg);
+        }
+
+        body.dark-mode {
+            --bg: #0a0a0a;
+            --text: #ffffff;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --card-bg: #18181b;
+            --color-text: var(--text);
+            --color-muted: var(--text-muted);
+            --color-bg: var(--bg);
+            --color-border: var(--border);
+            --color-card-bg: var(--card-bg);
+        }
+
+        /* Density settings */
+        body.density-compact {
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }
+        body.density-comfortable {
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }
+        body.density-spacious {
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
         }
 
         .container {
@@ -77,7 +111,7 @@
         }
 
         .page-header h1 {
-            font-family: 'Playfair Display', Georgia, serif;
+            font-family: var(--font-primary);
             font-size: clamp(2rem, 5vw, 3rem);
             margin-bottom: 0.5rem;
         }
@@ -310,7 +344,7 @@
         }
 
         .article-card h2 {
-            font-family: 'Playfair Display', Georgia, serif;
+            font-family: var(--font-primary);
             font-size: 1.5rem;
             margin: 0.5rem 0;
         }
@@ -513,14 +547,14 @@
             align-items: center;
             justify-content: space-between;
             padding: 1rem 2rem;
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--color-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--color-border);
         }
 
         .nav-logo {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-weight: 700;
             font-size: 1.25rem;
             color: var(--color-text);
@@ -657,6 +691,7 @@
             .nav-links.active li:nth-child(6) { transition-delay: 0.35s; }
             .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
             .nav-links.active li:nth-child(8) { transition-delay: 0.45s; }
+            .nav-links.active li:nth-child(9) { transition-delay: 0.5s; }
 
             .nav-links a {
                 display: block;
@@ -689,7 +724,7 @@
         }
 
         .footer-brand {
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: var(--font-primary);
             font-weight: 700;
             font-size: 1.5rem;
             color: var(--color-text);
@@ -785,11 +820,11 @@
     
     </style>
 </head>
-<body class="dark-mode">
+<body class="dark-mode editorial-mode">
     
     <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
-        <a href="/" class="nav-logo" aria-label="DailyTrending.info Home">
-            <span>DailyTrending.info</span>
+        <a href="/" class="nav-logo" aria-label="CMMC Watch Home">
+            <span>CMMC Watch</span>
         </a>
         <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
             <span class="hamburger-line"></span>
@@ -805,6 +840,7 @@
             <li><a href="/finance/">Finance</a></li>
             <li><a href="/media/">Media</a></li>
             <li><a href="/articles/" class="active">Articles</a></li>
+            <li><a href="/archive/">Archive</a></li>
         </ul>
         <div class="nav-actions">
             <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">
@@ -834,7 +870,7 @@
     <div class="container">
         <header class="page-header">
             <h1>Editorial Articles</h1>
-            <p>Daily analysis and insights from DailyTrending.info</p>
+            <p>Daily analysis and insights from CMMC Watch</p>
         </header>
 
         <div class="stats-bar" aria-label="Article statistics">
@@ -1332,10 +1368,10 @@
     <footer class="footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-main">
-                <div class="footer-brand">DailyTrending.info</div>
+                <div class="footer-brand">CMMC Watch</div>
                 <p class="footer-description">
-                    An autonomous trend aggregation website that regenerates daily
-                    with fresh content from multiple sources worldwide.
+                    CMMC compliance, certification, and Defense Industrial Base news
+                    aggregated daily from trusted federal and cybersecurity sources.
                 </p>
                 
                 <a href="https://github.com/fubak/daily-trending-info" class="footer-github" target="_blank" rel="noopener noreferrer">
@@ -1352,12 +1388,13 @@
                     <li><a href="/tech/">Tech</a></li>
                     <li><a href="/world/">World</a></li>
                     <li><a href="/articles/">Articles</a></li>
+                    <li><a href="/archive/">Archive</a></li>
                     <li><a href="/media/">Media</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>Generated on January 03, 2026</span>
+            <span>Generated on January 16, 2026</span>
             <div class="footer-actions">
                 <a href="/archive/" class="archive-btn">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1384,14 +1421,16 @@
             const themeToggle = document.getElementById('theme-toggle');
             const body = document.body;
 
-            // Check for saved theme preference
+            // Apply saved theme or default to dark mode for new users
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 body.classList.remove('dark-mode');
                 body.classList.add('light-mode');
             } else {
+                // Default to dark mode
                 body.classList.remove('light-mode');
                 body.classList.add('dark-mode');
+                if (!savedTheme) localStorage.setItem('theme', 'dark');
             }
 
             if (themeToggle) {
@@ -1421,6 +1460,25 @@
                     menuToggle.setAttribute('aria-expanded', isExpanded);
                 });
             }
+        })();
+
+        // Apply saved density/view preferences
+        (function() {
+            const body = document.body;
+            const densityClasses = ['density-compact', 'density-comfortable', 'density-spacious'];
+
+            // Apply saved density or default to compact
+            const savedDensity = localStorage.getItem('reading_density');
+            const density = savedDensity || 'compact';
+            densityClasses.forEach(cls => body.classList.remove(cls));
+            body.classList.add('density-' + density);
+            if (!savedDensity) localStorage.setItem('reading_density', 'compact');
+
+            // Apply saved view or default to grid
+            const savedView = localStorage.getItem('reading_view');
+            const view = savedView || 'grid';
+            body.classList.toggle('view-list', view === 'list');
+            if (!savedView) localStorage.setItem('reading_view', 'grid');
         })();
     </script>
 </body>

@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/verify-tests.sh",
+            "command": "cd /home/fubak/projects/daily-trending-info && .claude/hooks/verify-tests.sh",
             "description": "Run tests after changes",
             "once": true
           }

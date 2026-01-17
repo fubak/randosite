@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science & Health | CMMC Watch</title>
+    <meta name="description" content="Latest discoveries in science, technology, medicine, and space">
+    <link rel="canonical" href="https://cmmcwatch.com/science/">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <meta property="og:title" content="Science & Health | CMMC Watch">
+    <meta property="og:description" content="Latest discoveries in science, technology, medicine, and space">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cmmcwatch.com/science/">
+    <meta property="og:image" content="https://cmmcwatch.com/og-image.png">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Science & Health | CMMC Watch">
+    <meta name="twitter:description" content="Latest discoveries in science, technology, medicine, and space">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Science & Health Trends",
+        "description": "Latest discoveries in science, technology, medicine, and space",
+        "url": "https://cmmcwatch.com/science/",
+        "isPartOf": {"@id": "https://cmmcwatch.com"},
+        "dateModified": "2026-01-16T23:23:33.811891",
+        "numberOfItems": 51
+    }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #1e1e1e;
+            --color-card-bg: #252526;
+            --color-text: #d4d4d4;
+            --color-muted: #808080;
+            --color-border: #3c3c3c;
+            --color-accent: #569cd6;
+            --color-accent-secondary: #4ec9b0;
+            --radius: 0;
+            --card-padding: 1rem;
+            --transition: 0ms ease;
+            --font-primary: 'Zilla Slab', system-ui, sans-serif;
+            --font-secondary: 'Inter', system-ui, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-secondary);
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        body.light-mode {
+            --color-bg: #ffffff;
+            --color-card-bg: #f8fafc;
+            --color-text: #1a1a2e;
+            --color-muted: #64748b;
+            --color-border: #e2e8f0;
+            background: var(--color-bg);
+        }
+
+        body.dark-mode {
+            --color-bg: #0a0a0a;
+            --color-card-bg: #18181b;
+            --color-text: #ffffff;
+            --color-muted: #a1a1aa;
+            --color-border: #27272a;
+            background: var(--color-bg);
+        }
+
+        /* Density settings */
+        body.density-compact {
+            --section-gap: 1.5rem;
+            --card-gap: 0.75rem;
+            --card-padding: 0.75rem;
+        }
+        body.density-comfortable {
+            --section-gap: 2.5rem;
+            --card-gap: 1.25rem;
+            --card-padding: 1.25rem;
+        }
+        body.density-spacious {
+            --section-gap: 4rem;
+            --card-gap: 2rem;
+            --card-padding: 1.75rem;
+        }
+
+        /* View list mode */
+        body.view-list .stories-grid,
+        body.view-list .trend-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        body.view-list .story-card,
+        body.view-list .trend-card {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--color-border);
+            border-radius: 0;
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        body.view-list .story-card img,
+        body.view-list .trend-card img,
+        body.view-list .card-image {
+            display: none;
+        }
+
+        
+        /* Navigation */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background: var(--color-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .nav-logo {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--color-text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.25rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            padding: 0.5rem 1rem;
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 0.5rem;
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--color-text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-links a.active {
+            color: var(--color-accent);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-date {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .nav-date {
+                display: block;
+            }
+        }
+
+        .theme-toggle, .nav-github {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            color: var(--color-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+
+        .theme-toggle:hover, .nav-github:hover {
+            color: var(--color-text);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .theme-toggle .sun-icon { display: none; }
+        .theme-toggle .moon-icon { display: block; }
+        body.light-mode .theme-toggle .sun-icon { display: block; }
+        body.light-mode .theme-toggle .moon-icon { display: none; }
+
+        /* Mobile menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 101;
+        }
+
+        .hamburger-line {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--color-text);
+            margin: 5px 0;
+            transition: transform 0.3s ease;
+        }
+
+        @media (max-width: 900px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                flex-direction: column;
+                background: var(--color-bg);
+                border-bottom: 1px solid var(--color-border);
+                padding: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links li {
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+            }
+
+            .nav-links.active li {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            .nav-links.active li:nth-child(1) { transition-delay: 0.1s; }
+            .nav-links.active li:nth-child(2) { transition-delay: 0.15s; }
+            .nav-links.active li:nth-child(3) { transition-delay: 0.2s; }
+            .nav-links.active li:nth-child(4) { transition-delay: 0.25s; }
+            .nav-links.active li:nth-child(5) { transition-delay: 0.3s; }
+            .nav-links.active li:nth-child(6) { transition-delay: 0.35s; }
+            .nav-links.active li:nth-child(7) { transition-delay: 0.4s; }
+            .nav-links.active li:nth-child(8) { transition-delay: 0.45s; }
+            .nav-links.active li:nth-child(9) { transition-delay: 0.5s; }
+
+            .nav-links a {
+                display: block;
+                padding: 0.75rem 1rem;
+            }
+        }
+    
+
+        /* Hero Header with Featured Story */
+        .topic-hero {
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .hero-image {
+            position: absolute;
+            inset: 0;
+            background-size: contain;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-color: var(--color-bg);
+            z-index: 0;
+        }
+
+        /* Darkened scaled version behind for full coverage */
+        .hero-image::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            background: inherit;
+            background-size: cover;
+            filter: brightness(0.5);
+            z-index: -1;
+        }
+
+        .hero-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .topic-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--color-accent);
+            color: #000;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-family: var(--font-primary);
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            max-width: 800px;
+        }
+
+        .hero-title a {
+            color: var(--color-text);
+            text-decoration: none;
+            transition: color var(--transition);
+        }
+
+        .hero-title a:hover {
+            color: var(--color-accent);
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: var(--color-muted);
+            max-width: 600px;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-source {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--color-muted);
+        }
+
+        .hero-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--color-accent);
+            color: #000;
+            font-weight: 600;
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: transform var(--transition), box-shadow var(--transition);
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        .story-card {
+            background: var(--color-card-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .story-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-accent);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .story-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+        }
+
+        .story-media {
+            width: 100%;
+            flex-shrink: 0;
+            border-radius: 0;
+            overflow: hidden;
+            position: relative;
+            background: color-mix(in srgb, rgba(12, 16, 24, 0.95), rgba(34, 45, 63, 0.9));
+            background-image: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.18), transparent 40%),
+                              radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.08), transparent 55%);
+            min-height: 180px;
+        }
+
+        .story-media::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.25));
+            pointer-events: none;
+        }
+
+        .story-image {
+            width: 100%;
+            height: 180px;
+            min-height: 180px;
+            object-fit: cover;
+            object-position: center;
+            background-color: var(--color-border);
+            transition: opacity 0.3s ease;
+        }
+
+        /* Loading state - shimmer effect */
+        .story-image:not([loaded]):not(.placeholder) {
+            opacity: 0;
+        }
+
+        .story-media:not(.image-loaded):not(.image-fallback)::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.08) 50%,
+                transparent 100%);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Loaded state */
+        .story-image[loaded] {
+            opacity: 1;
+        }
+
+        .story-image.placeholder {
+            opacity: 0.85;
+            filter: grayscale(0.1);
+        }
+
+        /* Fallback indicator (subtle) */
+        .image-fallback .story-image {
+            opacity: 0.8;
+        }
+
+        .story-content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .source-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-accent);
+            margin-bottom: 0.4rem;
+        }
+
+        .story-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .story-title a {
+            color: var(--color-text);
+            text-decoration: none;
+            background: linear-gradient(to right, var(--color-accent), var(--color-accent)) 0 100% / 0 2px no-repeat;
+            transition: background-size 0.3s;
+        }
+
+        .story-title a:hover {
+            background-size: 100% 2px;
+        }
+
+        .story-desc {
+            color: var(--color-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        
+        /* Footer */
+        .footer {
+            margin-top: 4rem;
+            padding: 3rem 2rem;
+            background: var(--color-card-bg);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        .footer-brand {
+            font-family: var(--font-primary);
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+        }
+
+        .footer-description {
+            color: var(--color-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .footer-github {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-github:hover {
+            color: var(--color-accent);
+        }
+
+        .footer-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: var(--color-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--color-accent);
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 2rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--color-muted);
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-actions a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-muted);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+
+        .footer-actions a:hover {
+            color: var(--color-text);
+            background: rgba(255, 255, 255, 0.1);
+        }
+    
+
+        /* Responsive - Mobile (1 column) */
+        @media (max-width: 640px) {
+            .stories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topic-hero {
+                min-height: 350px;
+            }
+
+            .hero-content {
+                padding: 2rem 1rem;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .hero-desc {
+                font-size: 1rem;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .main-content {
+                padding: 2rem 1rem;
+            }
+
+            .story-card.featured {
+                grid-column: 1;
+            }
+        }
+
+        /* Responsive - Tablet (2 columns) */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .stories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .topic-hero {
+                min-height: 400px;
+            }
+        }
+
+        /* Responsive - Small Desktop (3 columns) */
+        @media (min-width: 1025px) and (max-width: 1280px) {
+            .stories-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    
+    <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+        <a href="/" class="nav-logo" aria-label="CMMC Watch Home">
+            <span>CMMC Watch</span>
+        </a>
+        <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/tech/">Tech</a></li>
+            <li><a href="/world/">World</a></li>
+            <li><a href="/science/" class="active">Science</a></li>
+            <li><a href="/politics/">Politics</a></li>
+            <li><a href="/finance/">Finance</a></li>
+            <li><a href="/media/">Media</a></li>
+            <li><a href="/articles/">Articles</a></li>
+            <li><a href="/archive/">Archive</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode" title="Toggle dark/light mode">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+            <a href="https://github.com/fubak/daily-trending-info" class="nav-github" target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub" title="View source on GitHub">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+            </a>
+        </div>
+    </nav>
+
+    <header class="topic-hero">
+        <div class="hero-image" style="background-image: url('https://scx1.b-cdn.net/csz/news/tmb/2020/rainfall.jpg');" role="img" aria-label="Is California really 100% drought-free for the first time in 25 years? Yes and no: Here's why"></div>
+        <div class="hero-content">
+            <span class="topic-label">Science & Health</span>
+            <h1 class="hero-title"><a href="https://phys.org/news/2026-01-california-drought-free-years.html" target="_blank" rel="noopener">Is California really 100% drought-free for the first time in 25 years? Yes and no: Here&#x27;s why</a></h1>
+            <p class="hero-desc">For the second time in the past two weeks, the U.S. Drought Monitor, a prominent national report, has classified 100% of California as being drought-free. That&#x27;s a rating that hasn&#x27;t occurred in 25 ye</p>
+            <div class="hero-meta">
+                <span class="hero-source">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Science Physorg
+                </span>
+                <div class="hero-stats">
+                    <span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+                        51 stories
+                    </span>
+                    <span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        January 16, 2026
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="stories-grid">
+            
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://cdn.arstechnica.net/wp-content/uploads/2026/01/55042362006_eb0e4d16ab_k-1152x648.jpg"
+                             alt="NASA’s first medical evacuation from space ends with on-target splashdown"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="80"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Ars Technica Science</span>
+                        <h3 class="story-title">
+                            <a href="https://arstechnica.com/space/2026/01/nasas-first-ever-medical-evacuation-from-space-ends-with-on-target-splashdown/" target="_blank" rel="noopener">NASA’s first medical evacuation from space ends with on-target splashdown</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://cdn.mos.cms.futurecdn.net/ByJHohidxU3p79FzQy4HxR-1280-80.jpg"
+                             alt="Congress passes $24.4 billion NASA budget, rejecting Trump&#x27;s deep cuts"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="80"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Spacecom</span>
+                        <h3 class="story-title">
+                            <a href="https://www.space.com/space-exploration/in-rejection-of-trumps-deep-cuts-congress-passes-usd24-4-billion-budget-for-nasa" target="_blank" rel="noopener">Congress passes $24.4 billion NASA budget, rejecting Trump&#x27;s deep cuts</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://cdn.mos.cms.futurecdn.net/SbhpJ2dVFCoSFnHyPXgxSB-1280-80.jpg"
+                             alt="NASA hopes to launch Artemis 2 astronauts to the moon next month, but it&#x27;s going to be tight: &#x27;This "
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="80"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Spacecom</span>
+                        <h3 class="story-title">
+                            <a href="https://www.space.com/space-exploration/artemis/nasa-hopes-to-launch-artemis-2-astronauts-to-the-moon-next-month-but-its-going-to-be-tight-this-is-not-a-rush" target="_blank" rel="noopener">NASA hopes to launch Artemis 2 astronauts to the moon next month, but it&#x27;s going to be tight: &#x27;This </a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://cdn.arstechnica.net/wp-content/uploads/2021/07/GettyImages-1228769036-1152x648.jpg"
+                             alt="EPA makes it harder for states, tribes to block pipelines"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="80"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Ars Technica Science</span>
+                        <h3 class="story-title">
+                            <a href="https://arstechnica.com/science/2026/01/epa-makes-it-harder-for-states-tribes-to-block-pipelines/" target="_blank" rel="noopener">EPA makes it harder for states, tribes to block pipelines</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://www.quantamagazine.org/wp-content/uploads/2026/01/Unstable-Blowup-cr-Samuel-Velasco-Default.webp"
+                             alt="Using AI, Mathematicians Find Hidden Glitches in Fluid Equations"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="70"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Quanta Magazine</span>
+                        <h3 class="story-title">
+                            <a href="https://www.quantamagazine.org/using-ai-mathematicians-find-hidden-glitches-in-fluid-equations-20260109/" target="_blank" rel="noopener">Using AI, Mathematicians Find Hidden Glitches in Fluid Equations</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Science Daily story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Science Daily</span>
+                        <h3 class="story-title">
+                            <a href="https://www.sciencedaily.com/releases/2026/01/260115022814.htm" target="_blank" rel="noopener">Fewer offspring, longer life: The hidden rule of mammal aging</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Nature News story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Nature News</span>
+                        <h3 class="story-title">
+                            <a href="https://www.nature.com/articles/d41586-026-00128-4" target="_blank" rel="noopener">HPV vaccine could help to protect the unvaccinated against cervical cancer</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Nature News story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Nature News</span>
+                        <h3 class="story-title">
+                            <a href="https://www.nature.com/articles/d41586-026-00146-2" target="_blank" rel="noopener">How do vaccine cutbacks affect public health? Ask Japan</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://images.newscientist.com/wp-content/uploads/2026/01/16220448/SEI_281032721.jpg"
+                             alt="First treaty to protect the high seas comes into force"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="70"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science New Scientist</span>
+                        <h3 class="story-title">
+                            <a href="https://www.newscientist.com/article/2512101-first-treaty-to-protect-the-high-seas-comes-into-force/?utm_campaign=RSS%7CNSNS&amp;utm_source=NSNS&amp;utm_medium=RSS&amp;utm_content=home" target="_blank" rel="noopener">First treaty to protect the high seas comes into force</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://cdn.mos.cms.futurecdn.net/f4P87aNhJDXzRftZX8TWVT-1280-80.jpg"
+                             alt="Artemis 2 update: NASA to wheel historic, 11 million-pound rocket to the launch pad this weekend"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="80"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Live Science</span>
+                        <h3 class="story-title">
+                            <a href="https://www.livescience.com/space/space-exploration/artemis-2-update-nasa-to-wheel-historic-11-million-pound-rocket-to-the-launch-pad-this-weekend" target="_blank" rel="noopener">Artemis 2 update: NASA to wheel historic, 11 million-pound rocket to the launch pad this weekend</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://cdn.mos.cms.futurecdn.net/vYrQWUnhFWgZZ3pn5Srh2H-1280-80.jpg"
+                             alt="NASA&#x27;s Mars Sample Return is dead, leaving China to retrieve signs of life from the Red Planet"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="80"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Live Science</span>
+                        <h3 class="story-title">
+                            <a href="https://www.livescience.com/space/mars/nasas-mars-sample-return-is-dead-leaving-china-to-retrieve-signs-of-life-from-the-red-planet" target="_blank" rel="noopener">NASA&#x27;s Mars Sample Return is dead, leaving China to retrieve signs of life from the Red Planet</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://images.newscientist.com/wp-content/uploads/2026/01/16172209/SEI_281031335.jpg"
+                             alt="Cancelling plans may be more socially acceptable than you think"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="70"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science New Scientist</span>
+                        <h3 class="story-title">
+                            <a href="https://www.newscientist.com/article/2511875-cancelling-plans-may-be-more-socially-acceptable-than-you-think/?utm_campaign=RSS%7CNSNS&amp;utm_source=NSNS&amp;utm_medium=RSS&amp;utm_content=home" target="_blank" rel="noopener">Cancelling plans may be more socially acceptable than you think</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://www.sciencenews.org/wp-content/uploads/sites/2/2026/01/011425_JB_cheetahs_feat.jpg?w=800"
+                             alt="How cheetah mummies could help bring the species back to Arabia"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="60"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Sciencenews</span>
+                        <h3 class="story-title">
+                            <a href="https://www.sciencenews.org/article/cheetah-mummies-dna-reintroduce-species" target="_blank" rel="noopener">How cheetah mummies could help bring the species back to Arabia</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="https://www.quantamagazine.org/wp-content/uploads/2026/01/DataStructures-crKristinaArmitage-Default-1.webp"
+                             alt="Why There’s No Single Best Way To Store Information"
+                             class="story-image"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-quality="70"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Quanta Magazine</span>
+                        <h3 class="story-title">
+                            <a href="https://www.quantamagazine.org/why-theres-no-single-best-way-to-store-information-20260116/" target="_blank" rel="noopener">Why There’s No Single Best Way To Store Information</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Nature News story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Nature News</span>
+                        <h3 class="story-title">
+                            <a href="https://www.nature.com/articles/d41586-026-00129-3" target="_blank" rel="noopener">Climate trends influence transatlantic flight times</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Nature News story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Nature News</span>
+                        <h3 class="story-title">
+                            <a href="https://www.nature.com/articles/d41586-025-04125-x" target="_blank" rel="noopener">My PI is not offering any support or guidance on my PhD project, what should I do?</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Science Daily story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Science Daily</span>
+                        <h3 class="story-title">
+                            <a href="https://www.sciencedaily.com/releases/2026/01/260116045344.htm" target="_blank" rel="noopener">NASA brings Crew-11 home early in rare medical evacuation</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Science Daily story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Science Daily</span>
+                        <h3 class="story-title">
+                            <a href="https://www.sciencedaily.com/releases/2026/01/260115022812.htm" target="_blank" rel="noopener">Statins may help almost everyone with type 2 diabetes live longer</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+            <article class="story-card">
+                <div class="story-wrapper">
+                    <figure class="story-media">
+                        <img src="/assets/nano-banana.png"
+                             alt="Science Science Daily story placeholder"
+                             class="story-image placeholder"
+                             loading="lazy"
+                             referrerpolicy="no-referrer"
+                             width="640"
+                             height="360"
+                             data-is-placeholder="true"
+                             onerror="this.onerror=null;this.src='/assets/nano-banana.png';this.classList.add('placeholder');">
+                    </figure>
+                    <div class="story-content">
+                        <span class="source-badge">Science Science Daily</span>
+                        <h3 class="story-title">
+                            <a href="https://www.sciencedaily.com/releases/2026/01/260115220612.htm" target="_blank" rel="noopener">Scientists found the soil secret that doubles forest regrowth</a>
+                        </h3>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    
+    <footer class="footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-main">
+                <div class="footer-brand">CMMC Watch</div>
+                <p class="footer-description">
+                    CMMC compliance, certification, and Defense Industrial Base news
+                    aggregated daily from trusted federal and cybersecurity sources.
+                </p>
+                
+                <a href="https://github.com/fubak/daily-trending-info" class="footer-github" target="_blank" rel="noopener noreferrer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View Source on GitHub
+                </a>
+            </div>
+            <div class="footer-links-section">
+                <h4 class="footer-section-title">Explore</h4>
+                <ul class="footer-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/tech/">Tech</a></li>
+                    <li><a href="/world/">World</a></li>
+                    <li><a href="/articles/">Articles</a></li>
+                    <li><a href="/archive/">Archive</a></li>
+                    <li><a href="/media/">Media</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>Generated on January 16, 2026</span>
+            <div class="footer-actions">
+                <a href="/archive/" class="archive-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3h18v18H3z"></path>
+                        <path d="M21 9H3"></path>
+                        <path d="M9 21V9"></path>
+                    </svg>
+                    View Archive
+                </a>
+                <a href="https://github.com/fubak/daily-trending-info" class="github-btn" target="_blank" rel="noopener noreferrer">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            const placeholderImage = "/assets/nano-banana.png";
+            const LOAD_TIMEOUT_MS = 8000; // 8 second timeout for slow images
+
+            const markBroken = (img, reason = 'error') => {
+                if (!placeholderImage) return;
+                if (img.dataset.fallbackApplied) return;
+                img.dataset.fallbackApplied = 'true';
+                img.dataset.fallbackReason = reason;
+                img.src = placeholderImage;
+                img.classList.add('placeholder');
+                img.title = 'Image unavailable';
+                // Add visual indicator class for styling
+                img.parentElement?.classList.add('image-fallback');
+            };
+
+            const bindErrors = () => {
+                document.querySelectorAll('.story-image').forEach((img) => {
+                    if (img.dataset.boundError) return;
+                    img.dataset.boundError = 'true';
+
+                    // Skip if already a placeholder
+                    if (img.dataset.isPlaceholder === 'true') {
+                        img.setAttribute('loaded', '');
+                        return;
+                    }
+
+                    // Set up timeout for slow-loading images
+                    let loadTimeout;
+                    const startTimeout = () => {
+                        loadTimeout = setTimeout(() => {
+                            if (!img.complete || img.naturalWidth === 0) {
+                                markBroken(img, 'timeout');
+                            }
+                        }, LOAD_TIMEOUT_MS);
+                    };
+
+                    // Handle successful image load
+                    img.addEventListener('load', () => {
+                        clearTimeout(loadTimeout);
+                        if (img.naturalWidth > 0) {
+                            img.setAttribute('loaded', '');
+                            img.parentElement?.classList.add('image-loaded');
+                        } else {
+                            markBroken(img, 'zero-size');
+                        }
+                    });
+
+                    // Handle image error
+                    img.addEventListener('error', () => {
+                        clearTimeout(loadTimeout);
+                        markBroken(img, 'error');
+                    });
+
+                    // Handle already-loaded images
+                    if (img.complete) {
+                        if (img.naturalWidth === 0) {
+                            markBroken(img, 'already-broken');
+                        } else {
+                            img.setAttribute('loaded', '');
+                            img.parentElement?.classList.add('image-loaded');
+                        }
+                    } else {
+                        // Start timeout for images still loading
+                        startTimeout();
+                    }
+                });
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindErrors);
+            } else {
+                bindErrors();
+            }
+        })();
+    </script>
+
+    
+    <script>
+        // Theme toggle functionality
+        (function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+
+            // Apply saved theme or default to dark mode for new users
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+            } else {
+                // Default to dark mode
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                if (!savedTheme) localStorage.setItem('theme', 'dark');
+            }
+
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    if (body.classList.contains('light-mode')) {
+                        body.classList.remove('light-mode');
+                        body.classList.add('dark-mode');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        body.classList.remove('dark-mode');
+                        body.classList.add('light-mode');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+        })();
+
+        // Mobile menu toggle
+        (function() {
+            const menuToggle = document.getElementById('mobile-menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('active');
+                    const isExpanded = navLinks.classList.contains('active');
+                    menuToggle.setAttribute('aria-expanded', isExpanded);
+                });
+            }
+        })();
+
+        // Apply saved density/view preferences
+        (function() {
+            const body = document.body;
+            const densityClasses = ['density-compact', 'density-comfortable', 'density-spacious'];
+
+            // Apply saved density or default to compact
+            const savedDensity = localStorage.getItem('reading_density');
+            const density = savedDensity || 'compact';
+            densityClasses.forEach(cls => body.classList.remove(cls));
+            body.classList.add('density-' + density);
+            if (!savedDensity) localStorage.setItem('reading_density', 'compact');
+
+            // Apply saved view or default to grid
+            const savedView = localStorage.getItem('reading_view');
+            const view = savedView || 'grid';
+            body.classList.toggle('view-list', view === 'list');
+            if (!savedView) localStorage.setItem('reading_view', 'grid');
+        })();
+    </script>
+</body>
+</html>
