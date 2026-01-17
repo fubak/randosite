@@ -96,6 +96,15 @@
         "pexels_234296",
         "pexels_17541115"
       ]
+    },
+    "fc0cb42fe6c1": {
+      "query": "without",
+      "timestamp": "2026-01-17T12:03:24.671907",
+      "image_ids": [
+        "pexels_534164",
+        "pexels_1279813",
+        "pexels_1591060"
+      ]
     }
   },
   "images": {
@@ -448,6 +457,34 @@
       "color": "#A89E95",
       "width": 8192,
       "height": 5464
+    },
+    "pexels_1279813": {
+      "id": "pexels_1279813",
+      "url_small": "https://images.pexels.com/photos/1279813/pexels-photo-1279813.jpeg?auto=compress&cs=tinysrgb&h=130",
+      "url_medium": "https://images.pexels.com/photos/1279813/pexels-photo-1279813.jpeg?auto=compress&cs=tinysrgb&h=350",
+      "url_large": "https://images.pexels.com/photos/1279813/pexels-photo-1279813.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+      "url_original": "https://images.pexels.com/photos/1279813/pexels-photo-1279813.jpeg",
+      "photographer": "Magda Ehlers",
+      "photographer_url": "https://www.pexels.com/@magda-ehlers-pexels",
+      "source": "pexels",
+      "alt_text": "Colorful rainbow striped pattern ideal for creative design projects.",
+      "color": "#C28A38",
+      "width": 5141,
+      "height": 3434
+    },
+    "pexels_1591060": {
+      "id": "pexels_1591060",
+      "url_small": "https://images.pexels.com/photos/1591060/pexels-photo-1591060.jpeg?auto=compress&cs=tinysrgb&h=130",
+      "url_medium": "https://images.pexels.com/photos/1591060/pexels-photo-1591060.jpeg?auto=compress&cs=tinysrgb&h=350",
+      "url_large": "https://images.pexels.com/photos/1591060/pexels-photo-1591060.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
+      "url_original": "https://images.pexels.com/photos/1591060/pexels-photo-1591060.jpeg",
+      "photographer": "Miguel \u00c1. Padri\u00f1\u00e1n",
+      "photographer_url": "https://www.pexels.com/@padrinan",
+      "source": "pexels",
+      "alt_text": "Minimalist image of keyboard keys spelling 'WEB' on a plain background.",
+      "color": "#676764",
+      "width": 6016,
+      "height": 4000
     }
   }
 }

@@ -149,18 +149,16 @@
 
     {% include "components/nav.html" %}
 
-    <div class="page-layout">
+    <article itemscope itemtype="https://schema.org/Article">
+        {% block hero %}{% endblock %}
+
         <main class="main-content" id="main-content">
-            <article itemscope itemtype="https://schema.org/Article">
-                {% block hero %}{% endblock %}
-
-                {% block content %}{% endblock %}
-            </article>
+            {% block content %}{% endblock %}
         </main>
+    </article>
 
-        <!-- On This Page Navigation (Desktop Only) -->
-        {% include "components/on-this-page.html" %}
-    </div>
+    <!-- On This Page Navigation (Floating) -->
+    {% include "components/on-this-page.html" %}
 
     {% include "components/footer.html" %}
 
@@ -394,23 +392,25 @@
             const onThisPageList = document.getElementById('on-this-page-list');
             const progressFill = document.getElementById('reading-progress-fill');
             const scrollToTopBtn = document.getElementById('scroll-to-top');
-            const togglePageBtn = document.getElementById('toggle-on-page');
+            const mobileToggle = document.getElementById('on-this-page-toggle');
 
             if (!onThisPage || !onThisPageList) return;
 
-            // Find all headings in the main content
-            const headings = document.querySelectorAll('.main-content h1, .main-content h2, .main-content h3, .main-content h4');
-            const headingData = [];
+            // Find only section headings (h2.section-title), not article titles
+            const sectionHeadings = document.querySelectorAll('h2.section-title');
+            const sectionData = [];
 
-            // Generate navigation items
-            headings.forEach((heading, index) => {
-                const id = heading.id || `heading-${index}`;
+            // Get hero element to determine when to show navigation
+            const hero = document.querySelector('.hero');
+            const heroHeight = hero ? hero.offsetHeight + hero.offsetTop : 300;
+
+            // Generate navigation items from section headings only
+            sectionHeadings.forEach((heading, index) => {
+                const id = heading.id || `section-${index}`;
                 heading.id = id;
 
-                const level = parseInt(heading.tagName.charAt(1));
                 const text = heading.textContent.trim();
-
-                headingData.push({ id, level, text, element: heading });
+                sectionData.push({ id, text, element: heading });
 
                 // Create navigation item
                 const li = document.createElement('li');
@@ -418,39 +418,52 @@
 
                 const a = document.createElement('a');
                 a.href = `#${id}`;
-                a.className = `on-this-page-link level-${Math.min(level - 1, 3)}`;
+                a.className = 'on-this-page-link';
                 a.textContent = text;
                 a.addEventListener('click', (e) => {
                     e.preventDefault();
-                    heading.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                    heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     history.pushState(null, '', `#${id}`);
+                    // Close mobile menu after click
+                    onThisPage.classList.remove('mobile-open');
+                    mobileToggle?.classList.remove('active');
                 });
 
                 li.appendChild(a);
                 onThisPageList.appendChild(li);
             });
 
-            // Hide navigation if no headings found
-            if (headingData.length === 0) {
-                onThisPage.style.display = 'none';
+            // Hide navigation if no sections found
+            if (sectionData.length === 0) {
+                onThisPage.classList.add('no-sections');
+                if (mobileToggle) mobileToggle.classList.add('no-sections');
                 return;
             }
+
+            // Update visibility based on scroll position
+            const updateVisibility = () => {
+                const scrollY = window.scrollY;
+                if (scrollY > heroHeight) {
+                    onThisPage.classList.remove('hidden');
+                } else {
+                    onThisPage.classList.add('hidden');
+                    onThisPage.classList.remove('mobile-open');
+                    mobileToggle?.classList.remove('active');
+                }
+            };
 
             // Update active section on scroll
             let isScrolling = false;
             const updateActiveSection = () => {
                 if (isScrolling) return;
 
-                const scrollY = window.scrollY + 100; // Offset for header
-                let activeHeading = null;
+                const scrollY = window.scrollY + 150; // Offset for header
+                let activeSection = null;
 
-                for (let i = headingData.length - 1; i >= 0; i--) {
-                    const heading = headingData[i];
-                    if (heading.element.offsetTop <= scrollY) {
-                        activeHeading = heading;
+                for (let i = sectionData.length - 1; i >= 0; i--) {
+                    const section = sectionData[i];
+                    if (section.element.offsetTop <= scrollY) {
+                        activeSection = section;
                         break;
                     }
                 }
@@ -460,8 +473,8 @@
                     link.classList.remove('active');
                 });
 
-                if (activeHeading) {
-                    const activeLink = document.querySelector(`a[href="#${activeHeading.id}"]`);
+                if (activeSection) {
+                    const activeLink = onThisPageList.querySelector(`a[href="#${activeSection.id}"]`);
                     if (activeLink) {
                         activeLink.classList.add('active');
                     }
@@ -476,87 +489,86 @@
                 const trackLength = docHeight - winHeight;
                 const pctScrolled = Math.floor((scrollTop / trackLength) * 100);
 
-                progressFill.style.width = `${Math.min(pctScrolled, 100)}%`;
+                if (progressFill) {
+                    progressFill.style.width = `${Math.min(Math.max(pctScrolled, 0), 100)}%`;
+                }
             };
 
-            // Scroll event handler with throttling
+            // Throttled scroll handler
             let scrollTimeout;
             const handleScroll = () => {
-                if (scrollTimeout) {
-                    clearTimeout(scrollTimeout);
-                }
-
+                if (scrollTimeout) clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(() => {
+                    updateVisibility();
                     updateActiveSection();
                     updateReadingProgress();
-                }, 10);
+                }, 16);
             };
 
-            // Smooth scroll handler
-            const handleSmoothScroll = (targetId) => {
+            // Smooth scroll to section
+            const smoothScrollTo = (targetId) => {
                 isScrolling = true;
                 const target = document.getElementById(targetId);
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                    // Re-enable active section detection after scroll animation
                     setTimeout(() => {
                         isScrolling = false;
                         updateActiveSection();
-                    }, 800);
+                    }, 600);
                 }
             };
 
-            // Scroll to top functionality
+            // Scroll to top
             if (scrollToTopBtn) {
                 scrollToTopBtn.addEventListener('click', () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             }
 
-            // Mobile toggle functionality
-            if (togglePageBtn) {
-                togglePageBtn.addEventListener('click', () => {
+            // Mobile toggle
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', () => {
                     onThisPage.classList.toggle('mobile-open');
+                    mobileToggle.classList.toggle('active');
                 });
 
-                // Close on outside click (mobile)
+                // Close on outside click
                 document.addEventListener('click', (e) => {
-                    if (!onThisPage.contains(e.target) && !togglePageBtn.contains(e.target)) {
+                    if (!onThisPage.contains(e.target) && !mobileToggle.contains(e.target)) {
                         onThisPage.classList.remove('mobile-open');
+                        mobileToggle.classList.remove('active');
                     }
                 });
 
-                // Close on escape key
+                // Close on escape
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
                         onThisPage.classList.remove('mobile-open');
+                        mobileToggle.classList.remove('active');
                     }
                 });
             }
 
             // Initialize
             window.addEventListener('scroll', handleScroll, { passive: true });
-            window.addEventListener('resize', updateReadingProgress);
+            window.addEventListener('resize', () => {
+                updateReadingProgress();
+                updateVisibility();
+            });
 
-            // Initial calls
+            // Initial state
+            updateVisibility();
             updateActiveSection();
             updateReadingProgress();
 
-            // Handle hash changes (back/forward navigation)
+            // Handle hash navigation
             window.addEventListener('hashchange', () => {
                 const hash = window.location.hash.slice(1);
-                if (hash) {
-                    handleSmoothScroll(hash);
-                }
+                if (hash) smoothScrollTo(hash);
             });
 
-            // Handle initial hash on page load
             if (window.location.hash) {
-                setTimeout(() => {
-                    const hash = window.location.hash.slice(1);
-                    handleSmoothScroll(hash);
-                }, 100);
+                setTimeout(() => smoothScrollTo(window.location.hash.slice(1)), 100);
             }
         })();
     </script>
